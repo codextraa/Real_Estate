@@ -38,7 +38,7 @@ jobs:
     name: Lint and Test Backend
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout JWT-djrest repository
+      - name: Checkout real-estate repository
         uses: actions/checkout@v4
 
       - name: Checkout Postgres repository
@@ -48,10 +48,10 @@ jobs:
           token: ${{ secrets.POSTGRES_REPO_PAT }}
           path: postgres-db
 
-      - name: Create token file for JWT-djrest
+      - name: Create token file for real-estate
         run: echo "${{ secrets.INFISICAL_TOKEN_DEV }}" > infisical_token.txt
 
-      - name: Create Infisical config for JWT-djrest
+      - name: Create Infisical config for real-estate
         run: |
           echo "${{ secrets.INFISICAL_JSON_DEV }}" | base64 -d > .infisical.json
 
@@ -75,29 +75,29 @@ jobs:
           timeout 120s bash -c 'until [ "$(docker inspect --format="{{.State.Health.Status}}" postgres-db)" = "healthy" ]; do echo "Waiting for Postgres to be healthy..."; sleep 5; done' || { echo "Postgres failed to become healthy within 2 minutes"; exit 1; }
 
       - name: Start backend and Redis services
-        run: docker compose up -d --build jwt-djrest-backend jwt-djrest-redis
+        run: docker compose up -d --build real-estate-backend real-estate-redis
 
       - name: Install linting dependencies
         run: |
-          docker exec jwt-djrest-backend sh -c "pip install black==25.1.0 pylint==3.3.4 pylint-django"
+          docker exec real-estate-backend sh -c "pip install black==25.1.0 pylint==3.3.4 pylint-django"
 
       - name: Run backend tests
         run: |
-          docker exec jwt-djrest-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/JWT-django-rest/backend' -- sh -c 'cd /app && python manage.py test'"
+          docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && python manage.py test'"
 
       - name: Show logs if tests fail
         if: failure()
-        run: docker logs jwt-djrest-backend
+        run: docker logs real-estate-backend
 
       - name: Check linting with Pylint
         run: |
-          docker exec jwt-djrest-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/JWT-django-rest/backend' -- sh -c 'cd /app && pylint backend auth_api core_db'"
+          docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && pylint backend auth_api core_db'"
 
       - name: Check code formatting with Black
         run: |
-          docker exec jwt-djrest-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/JWT-django-rest/backend' -- sh -c 'cd /app && black --check .'"
+          docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && black --check .'"
 
-      - name: Stop JWT-djrest containers
+      - name: Stop real-estate containers
         if: always()
         run: docker compose down -v
 
