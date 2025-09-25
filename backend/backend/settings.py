@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,17 +22,43 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-q&)f85&_7t0+=yr$fd0e!dgn!@eacfhh8h(y&&19i*zkfaey6#"
+SECRET_KEY = os.getenv("SECRET_KEY", "XXXXXX")
+PRIVATE_KEY = os.getenv("private_key")
+PUBLIC_KEY = os.getenv("public_key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG")
 
-ALLOWED_HOSTS = []
+# Django Environment
+DJANGO_ENV = os.getenv("DJANGO_ENV")
+
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
+
+NEXT_API_SECRET_KEY = os.getenv("NEXT_API_SECRET_KEY")
+
+HTTP_MEDIA_URL = os.getenv("HTTP_MEDIA_URL")
+HTTPS_MEDIA_URL = os.getenv("HTTPS_MEDIA_URL")
+
+HTTPS = os.getenv("HTTPS") == "True"
+if HTTPS or DJANGO_ENV == "production":
+    BACKEND_URL = os.getenv("HTTPS_BACKEND_URL")
+    FRONTEND_URL = os.getenv("HTTPS_FRONTEND_URL")
+else:
+    BACKEND_URL = os.getenv("HTTP_BACKEND_URL")
+    FRONTEND_URL = os.getenv("HTTP_FRONTEND_URL")
 
 
 # Application definition
 
+APP_NAME = os.getenv("APP_NAME")
+
 INSTALLED_APPS = [
+    "corsheaders",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+    "drf_spectacular",
+    "django_filters",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -40,6 +68,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -47,6 +76,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "backend.middlewares.RestrictDirectApiMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -68,14 +98,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
+PYTHONUNBUFFERED = 1
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": os.getenv("DB_ENGINE"),
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
 
@@ -115,8 +151,160 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+if HTTPS:
+    STATIC_ROOT = "/app/static"
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+# Media files
+if DJANGO_ENV == "development":
+    if HTTPS:
+        MEDIA_URL = HTTPS_MEDIA_URL
+    else:
+        MEDIA_URL = HTTP_MEDIA_URL
+    MEDIA_ROOT = "/app/media"
+else:
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/"
+    AWS_DEFAULT_ACL = None
+    AWS_S3_FILE_OVERWRITE = False
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{os.environ.get('REDIS_HOST')}:{os.environ.get('REDIS_PORT')}/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": ("drf_spectacular.openapi.AutoSchema"),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+        "rest_framework.permissions.IsAdminUser",
+    ),
+    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+    "ORDERING_PARAM": "ordering",
+}
+
+# Simple JWT Settings
+
+REST_USE_JWT = True
+
+SIMPLE_JWT = {
+    # 10 second window for access_token_expiry setup
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5, seconds=10),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    # Set the RS256 algorithm
+    "ALGORITHM": "RS256",
+    # Set the private key for signing the token
+    "SIGNING_KEY": PRIVATE_KEY,
+    # Set the public key for verifying the token
+    "VERIFYING_KEY": PUBLIC_KEY,
+    # Token Settings
+    "USER_ID_CLAIM": "user_id",
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+}
+
+# CORS Settings
+
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(
+    ","
+)
+
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF Settings
+
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:3000").split(
+    ","
+)
+
+CSRF_COOKIE_SECURE = True  # Ensures the CSRF cookie is sent only over HTTPS
+CSRF_COOKIE_HTTPONLY = True  # Must be False since JavaScript needs to read the token
+CSRF_COOKIE_SAMESITE = "Lax"  # Prevent cross-origin requests
+CSRF_COOKIE_AGE = 60 * 60 * 24  # 1 day
+
+# Session Settings
+
+SESSION_COOKIE_SECURE = True  # Secure session cookies
+
+SECURE_PROXY_SSL_HEADER = (
+    "HTTP_X_FORWARDED_PROTO",
+    "https",
+)  # Only if Nginx is reverse proxied
+
+# Monitoring
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "loggers": {
+        "": {  # Root logger
+            "level": "INFO",
+            "handlers": ["console"],
+        },
+        "django": {  # Django-specific logger
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "botocore": {  # botocore logger (for S3/AWS interactions)
+            "level": "WARNING",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "boto3": {  # boto3 logger
+            "level": "WARNING",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "s3transfer": {  # s3transfer logger (used by boto3 for file transfers)
+            "level": "WARNING",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+    },
+}
