@@ -1,4 +1,3 @@
-import re
 import secrets
 import string
 from django.db import models
@@ -9,6 +8,7 @@ from django.contrib.auth.models import (
 )
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, RegexValidator
+from .validators import validate_password_complexity
 
 
 class UserManager(BaseUserManager):
@@ -37,7 +37,6 @@ class UserManager(BaseUserManager):
         if not password:
             raise ValueError("SuperUser must have a password")
 
-        extra_fields.setdefault("is_email_verified", True)
         extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
@@ -84,22 +83,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
-    def _pass_valid(self, password):
-        """Private method for testing valid password"""
-        if password:
-            if (
-                len(password) < 8
-                or not re.search(r"[a-z]", password)
-                or not re.search(r"[A-Z]", password)
-                or not re.search(r"[0-9]", password)
-                or not re.search(r"[!@#$%^&*(),.?\":{}|<>[\]~/\\']", password)
-            ):
-                raise ValidationError(
-                    "Password must contain at least 8 characters, "
-                    "including an uppercase letter, a lowercase letter, "
-                    "a number, and a special character."
-                )
-
     @staticmethod
     def create_random_password(length=16):
         """
@@ -137,7 +120,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def set_password(self, raw_password):
         """Validates raw password before hashing"""
-        self._pass_valid(raw_password)
+        validate_password_complexity(raw_password)
         super().set_password(raw_password)
 
     def save(self, *args, **kwargs):
