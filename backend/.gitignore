@@ -162,4 +162,8 @@ cython_debug/
 .pypirc
 
 # media folder
-media/*
+media/**
+
+!media/profile_images/
+
+!media/profile_images/default_profile.jpg
