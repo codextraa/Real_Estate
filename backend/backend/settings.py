@@ -53,6 +53,7 @@ else:
 APP_NAME = os.getenv("APP_NAME")
 
 INSTALLED_APPS = [
+    "core_db",
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
@@ -254,6 +255,8 @@ CSRF_COOKIE_AGE = 60 * 60 * 24  # 1 day
 
 SESSION_COOKIE_SECURE = True  # Secure session cookies
 
+AUTH_USER_MODEL = "core_db.User"
+
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
@@ -261,50 +264,50 @@ SECURE_PROXY_SSL_HEADER = (
 
 # Monitoring
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname} {message}",
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "console": {
-            "level": "INFO",
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-        },
-    },
-    "loggers": {
-        "": {  # Root logger
-            "level": "INFO",
-            "handlers": ["console"],
-        },
-        "django": {  # Django-specific logger
-            "level": "INFO",
-            "handlers": ["console"],
-            "propagate": False,
-        },
-        "botocore": {  # botocore logger (for S3/AWS interactions)
-            "level": "WARNING",
-            "handlers": ["console"],
-            "propagate": False,
-        },
-        "boto3": {  # boto3 logger
-            "level": "WARNING",
-            "handlers": ["console"],
-            "propagate": False,
-        },
-        "s3transfer": {  # s3transfer logger (used by boto3 for file transfers)
-            "level": "WARNING",
-            "handlers": ["console"],
-            "propagate": False,
-        },
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "verbose": {
+#             "format": "{levelname} {asctime} {module} {message}",
+#             "style": "{",
+#         },
+#         "simple": {
+#             "format": "{levelname} {message}",
+#             "style": "{",
+#         },
+#     },
+#     "handlers": {
+#         "console": {
+#             "level": "INFO",
+#             "class": "logging.StreamHandler",
+#             "formatter": "simple",
+#         },
+#     },
+#     "loggers": {
+#         "": {  # Root logger
+#             "level": "INFO",
+#             "handlers": ["console"],
+#         },
+#         "django": {  # Django-specific logger
+#             "level": "INFO",
+#             "handlers": ["console"],
+#             "propagate": False,
+#         },
+#         "botocore": {  # botocore logger (for S3/AWS interactions)
+#             "level": "WARNING",
+#             "handlers": ["console"],
+#             "propagate": False,
+#         },
+#         "boto3": {  # boto3 logger
+#             "level": "WARNING",
+#             "handlers": ["console"],
+#             "propagate": False,
+#         },
+#         "s3transfer": {  # s3transfer logger (used by boto3 for file transfers)
+#             "level": "WARNING",
+#             "handlers": ["console"],
+#             "propagate": False,
+#         },
+#     },
+# }
