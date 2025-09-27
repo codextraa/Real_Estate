@@ -65,30 +65,6 @@ export function validateSessionData(data) {
   };
 }
 
-export function validateCSRFTokenData(data) {
-  // Check that the data is an object
-  if (typeof data !== "object" || data === null) {
-    return null;
-  }
-
-  // Validate CSRFToken (should be a string)
-  if (typeof data.csrf_token !== "string") {
-    return null;
-  }
-  data.csrf_token = String(data.csrf_token).trim();
-
-  if (typeof data.csrf_token_expiry !== "string") {
-    return null;
-  }
-  data.csrf_token_expiry = String(data.csrf_token_expiry).trim();
-
-  // Return sanitized and valid data
-  return {
-    csrf_token: data.csrf_token,
-    csrf_token_expiry: data.csrf_token_expiry,
-  };
-}
-
 /**
  * Encrypts the session data using Web Crypto API
  * @param {Object} data - The session data to encrypt
