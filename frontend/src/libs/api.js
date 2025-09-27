@@ -16,3 +16,7 @@ export const refreshToken = async (refreshToken) => {
 export const login = async (data) => {
   return apiClient.post("/auth-api/login/", data);
 };
+
+export const createUser = async (data) => {
+  return apiClient.post("/auth-api/users/", data);
+};
