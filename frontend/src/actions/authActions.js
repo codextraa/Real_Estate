@@ -1,11 +1,11 @@
-'use server';
+"use server";
 
-import { login, logout } from '@/libs/api';
+import { login, logout } from "@/libs/api";
 import {
   getUserIdFromSession,
   getUserRoleFromSession,
   deleteSessionCookie,
-} from '@/libs/cookie';
+} from "@/libs/cookie";
 
 export const getUserIdAction = async () => {
   try {
@@ -26,19 +26,19 @@ export const getUserRoleAction = async () => {
 };
 
 export const loginAction = async (formData) => {
-  const email = formData.get('email');
-  const password = formData.get('password');
+  const email = formData.get("email");
+  const password = formData.get("password");
 
   let errors = {};
 
   if (!email) {
-    errors.email = 'Email is required.';
-  } else if (!email.includes('@')) {
-    errors.email = 'Invalid email format.';
+    errors.email = "Email is required.";
+  } else if (!email.includes("@")) {
+    errors.email = "Invalid email format.";
   }
 
   if (!password) {
-    errors.password = 'Password is required';
+    errors.password = "Password is required";
   }
 
   if (Object.keys(errors).length > 0) {
@@ -56,10 +56,10 @@ export const loginAction = async (formData) => {
       errors.general = response.error;
       return errors;
     }
-    return { success: 'Login successful' };
+    return { success: "Login successful" };
   } catch (error) {
     console.error(error);
-    errors.general = error.message || 'An unexpected error occurred';
+    errors.general = error.message || "An unexpected error occurred";
     return errors;
   }
 };
