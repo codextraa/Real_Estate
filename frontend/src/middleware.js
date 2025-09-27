@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import {
   getAccessTokenExpiryFromSession,
   updateSessionCookie,
-  getCSRFTokenExpiryFromSession,
-  setCSRFCookie,
 } from "@/libs/cookie";
 import {
   DEFAULT_LOGIN_REDIRECT,
@@ -38,11 +36,6 @@ export async function middleware(req) {
     if (updatedCookie) {
       isLoggedIn = true;
     }
-  }
-
-  let csrfToken = await getCSRFTokenExpiryFromSession();
-  if (!csrfToken) {
-    await setCSRFCookie();
   }
 
   if (isAuthRoute) {
