@@ -1,11 +1,11 @@
-'use server';
+"use server";
 
-import { login, logout } from '@/libs/api';
+import { login, logout } from "@/libs/api";
 import {
   getUserIdFromSession,
   getUserRoleFromSession,
   deleteSessionCookie,
-} from '@/libs/cookie';
+} from "@/libs/cookie";
 
 export const getUserIdAction = async () => {
   try {
@@ -26,8 +26,8 @@ export const getUserRoleAction = async () => {
 };
 
 export async function loginAction(formData) {
-  const email = formData.get('email');
-  const password = formData.get('password');
+  const email = formData.get("email");
+  const password = formData.get("password");
 
   const data = {
     email,
@@ -39,7 +39,7 @@ export async function loginAction(formData) {
   } catch (error) {
     // Handle any network or unexpected error
     console.error(error);
-    return { error: error.message || 'An error occurred during login.' };
+    return { error: error.message || "An error occurred during login." };
   }
 }
 
