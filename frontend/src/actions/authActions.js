@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import { login, logout } from "@/libs/api";
+import { login, logout } from '@/libs/api';
 import {
   getUserIdFromSession,
   getUserRoleFromSession,
   deleteSessionCookie,
-} from "@/libs/cookie";
+} from '@/libs/cookie';
 
 export const getUserIdAction = async () => {
   try {
@@ -25,9 +25,25 @@ export const getUserRoleAction = async () => {
   }
 };
 
-export async function loginAction(formData) {
-  const email = formData.get("email");
-  const password = formData.get("password");
+export const loginAction = async (formData) => {
+  const email = formData.get('email');
+  const password = formData.get('password');
+
+  let errors = {};
+
+  if (!email) {
+    errors.email = 'Email is required.';
+  } else if (!email.includes('@')) {
+    errors.email = 'Invalid email format.';
+  }
+
+  if (!password) {
+    errors.password = 'Password is required';
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return { errors };
+  }
 
   const data = {
     email,
@@ -35,13 +51,18 @@ export async function loginAction(formData) {
   };
 
   try {
-    return await login(data);
+    const response = await login(data);
+    if (response.error) {
+      errors.general = response.error;
+      return errors;
+    }
+    return { success: 'Login successful' };
   } catch (error) {
-    // Handle any network or unexpected error
     console.error(error);
-    return { error: error.message || "An error occurred during login." };
+    errors.general = error.message || 'An unexpected error occurred';
+    return errors;
   }
-}
+};
 
 export const logoutAction = async () => {
   /* eslint-disable no-useless-catch */
