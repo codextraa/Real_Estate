@@ -1,4 +1,4 @@
-import { getAccessTokenFromSession, getCSRFTokenFromSession } from "./cookie";
+import { getAccessTokenFromSession } from "./cookie";
 
 const HTTPS = process.env.HTTPS === "true";
 
@@ -104,14 +104,9 @@ export class ApiClient {
     await this.throttle(endpoint);
 
     const accessToken = await getAccessTokenFromSession();
-    const csrfToken = await getCSRFTokenFromSession();
     const url = `${this.baseURL}${endpoint}`;
 
     let cookieHeader = "";
-
-    if (csrfToken) {
-      cookieHeader += `csrftoken=${csrfToken}; `;
-    }
 
     let options = {
       method,
@@ -119,7 +114,6 @@ export class ApiClient {
         Accept: "application/json",
         ...(cookieHeader && { Cookie: cookieHeader.trim() }),
         ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-        ...(csrfToken && { "X-CSRFToken": csrfToken }),
         "NEXT-X-API-KEY": process.env.NEXT_PUBLIC_API_SECRET_KEY,
         ...(HTTPS && { Referer: process.env.NEXT_PUBLIC_BASE_HTTPS_URL }),
       },
