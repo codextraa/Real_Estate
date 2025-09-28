@@ -81,7 +81,6 @@ class UserModelTest(TestCase):
         self.assertTrue(default_group, user.groups.all())
         self.assertEqual(user.slug, "adminexamplecom")
 
-
     def test_superuser_creation(self):
         """Test creating superuser using email and password"""
         email = "superuser@example.com"
@@ -101,8 +100,6 @@ class UserModelTest(TestCase):
         self.assertTrue(default_group, user.groups.all())
         self.assertEqual(user.slug, "superuserexamplecom")
 
-
-
     def test_user_creation_with_duplicate_email(self):
         """Test creating user with duplicate email"""
         email = "test@example.com"
@@ -119,7 +116,6 @@ class UserModelTest(TestCase):
             error_type=ValidationError,
         )
 
-
     def test_user_creation_with_no_email(self):
         """Test creating user with no email"""
         email = ""
@@ -128,10 +124,10 @@ class UserModelTest(TestCase):
         self.error_raise(
             email=email,
             password=password,
-            error_type=ValueError,)
+            error_type=ValueError,
+        )
 
         self.assertFalse(get_user_model().objects.filter(email=email).exists())
-
 
     def test_user_creation_with_email_exceeding_max_length(self):
         """Test creating user with email exceeding max length"""
@@ -167,7 +163,6 @@ class UserModelTest(TestCase):
                 username=username,
             )
 
-
     def test_user_creation_with_no_password(self):
         """Test creating user with no password"""
         email = "test@example.com"
@@ -178,7 +173,6 @@ class UserModelTest(TestCase):
             password=password,
             error_type=ValidationError,
         )
-
 
     def test_user_creation_with_password_length_less_than_eight(self):
         """Test creating user with password length less than eight"""
@@ -245,7 +239,6 @@ class UserModelTest(TestCase):
                 email=email,
                 password=password,
             )
-
 
     def test_superuser_creation_with_staff_being_false(self):
         """Test creating superuser with staff being false"""
