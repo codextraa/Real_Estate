@@ -1,5 +1,3 @@
-import secrets
-import string
 from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager,
@@ -9,7 +7,6 @@ from django.contrib.auth.models import (
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, RegexValidator
 from .validators import validate_password_complexity
-
 
 class UserManager(BaseUserManager):
     """Custom User Manager"""
@@ -26,9 +23,8 @@ class UserManager(BaseUserManager):
 
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        if password:
-            user.set_password(password)
-            user.save(using=self._db)
+        user.set_password(password)
+        user.save(using=self._db)
 
         return user
 
@@ -83,41 +79,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
-    @staticmethod
-    def create_random_password(length=16):
-        """
-        Generate a cryptographically secure random password of the given length.
-        Ensures at least one uppercase letter, one lowercase letter, one digit,
-        and one special character are included in the password.
-        """
-        if length < 4:
-            raise ValueError(
-                "Password length must be at least 4 characters to meet the requirements"
-            )
-
-        # Define the character sets
-        lower = string.ascii_lowercase
-        upper = string.ascii_uppercase
-        digits = string.digits
-        punctuation = string.punctuation
-
-        # Ensure at least one of each character type
-        password = [
-            secrets.choice(lower),
-            secrets.choice(upper),
-            secrets.choice(digits),
-            secrets.choice(punctuation),
-        ]
-
-        # Fill the rest of the password length with random characters from all sets
-        alphabet = lower + upper + digits + punctuation
-        password += [secrets.choice(alphabet) for _ in range(length - 4)]
-
-        # Shuffle the password to mix the characters
-        secrets.SystemRandom().shuffle(password)
-
-        return "".join(password)
-
     def set_password(self, raw_password):
         """Validates raw password before hashing"""
         validate_password_complexity(raw_password)
@@ -154,6 +115,7 @@ class Property(models.Model):
     price = models.FloatField()
     area_sqft = models.IntegerField()
     address = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True, blank=True, null=True)
     image_url = models.ImageField(
         upload_to="property_images/", blank=True, null=True, max_length=500
     )
