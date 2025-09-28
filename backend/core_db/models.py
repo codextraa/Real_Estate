@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, RegexValidator
 from .validators import validate_password_complexity
 
+
 class UserManager(BaseUserManager):
     """Custom User Manager"""
 
