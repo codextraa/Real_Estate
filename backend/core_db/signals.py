@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group
 from django.dispatch import receiver
 from django.utils.text import slugify
 from django.utils.timezone import now
-from .models import User, Agent
+from .models import User, Property, Agent
 
 
 @receiver(pre_save, sender=User)
@@ -22,15 +22,6 @@ def save_user_slug(
     """Create slug for user using username"""
     if created or (slugify(instance.username) != instance.slug):
         instance.slug = slugify(instance.username)
-        instance.save()
-
-
-@receiver(post_save, sender=User)
-def save_user_last_failed_login_time(
-    sender, instance, created, **kwargs
-):  # pylint: disable=unused-argument
-    if created:
-        instance.last_failed_login_time = now()
         instance.save()
 
 
@@ -53,6 +44,11 @@ def set_user_default_group(
             default_group, _ = Group.objects.get_or_create(name="Default")
             instance.groups.add(default_group)
 
+@receiver(post_save, sender=Property)
+def save_property_slug(sender, instance, created, **kwargs):  # pylint: disable=unused-argument
+    if created or (slugify(instance.title) != instance.slug):
+        instance.slug = slugify(instance.title)
+        instance.save()
 
 @receiver(post_save, sender=Agent)
 def set_is_agent_true_for_agent(
@@ -61,3 +57,5 @@ def set_is_agent_true_for_agent(
     if created:
         instance.is_agent = True
         instance.save()
+
+

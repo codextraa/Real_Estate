@@ -3,7 +3,6 @@
 import re
 from django.core.exceptions import ValidationError
 
-
 def validate_password_complexity(
     password,
 ):  # pylint: disable=inconsistent-return-statements
@@ -15,11 +14,10 @@ def validate_password_complexity(
     - At least one digit
     - At least one special character
     """
-    if not password:
-        return
 
     if (
-        len(password) < 8
+        not password
+        or len(password) < 8
         or not re.search(r"[a-z]", password)
         or not re.search(r"[A-Z]", password)
         or not re.search(r"[0-9]", password)
