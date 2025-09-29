@@ -24,7 +24,8 @@ jobs:
 
           ALLOWED_PATHS=(
             "backend/backend/"
-            "backend/backend_api/"
+            "backend/auth_api/"
+            "backend/property_api/"
             "backend/core_db/"
             "backend/static/"
             "frontend/src/"
