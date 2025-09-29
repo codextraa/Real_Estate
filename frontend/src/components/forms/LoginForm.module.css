@@ -1,0 +1,182 @@
+/*
+ * Desktop Styles
+ */
+.form {
+  /* The form itself is contained within formContainer */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%; /* Takes up a good portion of the form container */
+  max-width: 415px; /* Matches the max input width */
+  height: 100%;
+  padding: 20px 0;
+}
+
+.title1 {
+  position: absolute;
+  top: -30px;
+  font-family: var(--font-koh-santepheap);
+  font-weight: 400;
+  font-size: 115px;
+  text-align: center;
+  line-height: 1; /* 100% line-height */
+  color: #13252e;
+  z-index: 2; /* Ensure it's above other elements if positioned over them */
+}
+
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 25px; /* Vertical space between input groups */
+  width: 100%; /* Matches the width from the reference */
+  margin-top: 58px;
+  margin-bottom: 40px;
+}
+
+.title2 {
+  /* Welcome! text */
+  font-family: var(--font-quando);
+  font-weight: 400;
+  font-size: 53px;
+  color: #13252e;
+  /* Position adjusted to center and be slightly lower */
+  text-align: center;
+}
+
+/* --- Message Bars (Error/Success) --- */
+
+.generalError,
+.success {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: -40px;
+  border-radius: 37px; /* A softer radius for the message bar */
+  font-family: var(--font-merriweather);
+  font-weight: 400;
+  font-size: 16px;
+  color: #ffffff;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.generalError {
+  background: #980000; /* Dark Red */
+}
+
+.success {
+  background: #2c7701; /* Dark Green */
+}
+
+/* --- Input Fields --- */
+
+.formInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 25px; /* Vertical space between input groups */
+  width: 100%; /* Matches the width from the reference */
+  margin-top: 50px;
+  margin-bottom: 20px;
+}
+
+.inputContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* height: 61.8px reference - contains input and error */
+}
+
+.input {
+  width: 100%;
+  height: 40px;
+  padding: 13px; /* Add some padding for text inside */
+  padding-right: 45px;
+  border-radius: 93px;
+  background: rgba(217, 217, 217, 0);
+  border: 2px solid rgba(65, 82, 97, 1);
+  font-family: var(--font-old-standard-tt);
+  font-size: 18px;
+  font-weight: 700;
+  color: #13252e;
+  box-sizing: border-box;
+  text-align: left; /* Text aligns left for better user experience */
+}
+
+.input:focus {
+  outline: none;
+  border-color: #13252e;
+  box-shadow: 0 0 5px rgba(19, 37, 46, 0.5);
+}
+
+.input::placeholder {
+  color: #13252e;
+  font-family: var(--font-old-standard-tt);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.input[id='email']::placeholder::before {
+  content: 'Email';
+}
+
+.input[id='password']::placeholder::before {
+  content: 'Password';
+}
+
+.passwordContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  /* height: 61.8px reference - contains input and error */
+}
+
+/* Error message below the input */
+.error {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-style: bold;
+  font-size: 14px;
+  color: #a50000; /* Red Error Color */
+  margin-top: 5px; /* Space below the input */
+  margin-left: 15px; /* Slight indentation to the left */
+  text-align: left;
+}
+
+.buttonContainer {
+  width: 100%;
+  padding-bottom: 30px;
+}
+
+/*
+ * Mobile Styles
+ */
+@media (max-width: 600px) {
+  .form {
+    width: 90%;
+    max-width: 90%;
+  }
+
+  .title1 {
+    top: -45px;
+  }
+
+  .generalError,
+  .success {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .mainInputContainer {
+    gap: 20px;
+  }
+
+  .formInputContainer {
+    gap: 20px;
+  }
+
+  .input {
+    height: 38px;
+    font-size: 14px;
+  }
+}

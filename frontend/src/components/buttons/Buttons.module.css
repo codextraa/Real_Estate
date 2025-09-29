@@ -1,0 +1,71 @@
+/*
+ * Desktop Styles
+ */
+.formButton {
+  /* Mimics the style.formButton login button styles */
+  width: 100%; /* Take the full width of .buttonContainer (416px) */
+  height: 45px;
+  border-radius: 37px;
+  background: #13252e; /* Dark background */
+  border: none;
+  cursor: pointer;
+
+  /* Text styles */
+  font-family: 'Old Standard TT', serif;
+  font-weight: 700;
+  font-style: bold;
+  font-size: 18px;
+  line-height: 1; /* 100% line-height */
+  color: #f7f7f7; /* Light text */
+
+  transition: background 0.3s ease;
+}
+
+.formButton:hover:not(:disabled) {
+  background: #233e4f; /* Slightly lighter on hover */
+}
+
+.formButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/*
+ * Mobile Styles
+ */
+@media (max-width: 600px) {
+  .formButton {
+    height: 40px;
+    font-size: 16px;
+  }
+}
+
+/* --- Password Toggle Icon Styles --- */
+.passwordToggle {
+  position: absolute;
+  /* Adjust positioning to be vertically centered and near the right edge of the input field */
+  top: 50%;
+  right: 10px; /* Space from the right edge of the input */
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px; /* Makes the click target easier */
+  z-index: 10; /* Ensure it is above the input field */
+}
+
+.toggleIcon {
+  width: 20px; /* Set the size of the icon */
+  height: 14px;
+  display: block; /* Ensures no weird spacing issues */
+  opacity: 0.8;
+}
+
+.passwordToggle:hover .toggleIcon {
+  opacity: 1; /* Full opacity on hover */
+}
+/* For pending state */
+.passwordToggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
