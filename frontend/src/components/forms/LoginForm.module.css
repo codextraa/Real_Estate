@@ -115,12 +115,12 @@
   font-weight: 700;
 }
 
-.input[id='email']::placeholder::before {
-  content: 'Email';
+.input[id="email"]::placeholder::before {
+  content: "Email";
 }
 
-.input[id='password']::placeholder::before {
-  content: 'Password';
+.input[id="password"]::placeholder::before {
+  content: "Password";
 }
 
 .passwordContainer {
