@@ -4,6 +4,8 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
+from core_db.models import Agent, Property
+from django.db.utils import IntegrityError, DataError
 
 # import logging
 # logging.basicConfig(level=logging.INFO)
@@ -320,3 +322,75 @@ class UserModelTest(TestCase):
         user.save()
 
         self.assertEqual(user.slug, "annastory")
+
+
+class AgentModelTest(TestCase):
+    """Test cases for the Agent model"""
+
+    def setUp(self):
+        """Set up a User instance and base data."""
+        self.user = get_user_model().objects.create_user(
+            username="user_for_agent",
+            email="user@example.com",
+            password="Django@123",
+        )
+
+        self.base_data = {
+            "user": self.user,
+            "company_name": "Test Realty Group",
+            "bio": "Experienced agent serving the downtown area.",
+        }
+
+    def test_agents_creation_is_successful(self):
+        """Test creating agent is successful."""
+        agent = Agent.objects.create(**self.base_data)
+
+        self.assertEqual(agent.user, self.user)
+        self.assertEqual(agent.company_name, "Test Realty Group")
+        self.assertEqual(agent.bio, "Experienced agent serving the downtown area.")
+
+    def test_agent_creation_without_setting_is_agent_to_true(self):
+        """Test creating agent without setting is_agent to true."""
+        self.user.is_agent = False
+        self.user.save()
+        self.base_data["user"] = self.user
+
+        agent = Agent.objects.create(**self.base_data)
+        self.assertTrue(agent.user.is_agent)
+
+    def test_user_foreign_key_is_required(self):
+        """Test that an Agent cannot be created without creating a user."""
+        data_no_user = self.base_data.copy()
+        data_no_user.pop("user")
+
+        with self.assertRaises(ValidationError):
+            Agent.objects.create(**data_no_user)
+
+    def test_company_name_is_required(self):
+        """Test that company_name cannot be empty."""
+
+        data_no_company = self.base_data.copy()
+        data_no_company.pop("company_name")
+
+        with self.assertRaises(ValidationError):
+            Agent.objects.create(**data_no_company)
+
+    def test_company_name_max_length_exceed(self):
+        """Test that company_name is within the max_length of 255."""
+
+        comapany_name = "A" * 256
+        data_invalid = self.base_data.copy()
+        data_invalid["company_name"] = comapany_name
+
+        with self.assertRaises(ValidationError):
+            Agent.objects.create(**data_invalid)
+
+    def test_agent_bio_max_length_exceed(self):
+        """Test that bio is within the max_length of 255."""
+
+        bio = "A" * 256
+        data_invalid = self.base_data.copy()
+        data_invalid["bio"] = bio
+
+        with self.assertRaises(ValidationError):
+            Agent.objects.create(**data_invalid)
