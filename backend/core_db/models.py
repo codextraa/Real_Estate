@@ -103,6 +103,11 @@ class Agent(models.Model):
         upload_to="profile_images/", blank=True, null=True, max_length=500
     )
 
+    def save(self, *args, **kwargs):
+        """Running Validators before saving"""
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.company_name}"
 
@@ -120,6 +125,11 @@ class Property(models.Model):
     image_url = models.ImageField(
         upload_to="property_images/", blank=True, null=True, max_length=500
     )
+
+    def save(self, *args, **kwargs):
+        """Running Validators before saving"""
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.title}"
