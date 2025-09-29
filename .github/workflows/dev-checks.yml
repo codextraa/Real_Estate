@@ -81,9 +81,9 @@ jobs:
         run: |
           docker exec real-estate-backend sh -c "pip install black==25.1.0 pylint==3.3.4 pylint-django"
 
-      # - name: Run backend tests
-      #   run: |
-      #     docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && python manage.py test'"
+      - name: Run backend tests
+        run: |
+          docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && python manage.py test'"
 
       - name: Show logs if tests fail
         if: failure()
