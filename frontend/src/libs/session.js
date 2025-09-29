@@ -1,11 +1,11 @@
-const ALGORITHM = "AES-GCM";
+const ALGORITHM = 'AES-GCM';
 let SECRET_KEY;
 
 const get_secret_key = async () => {
-  if (typeof window !== "undefined") {
-    const response = await fetch("/api/auth-secret-key");
+  if (typeof window !== 'undefined') {
+    const response = await fetch('/api/auth-secret-key');
     const data = await response.json();
-    SECRET_KEY = data.auth_secret_key;
+    SECRET_KEY = data.authSecretKey;
   } else {
     SECRET_KEY = process.env.AUTH_SECRET_KEY;
   }
@@ -13,26 +13,26 @@ const get_secret_key = async () => {
 
 export function validateSessionData(data) {
   // Check that the data is an object
-  if (typeof data !== "object" || data === null) {
+  if (typeof data !== 'object' || data === null) {
     return null;
   }
 
   // Validate user_id (should be a non-empty string or number)
-  if (typeof data.user_id !== "string" && typeof data.user_id !== "number") {
+  if (typeof data.user_id !== 'string' && typeof data.user_id !== 'number') {
     return null;
   }
   data.user_id = String(data.user_id).trim(); // Convert to string and remove extra spaces
 
   // Validate user_role (should be a non-empty string)
-  if (typeof data.user_role !== "string" || data.user_role.trim() === "") {
+  if (typeof data.user_role !== 'string' || data.user_role.trim() === '') {
     return null;
   }
   data.user_role = data.user_role.trim();
 
   // Validate access_token (should be a non-empty string)
   if (
-    typeof data.access_token !== "string" ||
-    data.access_token.trim() === ""
+    typeof data.access_token !== 'string' ||
+    data.access_token.trim() === ''
   ) {
     return null;
   }
@@ -40,16 +40,16 @@ export function validateSessionData(data) {
 
   // Validate refresh_token (should be a non-empty string)
   if (
-    typeof data.refresh_token !== "string" ||
-    data.refresh_token.trim() === ""
+    typeof data.refresh_token !== 'string' ||
+    data.refresh_token.trim() === ''
   ) {
     return null;
   }
   data.refresh_token = data.refresh_token.trim();
 
   if (
-    typeof data.access_token_expiry !== "string" ||
-    data.access_token_expiry.trim() === ""
+    typeof data.access_token_expiry !== 'string' ||
+    data.access_token_expiry.trim() === ''
   ) {
     return null;
   }
@@ -75,24 +75,24 @@ export async function encrypt(data) {
     await get_secret_key();
     if (!SECRET_KEY || SECRET_KEY.length !== 64) {
       throw new Error(
-        "Invalid SECRET_KEY. Ensure it is a 64-character hex string.",
+        'Invalid SECRET_KEY. Ensure it is a 64-character hex string.'
       );
     }
   }
 
   // Convert SECRET_KEY to ArrayBuffer
-  const keyBuffer = Uint8Array.from(Buffer.from(SECRET_KEY, "hex"));
+  const keyBuffer = Uint8Array.from(Buffer.from(SECRET_KEY, 'hex'));
 
   // Generate a random IV
   const iv = crypto.getRandomValues(new Uint8Array(12)); // 12 bytes IV for AES-GCM (recommended)
 
   // Import the encryption key
   const cryptoKey = await crypto.subtle.importKey(
-    "raw",
+    'raw',
     keyBuffer,
     { name: ALGORITHM },
     false,
-    ["encrypt"],
+    ['encrypt']
   );
 
   // Encode the data into a byte array
@@ -102,7 +102,7 @@ export async function encrypt(data) {
   const encryptedBuffer = await crypto.subtle.encrypt(
     { name: ALGORITHM, iv },
     cryptoKey,
-    jsonData,
+    jsonData
   );
 
   // Combine IV and encrypted data
@@ -112,7 +112,7 @@ export async function encrypt(data) {
   ]);
 
   // Return as base64 string
-  return encryptedData.toString("base64");
+  return encryptedData.toString('base64');
 }
 
 /**
@@ -125,16 +125,16 @@ export async function decrypt(encryptedData) {
     await get_secret_key();
     if (!SECRET_KEY || SECRET_KEY.length !== 64) {
       throw new Error(
-        "Invalid SECRET_KEY. Ensure it is a 64-character hex string.",
+        'Invalid SECRET_KEY. Ensure it is a 64-character hex string.'
       );
     }
   }
 
   // Convert SECRET_KEY to ArrayBuffer
-  const keyBuffer = Uint8Array.from(Buffer.from(SECRET_KEY, "hex"));
+  const keyBuffer = Uint8Array.from(Buffer.from(SECRET_KEY, 'hex'));
 
   // Decode base64 encrypted data
-  const encryptedBuffer = Buffer.from(encryptedData, "base64");
+  const encryptedBuffer = Buffer.from(encryptedData, 'base64');
 
   // Extract IV (first 12 bytes) and actual encrypted data
   const iv = encryptedBuffer.subarray(0, 12);
@@ -142,18 +142,18 @@ export async function decrypt(encryptedData) {
 
   // Import the decryption key
   const cryptoKey = await crypto.subtle.importKey(
-    "raw",
+    'raw',
     keyBuffer,
     { name: ALGORITHM },
     false,
-    ["decrypt"],
+    ['decrypt']
   );
 
   // Decrypt the data
   const decryptedBuffer = await crypto.subtle.decrypt(
     { name: ALGORITHM, iv },
     cryptoKey,
-    dataBuffer,
+    dataBuffer
   );
 
   // Decode the decrypted data
