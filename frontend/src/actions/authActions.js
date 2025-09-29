@@ -61,7 +61,7 @@ export const loginAction = async (prevState, formData) => {
       return {
         errors,
         success: "",
-        formEmail: email,
+        formEmail: email || "",
       };
     }
 
@@ -73,7 +73,11 @@ export const loginAction = async (prevState, formData) => {
   } catch (error) {
     console.error(error);
     errors.general = error.message || "An unexpected error occurred";
-    return errors;
+    return {
+      errors,
+      success: "",
+      formEmail: email || "",
+    };
   }
 };
 
