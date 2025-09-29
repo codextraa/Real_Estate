@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import Form from 'next/form';
-import { redirect } from 'next/navigation';
-import { useActionState } from 'react';
-import { loginAction } from '@/actions/authActions';
-import { FormButton } from '@/components/buttons/Buttons';
-import { DEFAULT_LOGIN_REDIRECT } from '@/route';
-import styles from './LoginForm.module.css';
+import Form from "next/form";
+import { redirect } from "next/navigation";
+import { useActionState } from "react";
+import { loginAction } from "@/actions/authActions";
+import { FormButton } from "@/components/buttons/Buttons";
+import { DEFAULT_LOGIN_REDIRECT } from "@/route";
+import styles from "./LoginForm.module.css";
 
 const initialState = {
   errors: {},
-  success: '',
+  success: "",
 };
 
 export default function LoginForm() {
   const [state, formAction, isPending] = useActionState(
     loginAction,
-    initialState
+    initialState,
   );
 
   if (state.success) {
