@@ -58,5 +58,7 @@ def set_is_agent_true_for_agent(
     sender, instance, created, **kwargs
 ):  # pylint: disable=unused-argument
     if created:
-        instance.is_agent = True
-        instance.save()
+        user_instance = instance.user
+        if not user_instance.is_agent:
+            user_instance.is_agent = True
+            user_instance.save()
