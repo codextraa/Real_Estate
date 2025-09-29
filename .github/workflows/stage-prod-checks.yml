@@ -28,6 +28,7 @@ jobs:
             "backend/core_db/"
             "backend/static/"
             "frontend/src/"
+            "frontend/public/"
           )
 
           for file in $CHANGED_FILES; do
