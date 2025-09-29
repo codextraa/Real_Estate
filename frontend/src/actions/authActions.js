@@ -1,10 +1,10 @@
 "use server";
 
-import { login, logout } from "@/libs/api";
+import { login } from "@/libs/api";
 import {
   getUserIdFromSession,
   getUserRoleFromSession,
-  deleteSessionCookie,
+  // deleteSessionCookie,
 } from "@/libs/cookie";
 
 export const getUserIdAction = async () => {
@@ -25,7 +25,7 @@ export const getUserRoleAction = async () => {
   }
 };
 
-export const loginAction = async (formData) => {
+export const loginAction = async (prevState, formData) => {
   const email = formData.get("email");
   const password = formData.get("password");
 
@@ -42,7 +42,11 @@ export const loginAction = async (formData) => {
   }
 
   if (Object.keys(errors).length > 0) {
-    return { errors };
+    return {
+      errors, // {errors : errors}
+      success: "",
+      formEmail: email || "",
+    };
   }
 
   const data = {
@@ -54,9 +58,18 @@ export const loginAction = async (formData) => {
     const response = await login(data);
     if (response.error) {
       errors.general = response.error;
-      return errors;
+      return {
+        errors,
+        success: "",
+        formEmail: email,
+      };
     }
-    return { success: "Login successful" };
+
+    return {
+      errors,
+      success: "Login successful",
+      formEmail: "",
+    };
   } catch (error) {
     console.error(error);
     errors.general = error.message || "An unexpected error occurred";
@@ -64,15 +77,15 @@ export const loginAction = async (formData) => {
   }
 };
 
-export const logoutAction = async () => {
-  /* eslint-disable no-useless-catch */
-  try {
-    // Logout from the backend
-    await logout();
-    // Delete the session cookie
-    await deleteSessionCookie();
-  } catch (error) {
-    // Throw the NEXT REDIRECT error (otherwise it won't work)
-    throw error;
-  }
-};
+// export const logoutAction = async () => {
+//   /* eslint-disable no-useless-catch */
+//   try {
+//     // Logout from the backend
+//     await logout();
+//     // Delete the session cookie
+//     await deleteSessionCookie();
+//   } catch (error) {
+//     // Throw the NEXT REDIRECT error (otherwise it won't work)
+//     throw error;
+//   }
+// };
