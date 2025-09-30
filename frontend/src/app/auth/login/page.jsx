@@ -7,7 +7,6 @@ export default function LoginPage() {
 
   return (
     <div className={styles.background}>
-      <h1 className={styles.title}>Estate</h1>
       <div className={styles.container}>
         <div className={styles.formContainer}>
           <LoginForm />
