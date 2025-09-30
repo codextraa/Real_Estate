@@ -45,6 +45,7 @@ export const loginAction = async (prevState, formData) => {
     return {
       errors, // {errors : errors}
       success: "",
+      formEmail: email || "",
     };
   }
 
@@ -60,12 +61,14 @@ export const loginAction = async (prevState, formData) => {
       return {
         errors,
         success: "",
+        formEmail: email,
       };
     }
 
     return {
       errors,
       success: "Login successful",
+      formEmail: "",
     };
   } catch (error) {
     console.error(error);
