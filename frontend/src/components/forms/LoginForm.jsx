@@ -21,6 +21,7 @@ export default function LoginForm() {
     loginAction,
     initialState,
   );
+  //state var, server action func, true/false      //  server action, state var initialized
 
   const [showPassword, setShowPassword] = useState(false);
 
