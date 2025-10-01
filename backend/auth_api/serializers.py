@@ -1,7 +1,7 @@
 import re
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from core_db.models import User, Agent
-from django.contrib.auth import get_user_model
 
 
 def validate_password(password):
@@ -55,9 +55,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return get_user_model().objects.create_user(**validated_data)
-
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
 
     def validate(self, attrs):
         """Validate all data"""
@@ -116,9 +113,6 @@ class AgentSerializer(serializers.ModelSerializer):
             validated_data["profile_img"] = default_image_path
 
         return Agent.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
 
     def validate(self, attrs):
         """Validate all data"""

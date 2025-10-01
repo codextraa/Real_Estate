@@ -1,4 +1,3 @@
-import re
 from rest_framework import serializers
 from core_db.models import Property
 
@@ -33,9 +32,6 @@ class PropertySerializer(serializers.ModelSerializer):
             validated_data["image_url"] = default_image_path
 
         return Property.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
 
     def validate(self, attrs):
         """Validate all data"""
