@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useFormStatus } from "react-dom";
-import styles from "./Buttons.module.css";
+import Image from 'next/image';
+import { useFormStatus } from 'react-dom';
+import styles from './Buttons.module.css';
 
 export function FormButton({ text, pendingText, type }) {
   const { pending } = useFormStatus();
@@ -20,18 +20,29 @@ export function EyeButton({ action, showPassword, isPending }) {
       type="button"
       onClick={action}
       className={styles.passwordToggle}
-      aria-label={showPassword ? "Hide password" : "Show password"}
+      aria-label={showPassword ? 'Hide password' : 'Show password'}
       disabled={isPending}
     >
       <Image
         src={
-          showPassword ? "/assets/eye-closed-icon.svg" : "/assets/eye-icon.svg"
+          showPassword ? '/assets/eye-closed-icon.svg' : '/assets/eye-icon.svg'
         }
         width={20}
         height={14}
-        alt={showPassword ? "Hidden" : "Visible"}
+        alt={showPassword ? 'Hidden' : 'Visible'}
         className={styles.toggleIcon}
       />
     </button>
   );
 }
+
+export function SignUpButton({text}) {
+  return (
+    <button type="button" className={styles.signUpButton}>
+      {text}
+    </button>
+  );
+}
+
+
+
