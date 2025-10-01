@@ -30,7 +30,9 @@ export default function LoginForm() {
   };
 
   if (state.success) {
-    redirect(DEFAULT_LOGIN_REDIRECT);
+    setTimeout(() => {
+      redirect(DEFAULT_LOGIN_REDIRECT);
+    }, 1500);
   }
 
   return (
