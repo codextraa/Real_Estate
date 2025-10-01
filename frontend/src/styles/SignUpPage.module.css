@@ -1,0 +1,47 @@
+.background {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.background img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  filter: blur(4px);
+}
+
+.signUpPageCardContainer {
+  position: absolute;
+  top: 102px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 853px;
+  height: 627px;
+  background: rgba(247, 247, 247, 0.52);
+  border-radius: 30px;
+  backdrop-filter: blur(30px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .signUpPageCardContainer {
+    width: 90%;
+    height: auto;
+    top: 50px;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signUpPageCardContainer {
+    width: 95%;
+    padding: 15px;
+    top: 30px;
+  }
+}
