@@ -1,11 +1,12 @@
-"use server";
+'use server';
 
-import { login } from "@/libs/api";
+import { login } from '@/libs/api';
 import {
   getUserIdFromSession,
   getUserRoleFromSession,
+  setSessionCookie,
   // deleteSessionCookie,
-} from "@/libs/cookie";
+} from '@/libs/cookie';
 
 export const getUserIdAction = async () => {
   try {
@@ -26,26 +27,26 @@ export const getUserRoleAction = async () => {
 };
 
 export const loginAction = async (prevState, formData) => {
-  const email = formData.get("email");
-  const password = formData.get("password");
+  const email = formData.get('email');
+  const password = formData.get('password');
 
   let errors = {};
 
   if (!email) {
-    errors.email = "Email is required.";
-  } else if (!email.includes("@")) {
-    errors.email = "Invalid email format.";
+    errors.email = 'Email is required.';
+  } else if (!email.includes('@')) {
+    errors.email = 'Invalid email format.';
   }
 
   if (!password) {
-    errors.password = "Password is required";
+    errors.password = 'Password is required';
   }
 
   if (Object.keys(errors).length > 0) {
     return {
       errors, // {errors : errors}
-      success: "",
-      formEmail: email || "",
+      success: '',
+      formEmail: email || '',
     };
   }
 
@@ -56,27 +57,35 @@ export const loginAction = async (prevState, formData) => {
 
   try {
     const response = await login(data);
-    if (response.error) {
+    if (
+      response.access_token &&
+      response.refresh_token &&
+      response.user_role &&
+      response.user_id &&
+      response.access_token_expiry
+    ) {
+      await setSessionCookie(response);
+
+      return {
+        errors,
+        success: 'Login successful',
+        formEmail: '',
+      };
+    } else {
       errors.general = response.error;
       return {
         errors,
-        success: "",
-        formEmail: email || "",
+        success: '',
+        formEmail: email || '',
       };
     }
-
-    return {
-      errors,
-      success: "Login successful",
-      formEmail: "",
-    };
   } catch (error) {
     console.error(error);
-    errors.general = error.message || "An unexpected error occurred";
+    errors.general = error.message || 'An unexpected error occurred';
     return {
       errors,
-      success: "",
-      formEmail: email || "",
+      success: '',
+      formEmail: email || '',
     };
   }
 };
