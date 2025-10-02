@@ -2,7 +2,7 @@
 
 import { createUser } from "@/libs/api";
 
-export const signUpError = (response) => {
+const signUpError = (response) => {
   if (typeof response.error === "object") {
     const errorMessages = {};
 
@@ -73,7 +73,7 @@ export const signUpError = (response) => {
   return { general: response.error };
 };
 
-export const createUserAction = async (prevState, formdata, user = "user") => {
+export const createUserAction = async (user, prevState, formdata) => {
   const email = formdata.get("email");
   const username = formdata.get("username");
   const password = formdata.get("password");
@@ -134,7 +134,7 @@ export const createUserAction = async (prevState, formdata, user = "user") => {
     if (response.error) {
       const backend_errors = signUpError(response);
       return {
-        backend_errors,
+        errors: backend_errors,
         success: "",
         formEmail: email || "",
         formFirstName: first_name || "",
