@@ -35,3 +35,11 @@ export function EyeButton({ action, showPassword, isPending }) {
     </button>
   );
 }
+
+export function SignUpButton({ text }) {
+  return (
+    <button type="button" className={styles.signUpButton}>
+      {text}
+    </button>
+  );
+}
