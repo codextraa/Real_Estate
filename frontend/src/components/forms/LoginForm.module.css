@@ -145,9 +145,32 @@
 
 .buttonContainer {
   width: 100%;
-  padding-bottom: 30px;
 }
 
+.logInLast {
+  display: flex; /* Added to center the text */
+  justify-content: center; /* Center the text horizontally */
+  align-items: center; /* Align items vertically */
+  margin-top: 15px;
+  color: #13252e;
+  font-family: var(--font-old-standard-tt);
+  font-size: 18px;
+  font-weight: 700;
+
+}
+
+.logInLink {
+  margin-left: 5px;
+  font-size: 18px;
+  font-weight: 700;
+  text-decoration: underline;
+  color: #13252E;
+}
+
+.logInLink:hover {
+  text-decoration: underLine;
+  color:#356983;
+}
 /*
  * Mobile Styles
  */

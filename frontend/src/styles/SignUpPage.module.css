@@ -21,7 +21,7 @@
   height: 627px;
   background: rgba(247, 247, 247, 0.52);
   border-radius: 30px;
-  backdrop-filter: blur(30px);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
