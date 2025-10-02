@@ -9,6 +9,7 @@ import { FormButton } from '@/components/buttons/Buttons';
 import { DEFAULT_LOGIN_REDIRECT } from '@/route';
 import { EyeButton } from '@/components/buttons/Buttons';
 import styles from './LoginForm.module.css';
+import Link from 'next/link';
 
 const initialState = {
   errors: {},
@@ -83,6 +84,12 @@ export default function LoginForm() {
         </div>
         <div className={styles.buttonContainer}>
           <FormButton text="Login" pendingText="Logging in..." type="submit" />
+        </div>
+        <div className={styles.logInLast}>
+            Don't have an account? 
+            <Link href="/auth/signup" className={styles.logInLink}>
+              Sign Up
+            </Link>
         </div>
       </div>
     </Form>
