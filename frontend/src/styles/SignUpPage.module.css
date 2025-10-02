@@ -10,11 +10,12 @@
   width: 100%;
   height: 100%;
   filter: blur(4px);
+  transform: scale(1.02);
 }
 
 .signUpPageCardContainer {
   position: absolute;
-  top: 102px;
+  top: 17%;
   left: 50%;
   transform: translateX(-50%);
   width: 853px;

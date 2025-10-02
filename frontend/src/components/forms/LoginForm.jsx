@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import Form from 'next/form';
-import { useState } from 'react';
-import { useActionState } from 'react';
-import { redirect } from 'next/navigation';
-import { loginAction } from '@/actions/authActions';
-import { FormButton } from '@/components/buttons/Buttons';
-import { DEFAULT_LOGIN_REDIRECT } from '@/route';
-import { EyeButton } from '@/components/buttons/Buttons';
-import styles from './LoginForm.module.css';
-import Link from 'next/link';
+import Form from "next/form";
+import { useState } from "react";
+import { useActionState } from "react";
+import { redirect } from "next/navigation";
+import { loginAction } from "@/actions/authActions";
+import { FormButton } from "@/components/buttons/Buttons";
+import { DEFAULT_LOGIN_REDIRECT } from "@/route";
+import { EyeButton } from "@/components/buttons/Buttons";
+import styles from "./LoginForm.module.css";
+import Link from "next/link";
 
 const initialState = {
   errors: {},
-  success: '',
-  formEmail: '',
+  success: "",
+  formEmail: "",
 };
 
 export default function LoginForm() {
   const [state, formAction, isPending] = useActionState(
     loginAction,
-    initialState
+    initialState,
   );
 
   const [showPassword, setShowPassword] = useState(false);
@@ -66,7 +66,7 @@ export default function LoginForm() {
               <input
                 id="password"
                 name="password"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 disabled={isPending}
                 className={styles.input}
@@ -86,10 +86,10 @@ export default function LoginForm() {
           <FormButton text="Login" pendingText="Logging in..." type="submit" />
         </div>
         <div className={styles.logInLast}>
-            Don't have an account? 
-            <Link href="/auth/signup" className={styles.logInLink}>
-              Sign Up
-            </Link>
+          Don't have an account?
+          <Link href="/auth/signup" className={styles.logInLink}>
+            Sign Up
+          </Link>
         </div>
       </div>
     </Form>

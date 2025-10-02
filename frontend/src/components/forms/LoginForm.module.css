@@ -156,7 +156,6 @@
   font-family: var(--font-old-standard-tt);
   font-size: 18px;
   font-weight: 700;
-
 }
 
 .logInLink {
@@ -164,12 +163,12 @@
   font-size: 18px;
   font-weight: 700;
   text-decoration: underline;
-  color: #13252E;
+  color: #13252e;
 }
 
 .logInLink:hover {
   text-decoration: underLine;
-  color:#356983;
+  color: #356983;
 }
 /*
  * Mobile Styles

@@ -2,7 +2,7 @@
   width: 100%;
   height: 100%;
   text-align: center;
-  color: #13252E;
+  color: #13252e;
   font-family: var(--font-old-standard-tt);
   display: flex;
   flex-direction: column;
@@ -14,14 +14,14 @@
   font-size: 50px;
   font-weight: 700;
   margin-bottom: 10px;
-  margin-top: -1rem; 
+  margin-top: -1rem;
 }
 
 .signUpCardSubTitle {
   font-size: 25px;
   font-weight: 700;
   margin-bottom: 30px;
-  margin-top: -1rem; 
+  margin-top: -1rem;
 }
 
 .signUpButtonContainer1,
@@ -61,12 +61,12 @@
   font-size: 18px;
   font-weight: 700;
   text-decoration: underline;
-  color: #13252E;
+  color: #13252e;
 }
 
 .signUpLink:hover {
   text-decoration: underLine;
-  color:#356983;
+  color: #356983;
 }
 
 /* Mobile Responsive */
