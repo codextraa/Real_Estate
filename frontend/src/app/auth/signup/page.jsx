@@ -9,7 +9,7 @@ export default async function SignUpPage({ searchParams }) {
   // const params = await searchParams;
   // user = params.user
 
-  return (user && (user === "customer" || user === "agent")) ? (
+  return user && (user === "customer" || user === "agent") ? (
     <div className={styles.signUpBackground}>
       <div className={styles.signUpPageContainer}>
         <div className={styles.signUpPictureContainer}>
@@ -25,7 +25,6 @@ export default async function SignUpPage({ searchParams }) {
           <SignUpForm userType={user} />
         </div>
       </div>
-      
     </div>
   ) : (
     <div className={styles.background}>

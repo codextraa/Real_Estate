@@ -8,7 +8,7 @@ const API_URL = HTTPS
 const apiClient = new ApiClient(API_URL);
 
 export const refreshToken = async (refreshToken) => {
-  return await apiClient.post('/auth-api/refresh-token/', {
+  return await apiClient.post("/auth-api/refresh-token/", {
     refresh: refreshToken,
   });
 };
