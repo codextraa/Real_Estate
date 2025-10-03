@@ -2,13 +2,18 @@
 
 from datetime import timedelta
 from rest_framework import status
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from backend.renderers import ViewRenderer
+from .serializers import (
+    UserSerializer,
+)
 
 
 def check_user_validity(email):
@@ -181,3 +186,141 @@ class RefreshTokenView(TokenRefreshView):
             return Response(
                 {"error": "Invalid refresh token"}, status=status.HTTP_401_UNAUTHORIZED
             )
+
+
+class UserViewSet(ModelViewSet):
+    """User View Set."""
+
+    queryset = get_user_model().objects.all()  # get all the users
+    serializer_class = UserSerializer  # User Serializer initialized
+    authentication_classes = [JWTAuthentication]  # Using jwtoken
+    http_method_names = ["get", "post", "patch", "delete"]
+
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        """Disallow PUT operation."""
+        if request.method == "PUT":
+            return Response(
+                {"error": "PUT operation not allowed."},
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            )
+        return None
+
+    def create(self, request, *args, **kwargs):  # pylint: disable=R0911
+        """Create new user and send email verification link."""
+        current_user = self.request.user
+
+        if "is_superuser" in request.data:
+            return Response(
+                {
+                    "error": "You do not have permission to create a superuser. Contact Developer."
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if "is_staff" in request.data and not current_user.is_superuser:
+            return Response(
+                {"error": "You do not have permission to create an admin user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if "slug" in request.data or "is_active" in request.data:
+            return Response(
+                {"error": "Forbidden fields cannot be updated."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        password = request.data.get("password")
+        if not request.data.get("c_password"):
+            return Response(
+                {"error": "Please confirm your password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        c_password = request.data.pop("c_password")
+        if password != c_password:
+            return Response(
+                {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        response = super().create(request, *args, **kwargs)
+
+        if response.status_code != status.HTTP_201_CREATED:
+            return response
+
+        return Response(
+            {"success": ("User created successfully. ")},
+            status=status.HTTP_201_CREATED,
+        )
+
+    def update(self, request, *args, **kwargs):  # pylint: disable=R0911
+        """Allow only users to update their own profile. SuperUser can update any profile.
+        Patch method allowed, Put method not allowed"""
+
+        not_allowed_method = self.http_method_not_allowed(request)
+
+        if not_allowed_method:
+            return not_allowed_method
+
+        current_user = self.request.user
+        user = self.get_object()
+
+        if "email" in request.data:
+            return Response(
+                {"error": "You cannot update the email field."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if (
+            "slug" in request.data  # pylint: disable=R0916
+            or "is_active" in request.data
+            or "is_staff" in request.data
+            or "is_superuser" in request.data
+        ):
+            return Response(
+                {"error": "Forbidden fields cannot be updated."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if current_user.id != user.id and not current_user.is_superuser:
+            return Response(
+                {"error": "You do not have permission to update this user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        response = super().update(request, *args, **kwargs)
+
+        if response.status_code == status.HTTP_200_OK:
+            return Response(
+                {"success": "User profile updated successfully."},
+                status=status.HTTP_200_OK,
+            )
+
+        return response
+
+    def destroy(self, request, *args, **kwargs):
+        """Allow only superusers to delete normal or staff users and clean up profile image."""
+        current_user = self.request.user
+        user_to_delete = self.get_object()
+
+        if not current_user.is_superuser or current_user.id != user_to_delete.id:
+            return Response(
+                {"error": "You are not authorized to delete this user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if user_to_delete.is_superuser:
+            return Response(
+                {"error": "You cannot delete superusers"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        email = user_to_delete.email
+        response = super().destroy(request, *args, **kwargs)
+
+        if response.status_code == status.HTTP_204_NO_CONTENT:
+            return Response(
+                {"success": f"User {email} deleted successfully."},
+                status=status.HTTP_200_OK,
+            )
+
+        return response
