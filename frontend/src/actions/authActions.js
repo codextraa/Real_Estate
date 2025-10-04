@@ -4,6 +4,7 @@ import { login } from "@/libs/api";
 import {
   getUserIdFromSession,
   getUserRoleFromSession,
+  setSessionCookie,
   // deleteSessionCookie,
 } from "@/libs/cookie";
 
@@ -56,24 +57,37 @@ export const loginAction = async (prevState, formData) => {
 
   try {
     const response = await login(data);
-    if (response.error) {
+    // console.log(response);
+    if (
+      response.access_token &&
+      response.refresh_token &&
+      response.user_role &&
+      response.user_id &&
+      response.access_token_expiry
+    ) {
+      await setSessionCookie(response);
+
+      return {
+        errors,
+        success: "Login successful",
+        formEmail: "",
+      };
+    } else {
       errors.general = response.error;
       return {
         errors,
         success: "",
-        formEmail: email,
+        formEmail: email || "",
       };
     }
-
-    return {
-      errors,
-      success: "Login successful",
-      formEmail: "",
-    };
   } catch (error) {
     console.error(error);
     errors.general = error.message || "An unexpected error occurred";
-    return errors;
+    return {
+      errors,
+      success: "",
+      formEmail: email || "",
+    };
   }
 };
 

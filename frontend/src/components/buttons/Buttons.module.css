@@ -69,3 +69,43 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
+
+.signUpButton {
+  width: 100%;
+  max-width: 543px;
+  height: 48px;
+  background: #13252e;
+  color: #ffffff;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.signUpButton:hover {
+  background: #233e4f;
+  transform: translateY(-2px);
+}
+
+.signUpButton:active {
+  background: #0c151b;
+  transform: translateY(1px);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .signUpButton {
+    font-size: 18px;
+    height: 45px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signUpButton {
+    font-size: 16px;
+    height: 42px;
+  }
+}
