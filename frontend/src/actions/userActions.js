@@ -130,6 +130,7 @@ export const createUserAction = async (user, prevState, formdata) => {
   };
 
   try {
+    // throw new Error('Error div testing');
     const response = await createUser(data);
     if (response.error) {
       const backend_errors = signUpError(response);

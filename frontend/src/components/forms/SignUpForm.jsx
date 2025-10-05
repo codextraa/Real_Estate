@@ -25,9 +25,14 @@ export default function SignUpForm({ userType }) {
   );
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  const toggleShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   if (state.success) {
@@ -138,7 +143,7 @@ export default function SignUpForm({ userType }) {
           <div className={styles.inputContainer}>
             <div className={styles.passwordContainer}>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 placeholder="Password*"
@@ -165,7 +170,7 @@ export default function SignUpForm({ userType }) {
           <div className={styles.inputContainer}>
             <div className={styles.passwordContainer}>
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 id="c_password"
                 name="c_password"
                 placeholder="Confirm Password*"
@@ -173,8 +178,8 @@ export default function SignUpForm({ userType }) {
                 className={styles.input}
               />
               <EyeButton
-                action={toggleShowPassword}
-                showPassword={showPassword}
+                action={toggleShowConfirmPassword}
+                showPassword={showConfirmPassword}
                 isPending={isPending}
               />
             </div>
@@ -187,11 +192,19 @@ export default function SignUpForm({ userType }) {
           </div>
         </div>
         <div className={styles.buttonContainer}>
-          <FormButton
-            text="Create CustomerAccount"
-            pendingText="Creating Account..."
-            type="submit"
-          />
+          {userType === "agent" ? (
+            <FormButton
+              text="Create Agent Account"
+              pendingText="Creating Account..."
+              type="submit"
+            />
+          ) : (
+            <FormButton
+              text="Create Customer Account"
+              pendingText="Creating Account..."
+              type="submit"
+            />
+          )}
         </div>
         <div className={styles.signUpLast}>
           Already have an account?
