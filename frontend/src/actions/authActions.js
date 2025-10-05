@@ -57,7 +57,6 @@ export const loginAction = async (prevState, formData) => {
 
   try {
     const response = await login(data);
-    // console.log(response);
     if (
       response.access_token &&
       response.refresh_token &&

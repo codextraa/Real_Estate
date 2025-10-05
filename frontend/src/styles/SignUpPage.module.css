@@ -29,7 +29,6 @@
   padding: 40px;
 }
 
-/* Mobile Responsive */
 @media (max-width: 768px) {
   .signUpPageCardContainer {
     width: 90%;
@@ -44,5 +43,92 @@
     width: 95%;
     padding: 15px;
     top: 30px;
+  }
+}
+
+/* --- Desktop Styles (Based on 1280px wide layout) --- */
+
+.signUpBackground {
+  background: #f7f7f7;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.signUpPageContainer {
+  /* Main container for the split layout */
+  display: flex;
+  width: 1280px; /* Adjust as needed, but aims for a wide container */
+  height: auto;
+  margin-top: 80px; /* Pushed down to account for the title position */
+  margin-bottom: 80px; /* Pushed down to account for the title position */
+  border-radius: 93px;
+  padding: 20px 60px 20px 60px;
+  overflow: hidden;
+  position: relative;
+}
+
+.signUpPictureContainer {
+  width: 680px;
+  position: relative;
+  border-radius: 93px;
+  overflow: hidden; /* Important to keep the image within the border radius */
+  box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.1);
+  filter: blur(2px);
+  z-index: 1; /* Should be behind the form container if there's any overlap */
+}
+
+.signUpPictureContainer > img {
+  /* Next.js Image component styling to make it fill the container */
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.signUpPageFormContainer {
+  /* Right side with the form */
+  width: 723px; /* Equal split with the image */
+  margin-left: -90px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 0;
+}
+
+/* --- Fallback/Initial Page Card Container (when user is not set) --- */
+
+/* --- Mobile/Small Screen Styles (Max-width 600px, roughly iPhone 6/SE) --- */
+
+@media (max-width: 600px) {
+  .signUpBackground {
+    padding: 0;
+    align-items: flex-start; /* Start content from the top on mobile */
+  }
+
+  .signUpPageContainer {
+    flex-direction: column; /* Stack the image and form vertically */
+    width: 100%;
+    min-height: 100vh;
+    border-radius: 0; /* Remove rounding for full-screen view */
+    box-shadow: none;
+  }
+
+  .signUpPictureContainer {
+    /* Image now takes a smaller, fixed portion at the top */
+    width: 100%;
+    height: 200px; /* Fixed height for the header image */
+    border-radius: 0;
+  }
+
+  .signUpPageFormContainer {
+    /* Form takes the remaining space, adjusting its background as needed */
+    width: 100%;
+    flex-grow: 1; /* Allows it to take up available space */
+    padding: 1rem;
+    border-radius: 0;
+    background: #f7f7f7;
   }
 }
