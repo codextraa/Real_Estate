@@ -46,3 +46,104 @@
     top: 30px;
   }
 }
+
+/* --- Desktop Styles (Based on 1280px wide layout) --- */
+
+.signUpBackground {
+  /* Fills the viewport and uses the specified background color */
+  /* min-height: 100vh;
+  width: 100vw; */
+  background: #f7f7f7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.signUpPageContainer {
+  /* Main container for the split layout */
+  display: flex;
+  width: 90%; /* Adjust as needed, but aims for a wide container */
+  max-width: 1200px; /* Capping the maximum width */
+  min-height: 800px;
+  border-radius: 93px;
+  overflow: hidden; /* Ensures contents stay within the rounded border */
+  /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);  */
+}
+
+.signUpPictureContainer {
+  /* Left side with the image */
+  width: 613px; /* Equal split with the form */
+  position: relative;
+  /* Use the provided dimensions for styling */
+  border-radius: 93px; /* Only round the left corners visually for the image within the container */
+  overflow: hidden;
+  /* The backdrop-filter effect is hard to achieve on the image itself, 
+     but we'll apply an overlay or adjust opacity if needed. 
+     Since the provided image *is* the backdrop, we'll keep it simple. */
+  filter: blur(5px);
+  /* Ensure the Image component fills this container */
+  flex-shrink: 0;
+
+  height: 824px;
+  top: 79px;
+  left: 63px;
+  opacity: 1;
+}
+
+.signUpPictureContainer > img {
+  /* Next.js Image component styling to make it fill the container */
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.signUpPageFormContainer {
+  /* Right side with the form */
+  width: 625px; /* Equal split with the image */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  /* The background gradient and rounded corners will be applied to the form itself 
+     for better control, as per your SignUpForm hints. */
+  position: relative;
+  /* The opacity: 0.85 hint suggests a slight transparency */
+  background: rgba(255, 255, 255, 0.1);
+
+  /* The form itself will handle the main background and rounding. */
+}
+
+/* --- Fallback/Initial Page Card Container (when user is not set) --- */
+
+/* --- Mobile/Small Screen Styles (Max-width 600px, roughly iPhone 6/SE) --- */
+
+@media (max-width: 600px) {
+  .signUpBackground {
+    padding: 0;
+    align-items: flex-start; /* Start content from the top on mobile */
+  }
+
+  .signUpPageContainer {
+    flex-direction: column; /* Stack the image and form vertically */
+    width: 100%;
+    min-height: 100vh;
+    border-radius: 0; /* Remove rounding for full-screen view */
+    box-shadow: none;
+  }
+
+  .signUpPictureContainer {
+    /* Image now takes a smaller, fixed portion at the top */
+    width: 100%;
+    height: 200px; /* Fixed height for the header image */
+    border-radius: 0;
+  }
+
+  .signUpPageFormContainer {
+    /* Form takes the remaining space, adjusting its background as needed */
+    width: 100%;
+    flex-grow: 1; /* Allows it to take up available space */
+    padding: 1rem;
+    border-radius: 0;
+    background: #f7f7f7;
+  }
+}
