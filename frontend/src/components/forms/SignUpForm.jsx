@@ -192,11 +192,19 @@ export default function SignUpForm({ userType }) {
           </div>
         </div>
         <div className={styles.buttonContainer}>
-          <FormButton
-            text="Create CustomerAccount"
-            pendingText="Creating Account..."
-            type="submit"
-          />
+          {userType === "agent" ? (
+            <FormButton
+              text="Create Agent Account"
+              pendingText="Creating Account..."
+              type="submit"
+            />
+          ) : (
+            <FormButton
+              text="Create Customer Account"
+              pendingText="Creating Account..."
+              type="submit"
+            />
+          )}
         </div>
         <div className={styles.signUpLast}>
           Already have an account?

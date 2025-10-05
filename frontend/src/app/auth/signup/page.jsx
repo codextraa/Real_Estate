@@ -17,7 +17,7 @@ export default async function SignUpPage({ searchParams }) {
             src={imgUrl}
             alt="Modern city buildings representing real estate"
             width={669}
-            height={746}
+            height={900}
             priority
           />
         </div>
