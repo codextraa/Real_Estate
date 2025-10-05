@@ -1,0 +1,294 @@
+/* --- Desktop Styles (Based on the 645px wide form element) --- */
+
+.form {
+  /* Styles for the main form container */
+  /* Auto height is better than fixed */
+  width: 100%; /* 645px width
+  max-width: 635.59326171875px;
+  height: 771.796875px;
+  top: 106.2px;
+  left: 580.7px;
+
+  
+  
+
+  padding: 3rem 4rem; /* Padding inside the form */
+
+  /* Applying the rounded container style as per the image */
+  border-radius: 93px;
+  max-width: 635px;
+
+  /* The main background gradient as hinted */
+  background: linear-gradient(224.13deg, #e0edf6 -39.4%, #415261 110.57%);
+
+  /* Subtle backdrop-filter is often used for this kind of look, 
+     though your hint specified blur(0px) for the mainContainer */
+  /* backdrop-filter: blur(5px); */
+
+  /* Flex layout to center content inside the form */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem; /* Space between major sections */
+}
+
+/* --- Typography: Titles and Text --- */
+
+.title {
+  /* "Estate" text style */
+  font-family: var(--font-koh-santepheap);
+  font-weight: 400;
+  font-size: 8.5rem; /* ~115px */
+  color: #13252e;
+  line-height: 1;
+  text-align: center;
+  margin-top: -5rem; /* Adjust position to match image */
+}
+
+.subTitle {
+  /* "Welcome!" text style */
+  font-family: var(--font-quando);
+  font-weight: 400;
+  font-size: 3.3rem; /* ~53px */
+  color: #13252e;
+
+  text-align: center;
+  margin-bottom: 1rem;
+
+  width: 278px;
+  height: 66px;
+  top: 149px;
+  left: 810px;
+
+  opacity: 1;
+
+  font-style: Regular;
+
+  line-height: 100%;
+  letter-spacing: 0%;
+}
+
+/* --- Main Content and Input Containers --- */
+
+.mainContainer {
+  /* A wrapper for the form's content below the main title */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+
+  top: 106.2px;
+  left: 580.7px;
+  border-radius: 93px;
+
+  opacity: 1;
+}
+
+.formInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  max-width: 625px;
+  border-radius: 93px;
+
+  width: 416px;
+
+  opacity: 1;
+
+  height: 560.6121826171875px;
+  top: 267px;
+  left: 725px;
+}
+
+.inputContainer {
+  /* Wrapper for each input field, hint, and error text */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  width: 415.6043701171875px;
+  /* height: 41.80159378051758px; */
+  opacity: 1;
+  border-radius: 93px;
+
+  height: 88.01556396484375px;
+}
+
+/* --- Input Fields --- */
+
+.input {
+  /* Base style for all text/email/password inputs */
+  width: 100%;
+  height: 3.5rem; /* ~58px */
+  padding: 0.75rem 1.5rem;
+
+  /* Color and border styles from hint */
+  background: none;
+  border: 2px solid #415261;
+  border-radius: 93px;
+
+  /* Typography for input text */
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 1rem; /* ~16px */
+  color: #13252e;
+
+  /* Placeholder color for a more subtle look */
+  &::placeholder {
+    color: #14242c;
+    font-weight: 700;
+  }
+}
+
+/* --- Password Field Specific Styles --- */
+
+.passwordContainer {
+  /* Container for password input and eye button */
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  /* Match the .input styling for consistency */
+  height: 3.5rem; /* ~58px */
+  /* background: #d9d9d9; */
+  border: 2px solid #415261;
+  border-radius: 93px;
+  padding: 0; /* Remove padding from this wrapper */
+}
+
+.passwordContainer .input {
+  /* Input inside the password container needs to adjust padding */
+  border: none;
+  padding-right: 4rem; /* Make space for the eye button */
+}
+
+/* --- Error and Success Message Containers --- */
+
+.errorContainer,
+.successContainer {
+  /* General message containers (Error/Success banner under Welcome!) */
+  width: 75%; /* ~415px width */
+  padding: 0.75rem 1.5rem;
+  border-radius: 93px;
+
+  font-family: var(--font-merriweather);
+  font-weight: 400;
+  font-size: 1rem; /* ~16px */
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.errorContainer {
+  /* Error banner style (Red background, White text as per image) */
+  background: #a50000;
+  color: #ffffff;
+}
+
+.successContainer {
+  /* Success banner style (Green background, White text as per image) */
+  background: #2c7701;
+  color: #ffffff;
+}
+
+/* --- Error and Hint Text Styles --- */
+
+.errorText {
+  /* Specific error message below an input field */
+  color: #a50000;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 0.75rem; /* ~12px */
+  margin-top: 0.3rem;
+  margin-left: 1rem; /* Indent to align with input text */
+}
+
+.inputHint {
+  /* Hint text below an input field (Username/Password criteria) */
+  color: #13252e;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 0.6875rem; /* ~11px */
+  margin-top: 0.3rem;
+  margin-left: 1rem; /* Indent to align with input text */
+}
+
+/* --- Button Container (FormButton styling is assumed to be in a separate file) --- */
+
+.buttonContainer {
+  width: 75%; /* Align with the error/success banner width */
+  margin-top: 1rem;
+}
+
+/* --- Sign Up Last Section --- */
+
+.signUpLast {
+  /* "Already have an account?" text */
+  margin-top: 1rem;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 1.125rem; /* ~18px */
+  color: #13252e;
+}
+
+.signUpLink {
+  /* "Login" link */
+  color: #13252e;
+  text-decoration: underline;
+  margin-left: 0.5rem;
+}
+
+/* --- Mobile/Small Screen Styles (Max-width 600px) --- */
+
+@media (max-width: 600px) {
+  .form {
+    padding: 2rem 1.5rem;
+    border-radius: 0; /* Remove rounding for full-screen view */
+    max-width: 100%;
+  }
+
+  .title {
+    font-size: 5rem; /* Smaller title on mobile */
+  }
+
+  .subTitle {
+    font-size: 2.5rem; /* Smaller subtitle on mobile */
+  }
+
+  .errorContainer,
+  .successContainer {
+    width: 90%;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .inputContainer {
+    /* Less vertical gap on mobile */
+    gap: 0.1rem;
+  }
+
+  .input {
+    height: 3rem;
+    font-size: 0.9rem;
+  }
+
+  .passwordContainer {
+    height: 3rem;
+  }
+
+  .buttonContainer {
+    width: 90%;
+  }
+
+  .signUpLast {
+    font-size: 1rem;
+  }
+
+  .signUpLink {
+    font-size: 1rem;
+  }
+}
