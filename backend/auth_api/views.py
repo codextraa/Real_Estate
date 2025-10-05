@@ -10,6 +10,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
+from django.db.models import Q
 from backend.renderers import ViewRenderer
 from .serializers import (
     UserSerializer,
@@ -195,6 +196,27 @@ class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer  # User Serializer initialized
     authentication_classes = [JWTAuthentication]  # Using jwtoken
     http_method_names = ["get", "post", "patch", "delete"]
+
+    def get_queryset(self):  # pylint: disable=R0911
+        """Queryset for User View."""
+        if self.action == "list":
+            if self.request.user.is_staff:
+                return get_user_model().objects.all()
+            return get_user_model().objects.none()
+
+        if self.action == "retrieve":
+            if self.request.user.is_staff:
+                return get_user_model().objects.all()
+            if self.request.user.is_agent:
+                return get_user_model().objects.filter(is_staff=False)
+
+            allowed_user_queryset = Q(pk=self.request.user.pk) | Q(is_agent=True)
+            return get_user_model().objects.filter(allowed_user_queryset)
+
+        # create, update, partial_update, destroy
+        if self.request.user.is_superuser:
+            return get_user_model().objects.all()
+        return get_user_model().objects.filter(pk=self.request.user.pk)
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         """Disallow PUT operation."""
