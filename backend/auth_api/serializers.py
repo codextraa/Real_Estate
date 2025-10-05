@@ -90,6 +90,60 @@ class UserSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class UserListSerializer(serializers.ModelSerializer):
+    """List user serializer."""
+
+    class Meta:
+        model = get_user_model()
+        fields = [
+            "id",
+            "email",
+            "username",
+            "is_active",
+            "is_agent",
+            "is_staff",
+            "is_superuser",
+            "slug",
+        ]
+
+        read_only_fields = [
+            "id",
+            "email",
+            "username",
+            "is_active",
+            "is_agent",
+            "is_staff",
+            "is_superuser",
+            "slug",
+        ]
+
+
+class UserRetrieveSerializer(serializers.ModelSerializer):
+    """Get user by id serializer."""
+
+    class Meta:
+        model = get_user_model()
+        fields = [
+            "id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "address",
+            "slug",
+        ]
+
+        read_only_fields = [
+            "id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "address",
+            "slug",
+        ]
+
+
 class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
