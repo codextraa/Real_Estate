@@ -8,7 +8,9 @@ export default function SignUpPageCard() {
       <h1 className={styles.signUpCardTitle}>Sign Up</h1>
       <h3 className={styles.signUpCardSubTitle}>Create an account</h3>
       <div className={styles.signUpButtonContainer1}>
-        <SignUpButton text="As a Customer" />
+        <Link href="/auth/signup?user=customer">
+          <SignUpButton text="As a Customer" />
+        </Link>
       </div>
       <div className={styles.signUpOr}>
         <div className={styles.signUpLine1}></div>
@@ -16,7 +18,9 @@ export default function SignUpPageCard() {
         <div className={styles.signUpLine2}></div>
       </div>
       <div className={styles.signUpButtonContainer2}>
-        <SignUpButton text="As an Agent" />
+        <Link href="/auth/signup?user=agent">
+          <SignUpButton text="As an Agent" />
+        </Link>
       </div>
       <div className={styles.signUpLast}>
         Already have an account?
