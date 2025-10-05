@@ -1,6 +1,7 @@
 """Views for Auth API."""  # pylint: disable=C0302
 
 from datetime import timedelta
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
@@ -14,6 +15,8 @@ from django.db.models import Q
 from backend.renderers import ViewRenderer
 from .serializers import (
     UserSerializer,
+    UserListSerializer,
+    UserRetrieveSerializer,
 )
 
 
@@ -196,6 +199,22 @@ class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer  # User Serializer initialized
     authentication_classes = [JWTAuthentication]  # Using jwtoken
     http_method_names = ["get", "post", "patch", "delete"]
+
+    def get_serializer_class(self):
+        """Assign serializer based on action."""
+        if self.action == "list":
+            return UserListSerializer
+        if self.action == "retrieve":
+            return UserRetrieveSerializer
+        return super().get_serializer_class()
+
+    def get_permissions(self):
+        """Assign permissions based on action."""
+        if self.action == "create":
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):  # pylint: disable=R0911
         """Queryset for User View."""
