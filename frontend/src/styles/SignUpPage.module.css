@@ -29,7 +29,6 @@
   padding: 40px;
 }
 
-/* Mobile Responsive */
 @media (max-width: 768px) {
   .signUpPageCardContainer {
     width: 90%;
@@ -50,44 +49,35 @@
 /* --- Desktop Styles (Based on 1280px wide layout) --- */
 
 .signUpBackground {
-  /* Fills the viewport and uses the specified background color */
-  /* min-height: 100vh;
-  width: 100vw; */
   background: #f7f7f7;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .signUpPageContainer {
   /* Main container for the split layout */
   display: flex;
-  width: 90%; /* Adjust as needed, but aims for a wide container */
-  max-width: 1200px; /* Capping the maximum width */
-  min-height: 800px;
+  width: 1280px; /* Adjust as needed, but aims for a wide container */
+  height: auto;
+  margin-top: 80px; /* Pushed down to account for the title position */
+  margin-bottom: 80px; /* Pushed down to account for the title position */
   border-radius: 93px;
-  overflow: hidden; /* Ensures contents stay within the rounded border */
-  /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);  */
+  padding: 20px 60px 20px 60px;
+  overflow: hidden;
+  position: relative;
 }
 
 .signUpPictureContainer {
-  /* Left side with the image */
-  width: 613px; /* Equal split with the form */
+  width: 680px;
   position: relative;
-  /* Use the provided dimensions for styling */
-  border-radius: 93px; /* Only round the left corners visually for the image within the container */
-  overflow: hidden;
-  /* The backdrop-filter effect is hard to achieve on the image itself, 
-     but we'll apply an overlay or adjust opacity if needed. 
-     Since the provided image *is* the backdrop, we'll keep it simple. */
-  filter: blur(5px);
-  /* Ensure the Image component fills this container */
-  flex-shrink: 0;
-
-  height: 824px;
-  top: 79px;
-  left: 63px;
-  opacity: 1;
+  border-radius: 93px;
+  overflow: hidden; /* Important to keep the image within the border radius */
+  box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.1);
+  filter: blur(2px);
+  z-index: 1; /* Should be behind the form container if there's any overlap */
 }
 
 .signUpPictureContainer > img {
@@ -99,18 +89,13 @@
 
 .signUpPageFormContainer {
   /* Right side with the form */
-  width: 625px; /* Equal split with the image */
+  width: 723px; /* Equal split with the image */
+  margin-left: -90px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
-  /* The background gradient and rounded corners will be applied to the form itself 
-     for better control, as per your SignUpForm hints. */
   position: relative;
-  /* The opacity: 0.85 hint suggests a slight transparency */
-  background: rgba(255, 255, 255, 0.1);
-
-  /* The form itself will handle the main background and rounding. */
+  z-index: 0;
 }
 
 /* --- Fallback/Initial Page Card Container (when user is not set) --- */
