@@ -196,6 +196,7 @@ class UserViewSet(ModelViewSet):
     """User View Set."""
 
     queryset = get_user_model().objects.all()  # get all the users
+    renderer_classes = [ViewRenderer]
     serializer_class = UserSerializer  # User Serializer initialized
     authentication_classes = [JWTAuthentication]  # Using jwtoken
     http_method_names = ["get", "post", "patch", "delete"]
