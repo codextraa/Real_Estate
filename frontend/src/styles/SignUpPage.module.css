@@ -126,9 +126,20 @@
   .signUpPageFormContainer {
     /* Form takes the remaining space, adjusting its background as needed */
     width: 100%;
-    flex-grow: 1; /* Allows it to take up available space */
-    padding: 1rem;
+    flex-grow: 1;
+    max-width: 100%;
     border-radius: 0;
     background: #f7f7f7;
+
+    padding: 0.3rem;
+    margin: 3px;
+    margin-top: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .signUpPictureContainer {
+    display: none;
   }
 }
