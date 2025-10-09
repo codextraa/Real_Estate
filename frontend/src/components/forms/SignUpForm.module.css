@@ -204,29 +204,34 @@
 
 @media (max-width: 600px) {
   .form {
-    padding: 2rem 5rem 15rem 7rem;
-    border-radius: 0; /* Remove rounding for full-screen view */
     max-width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border-radius: 93px;
+    border-radius: 30px;
+  }
+
+  .mainContainer {
+    margin-left: 0px;
   }
 
   .title {
     font-size: 5rem; /* Smaller title on mobile */
     text-align: center;
-    margin-left: -20px;
+    margin-top: -40px;
+    margin-left: 0px;
   }
 
   .subTitle {
+    display:flex;
+    margin-top: 0px;
     font-size: 2.5rem; /* Smaller subtitle on mobile */
-    text-align: center;
+    align-items: center;
+    justify-content: center;
   }
 
   .errorContainer,
   .successContainer {
-    width: 90%;
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
   }
