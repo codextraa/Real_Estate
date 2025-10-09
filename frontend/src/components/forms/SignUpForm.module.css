@@ -204,15 +204,18 @@
 
 @media (max-width: 600px) {
   .form {
-    max-width: 100%;
+    width: 90%;
+    max-width: 90%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border-radius: 30px;
+    border-radius: 50px;
   }
 
   .mainContainer {
     margin-left: 0px;
+    width: 90%;
+    gap: 0.2rem;
   }
 
   .title {
@@ -223,7 +226,7 @@
   }
 
   .subTitle {
-    display:flex;
+    display: flex;
     margin-top: 0px;
     font-size: 2.5rem; /* Smaller subtitle on mobile */
     align-items: center;
@@ -237,18 +240,20 @@
   }
 
   .inputContainer {
-    /* Less vertical gap on mobile */
-    gap: 0.1rem;
-    position: relative;
-    width: 80%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .formInputContainer {
+    gap: 0.3rem;
   }
 
   .input {
-    height: 3rem;
-    font-size: 0.9rem;
+    /* height: 3rem;
+    font-size: 0.9rem; */
+
+    height: 38px;
+    font-size: 14px;
   }
 
   .passwordContainer {
@@ -256,14 +261,15 @@
   }
 
   .buttonContainer {
-    width: 90%;
+    height: 38px;
+    font-size: 14px;
   }
 
   .signUpLast {
-    font-size: 1rem;
+    font-size: 16px;
   }
 
   .signUpLink {
-    font-size: 1rem;
+    font-size: 16px;
   }
 }
