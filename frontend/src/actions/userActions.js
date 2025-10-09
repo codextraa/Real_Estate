@@ -109,7 +109,7 @@ export const createUserAction = async (user, prevState, formdata) => {
   };
 
   try {
-    // throw new Error('Error div testing');
+    throw new Error('Error div testing');
     const response = await createUser(data);
     console.log(response);
     if (response.error) {
