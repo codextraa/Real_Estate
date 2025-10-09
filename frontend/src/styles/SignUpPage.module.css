@@ -14,8 +14,8 @@
 }
 
 .signUpPageCardContainer {
-  position: absolute;
-  top: 17%;
+  position: relative;
+  top: 11px;
   left: 50%;
   transform: translateX(-50%);
   width: 853px;
@@ -33,7 +33,7 @@
   .signUpPageCardContainer {
     width: 90%;
     height: auto;
-    top: 50px;
+    top: 100px;
     padding: 20px;
   }
 }
@@ -65,7 +65,7 @@
   margin-top: 80px; /* Pushed down to account for the title position */
   margin-bottom: 80px; /* Pushed down to account for the title position */
   border-radius: 93px;
-  padding: 20px 60px 20px 60px;
+  padding: 20px;
   overflow: hidden;
   position: relative;
 }
@@ -115,7 +115,7 @@
     margin-top: 20px;
     margin-bottom: 20px;
     min-height: 100vh;
-    border-radius: 30px;
+    border-radius: 0px;
   }
 
   .signUpPageFormContainer {
@@ -125,7 +125,6 @@
     max-width: 100%;
     border-radius: 0;
     background: #f7f7f7;
-    padding: 0.3rem;
     margin: 3px;
     margin-top: 8px;
     display: flex;
