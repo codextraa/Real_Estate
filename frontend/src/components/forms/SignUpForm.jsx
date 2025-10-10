@@ -157,8 +157,9 @@ export default function SignUpForm({ userType }) {
               />
             </div>
             <span className={styles.inputHint}>
-              Password must be at least 8 characters.
-              Must include at least one uppercase letter, one lowercase letter, one number, one special character.
+              Password must be at least 8 characters. Must include at least one
+              uppercase letter, one lowercase letter, one number, one special
+              character.
             </span>
             {Object.keys(state.errors).length > 0 && state.errors.password && (
               <span className={styles.errorText}>{state.errors.password}</span>
