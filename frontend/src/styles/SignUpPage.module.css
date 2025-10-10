@@ -63,7 +63,7 @@
   margin-top: 80px; /* Pushed down to account for the title position */
   margin-bottom: 80px; /* Pushed down to account for the title position */
   border-radius: 93px;
-  padding: 20px;
+  padding: 20px 0 20px 20px;
   overflow: hidden;
   position: relative;
 }
@@ -100,7 +100,7 @@
 
 /* --- Mobile/Small Screen Styles (Max-width 600px, roughly iPhone 6/SE) --- */
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
   .signUpBackground {
     padding: 0;
     align-items: flex-start; /* Start content from the top on mobile */
