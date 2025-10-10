@@ -10,7 +10,6 @@
   align-items: center;
   background: #f7f7f7;
   position: relative; /* For absolute positioning of children if needed, but flex is better */
-
 }
 
 .container {
@@ -94,8 +93,6 @@
 }
 
 @media (max-width: 500px) {
-  
-
   .container {
     /* Stack the form and image vertically */
     flex-direction: column;
