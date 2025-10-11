@@ -12,7 +12,10 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 from backend.renderers import ViewRenderer
+from .paginations import UserPagination
+from .filters import UserFilter
 from .serializers import (
     UserSerializer,
     UserListSerializer,
@@ -196,8 +199,12 @@ class UserViewSet(ModelViewSet):
     """User View Set."""
 
     queryset = get_user_model().objects.all()  # get all the users
+    renderer_classes = [ViewRenderer]
     serializer_class = UserSerializer  # User Serializer initialized
     authentication_classes = [JWTAuthentication]  # Using jwtoken
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = UserFilter
+    pagination_class = UserPagination
     http_method_names = ["get", "post", "patch", "delete"]
 
     def get_serializer_class(self):

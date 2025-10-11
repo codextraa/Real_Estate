@@ -38,32 +38,11 @@ const signUpError = (response) => {
 
     // Check for each possible attribute and append its messages
     if (response.error.password) {
-      const passErrorMessages = [];
-      const error = response.error.password;
-
-      if (error.short) {
-        passErrorMessages.push(...[error.short]);
+      if (Array.isArray(response.error.password)) {
+        errorMessages["password"] = response.error.password.join(" ");
+      } else {
+        errorMessages["password"] = response.error.password;
       }
-      if (error.upper) {
-        passErrorMessages.push(...[error.upper]);
-      }
-      if (error.lower) {
-        passErrorMessages.push(...[error.lower]);
-      }
-      if (error.number) {
-        passErrorMessages.push(...[error.number]);
-      }
-      if (error.special) {
-        passErrorMessages.push(...[error.special]);
-      }
-
-      if (passErrorMessages.length === 0) {
-        passErrorMessages.push(
-          ...[error[0][0].toUpperCase() + error[0].slice(1).toLowerCase()],
-        );
-      }
-
-      errorMessages["password"] = passErrorMessages.join(" ");
     }
 
     // Combine messages into a single string with \n between each
@@ -130,8 +109,8 @@ export const createUserAction = async (user, prevState, formdata) => {
   };
 
   try {
-    // throw new Error('Error div testing');
     const response = await createUser(data);
+    console.log(response);
     if (response.error) {
       const backend_errors = signUpError(response);
       return {

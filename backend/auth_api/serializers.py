@@ -1,29 +1,7 @@
-import re
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from backend.validators import validate_password_complexity
 from core_db.models import User, Agent
-
-
-def validate_password(password):
-    """Password Validation"""
-    errors = {}
-
-    if len(password) < 8:
-        errors["short"] = "Password must be at least 8 characters long."
-
-    if not re.search(r"[a-z]", password):
-        errors["lower"] = "Password must contain at least one lowercase letter."
-
-    if not re.search(r"[A-Z]", password):
-        errors["upper"] = "Password must contain at least one uppercase letter."
-
-    if not re.search(r"[0-9]", password):
-        errors["number"] = "Password must contain at least one number."
-
-    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-        errors["special"] = "Password must contain at least one special character."
-
-    return errors
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,6 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active",
             "is_staff",
             "is_agent",
+            "password",
             "slug",
         ]
 
@@ -61,9 +40,9 @@ class UserSerializer(serializers.ModelSerializer):
         password = attrs.get("password")
 
         if password:
-            errors = validate_password(password)
-            if errors:
-                raise serializers.ValidationError({"password": errors})
+            errors = validate_password_complexity(attrs.get("password"))
+            if len(errors["password"]) > 0:
+                raise serializers.ValidationError(errors)
 
         username = attrs.get("username")
         if username:
