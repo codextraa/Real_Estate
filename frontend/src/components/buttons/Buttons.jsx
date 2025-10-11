@@ -7,9 +7,11 @@ import styles from "./Buttons.module.css";
 
 export function FormButton({ text, pendingText, type }) {
   const { pending } = useFormStatus();
+  const textClassName =
+    text === "Delete Profile" ? styles.deleteProfileButton : styles.formButton;
 
   return (
-    <button type={type} disabled={pending} className={styles.formButton}>
+    <button type={type} disabled={pending} className={textClassName}>
       {pending ? pendingText : text}
     </button>
   );
