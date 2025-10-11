@@ -14,6 +14,7 @@ from django.utils.timezone import now
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from backend.renderers import ViewRenderer
+from backend.mixins import http_method_mixin
 from .paginations import UserPagination
 from .filters import UserFilter
 from .serializers import (
@@ -245,13 +246,7 @@ class UserViewSet(ModelViewSet):
         return get_user_model().objects.filter(pk=self.request.user.pk)
 
     def http_method_not_allowed(self, request, *args, **kwargs):
-        """Disallow PUT operation."""
-        if request.method == "PUT":
-            return Response(
-                {"error": "PUT operation not allowed."},
-                status=status.HTTP_405_METHOD_NOT_ALLOWED,
-            )
-        return None
+        return http_method_mixin(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Create new user and send email verification link."""
@@ -295,12 +290,13 @@ class UserViewSet(ModelViewSet):
         if response.status_code != status.HTTP_201_CREATED:
             return response
 
+        # pylint: disable=R0801
         return Response(
-            {"success": ("User created successfully. ")},
+            {"success": "User created successfully."},
             status=status.HTTP_201_CREATED,
         )
 
-    def update(self, request, *args, **kwargs):  # pylint: disable=R0911
+    def update(self, request, *args, **kwargs):
         """Allow only users to update their own profile. SuperUser can update any profile.
         Patch method allowed, Put method not allowed"""
 
@@ -311,6 +307,7 @@ class UserViewSet(ModelViewSet):
 
         current_user = self.request.user
         user = self.get_object()
+        # pylint: enable=R0801
 
         if "email" in request.data:
             return Response(
