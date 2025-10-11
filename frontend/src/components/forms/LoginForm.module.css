@@ -170,23 +170,46 @@
   text-decoration: underLine;
   color: #356983;
 }
+
+/*
+ * Tab Styles
+ */
+
+@media (max-width: 900px) {
+  .title1 {
+    top: -45px;
+  }
+}
+
 /*
  * Mobile Styles
  */
-@media (max-width: 600px) {
+@media (max-width: 500px) {
   .form {
     width: 90%;
     max-width: 90%;
   }
 
+  .mainContainer {
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
   .title1 {
-    top: -45px;
+    top: -30px;
+    font-size: 5rem;
+  }
+
+  .title2 {
+    font-size: 2.5rem;
   }
 
   .generalError,
   .success {
     font-size: 14px;
     padding: 8px;
+    margin-top: -10px;
+    margin-bottom: -20px;
   }
 
   .mainInputContainer {
@@ -195,10 +218,23 @@
 
   .formInputContainer {
     gap: 20px;
+    margin-top: 20px;
   }
 
   .input {
     height: 38px;
     font-size: 14px;
+  }
+
+  .input::placeholder {
+    font-size: 14px;
+  }
+
+  .logInLast {
+    font-size: 16px;
+  }
+
+  .logInLink {
+    font-size: 16px;
   }
 }

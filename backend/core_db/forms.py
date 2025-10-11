@@ -3,7 +3,7 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
-from .validators import validate_password_complexity
+from backend.validators import validate_password_complexity
 
 
 User = get_user_model()

@@ -12,7 +12,11 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 from backend.renderers import ViewRenderer
+from backend.mixins import http_method_mixin
+from .paginations import UserPagination
+from .filters import UserFilter
 from .serializers import (
     UserSerializer,
     UserListSerializer,
@@ -196,8 +200,12 @@ class UserViewSet(ModelViewSet):
     """User View Set."""
 
     queryset = get_user_model().objects.all()  # get all the users
+    renderer_classes = [ViewRenderer]
     serializer_class = UserSerializer  # User Serializer initialized
     authentication_classes = [JWTAuthentication]  # Using jwtoken
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = UserFilter
+    pagination_class = UserPagination
     http_method_names = ["get", "post", "patch", "delete"]
 
     def get_serializer_class(self):
@@ -238,13 +246,7 @@ class UserViewSet(ModelViewSet):
         return get_user_model().objects.filter(pk=self.request.user.pk)
 
     def http_method_not_allowed(self, request, *args, **kwargs):
-        """Disallow PUT operation."""
-        if request.method == "PUT":
-            return Response(
-                {"error": "PUT operation not allowed."},
-                status=status.HTTP_405_METHOD_NOT_ALLOWED,
-            )
-        return None
+        return http_method_mixin(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Create new user and send email verification link."""
@@ -288,12 +290,13 @@ class UserViewSet(ModelViewSet):
         if response.status_code != status.HTTP_201_CREATED:
             return response
 
+        # pylint: disable=R0801
         return Response(
-            {"success": ("User created successfully. ")},
+            {"success": "User created successfully."},
             status=status.HTTP_201_CREATED,
         )
 
-    def update(self, request, *args, **kwargs):  # pylint: disable=R0911
+    def update(self, request, *args, **kwargs):
         """Allow only users to update their own profile. SuperUser can update any profile.
         Patch method allowed, Put method not allowed"""
 
@@ -304,6 +307,7 @@ class UserViewSet(ModelViewSet):
 
         current_user = self.request.user
         user = self.get_object()
+        # pylint: enable=R0801
 
         if "email" in request.data:
             return Response(

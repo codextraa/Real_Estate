@@ -76,3 +76,57 @@ class PropertyImageSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
 
         return value
+
+
+class PropertyListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Property
+        fields = [
+            "id",
+            "slug",
+            "title",
+            "image_url",
+            "description",
+        ]
+
+        read_only_fields = [
+            "id",
+            "slug",
+            "title",
+            "image_url",
+            "description",
+        ]
+
+
+class PropertyRetrieveSerializer(serializers.ModelSerializer):
+    """Get property by id serializer."""
+
+    class Meta:
+        model = Property
+        fields = [
+            "id",
+            "agent",
+            "title",
+            "description",
+            "beds",
+            "baths",
+            "price",
+            "area_sqft",
+            "address",
+            "slug",
+            "image_url",
+        ]
+
+        read_only_fields = [
+            "id",
+            "agent",
+            "title",
+            "description",
+            "beds",
+            "baths",
+            "price",
+            "area_sqft",
+            "address",
+            "slug",
+            "image_url",
+        ]

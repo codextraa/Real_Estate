@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
 import styles from "./Buttons.module.css";
 
 export function FormButton({ text, pendingText, type }) {
@@ -39,6 +40,43 @@ export function EyeButton({ action, showPassword, isPending }) {
 export function SignUpButton({ text }) {
   return (
     <button type="button" className={styles.signUpButton}>
+      {text}
+    </button>
+  );
+}
+
+export function NavButton({ text, href }) {
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (href) {
+      router.push(href);
+    }
+  };
+
+  const buttonClass =
+    text === "Sign Up" ? styles.NavSignUpButton : styles.NavLogInButton;
+
+  return (
+    <button type="button" className={buttonClass} onClick={handleClick}>
+      {text}
+    </button>
+  );
+}
+
+export function HomePageButton({ text }) {
+  const router = useRouter();
+  const status = useFormStatus();
+  const handleClick = () => {
+    router.push("/auth/login");
+  };
+  return (
+    <button
+      type="button"
+      className={styles.HomePageButton}
+      onClick={handleClick}
+      disabled={status === "loading"}
+    >
       {text}
     </button>
   );
