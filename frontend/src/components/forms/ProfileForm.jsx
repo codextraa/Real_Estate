@@ -2,11 +2,9 @@ import Form from "next/form";
 import { FormButton } from "@/components/buttons/Buttons";
 import styles from "./ProfileForm.module.css";
 
-export default function ProfileForm() {
-  const sabiq=11
+export default function ProfileForm({ userData }) {
   return (
-  
-    <Form action={sabiq} className={styles.Form}>
+    <Form action={userData} className={styles.Form}>
       <div className={styles.inputFormContainer}>
         <div className={styles.inputContainer}>
           <input

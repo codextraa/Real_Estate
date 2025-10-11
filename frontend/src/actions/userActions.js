@@ -109,7 +109,7 @@ export const createUserAction = async (user, prevState, formdata) => {
   };
 
   try {
-    const response = await createUser(data);
+    const response = await createUser(data, user);
     console.log(response);
     if (response.error) {
       const backend_errors = signUpError(response);

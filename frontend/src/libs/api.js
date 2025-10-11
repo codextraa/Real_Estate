@@ -17,6 +17,22 @@ export const login = async (data) => {
   return apiClient.post("/auth-api/login/", data);
 };
 
-export const createUser = async (data) => {
+export const getUser = async (id) => {
+  console.log(`[NETWORK CALL] Fetching user ${id} from the external API.`);
+  return apiClient.get(`/auth-api/users/${id}/`, {
+    next: { revalidate: 60 },
+  });
+};
+
+export const getAgent = async (id) => {
+  return apiClient.get(`/auth-api/agents/${id}/`, {
+    next: { revalidate: 60 },
+  });
+};
+
+export const createUser = async (data, userType) => {
+  if (userType === "agent") {
+    return apiClient.post("/auth-api/agents/", data);
+  }
   return apiClient.post("/auth-api/users/", data);
 };
