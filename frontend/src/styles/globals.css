@@ -8,7 +8,7 @@
 /* --- CSS Variable Definitions (Global Scope) --- */
 
 :root {
-  --font-koh-santepheap: "Koh Santepheap";
+  --font-koh-santepheap: "Koh Santepheap", cursive;
   --font-quando: "Quando", serif;
   --font-old-standard-tt: "Old Standard TT", serif;
   --font-merriweather: "Merriweather", serif;

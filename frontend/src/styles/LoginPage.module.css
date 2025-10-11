@@ -10,7 +10,6 @@
   align-items: center;
   background: #f7f7f7;
   position: relative; /* For absolute positioning of children if needed, but flex is better */
-  padding: 20px;
 }
 
 .container {
@@ -70,11 +69,6 @@
  */
 
 @media (max-width: 900px) {
-  .background {
-    padding: 0;
-    margin-top: -30px;
-  }
-
   .container {
     /* Stack the form and image vertically */
     flex-direction: column;
@@ -99,11 +93,6 @@
 }
 
 @media (max-width: 500px) {
-  .background {
-    padding: 0;
-    margin-top: -50px;
-  }
-
   .container {
     /* Stack the form and image vertically */
     flex-direction: column;
