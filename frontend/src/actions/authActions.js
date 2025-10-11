@@ -56,7 +56,6 @@ export const loginAction = async (prevState, formData) => {
   };
 
   try {
-    throw new Error("Login div testing");
     const response = await login(data);
     if (
       response.access_token &&
