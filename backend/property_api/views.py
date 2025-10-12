@@ -3,9 +3,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 from backend.renderers import ViewRenderer
 from backend.mixins import http_method_mixin
 from core_db.models import Property
+from .paginations import PropertyPagination
+from .filters import PropertyFilter
 from .serializers import (
     PropertySerializer,
     PropertyListSerializer,
@@ -17,6 +20,9 @@ class PropertyViewSet(ModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
     renderer_classes = [ViewRenderer]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PropertyFilter
+    pagination_class = PropertyPagination
     permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
