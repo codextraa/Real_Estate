@@ -167,3 +167,7 @@ media/**
 !media/profile_images/
 
 !media/profile_images/default_profile.jpg
+
+!media/property_images/
+
+!media/property_images/default_image.jpg
