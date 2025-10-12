@@ -1,6 +1,7 @@
 "use server";
 
 import { createUser } from "@/libs/api";
+import { updateUser } from "@/libs/api";
 
 const signUpError = (response) => {
   if (typeof response.error === "object") {
@@ -50,6 +51,78 @@ const signUpError = (response) => {
   }
   // If it's not an object, return the error as is (string or other type)
   return { general: response.error };
+};
+export const updateUserAction = async (id, user, prevState, formdata) => {
+  const email = formdata.get("email_address");
+  const first_name = formdata.get("first_name");
+  const last_name = formdata.get("last_name");
+  const username = formdata.get("username");
+
+  const errors = {};
+
+  if (!email) {
+    errors.email = "Email is required";
+  } else if (!email.includes("@")) {
+    errors.email = "Email is invalid";
+  }
+
+  // if (user === "agent" && !company_name) {
+  //   errors.company_name = "Company Name is required";
+  // }
+
+  const data = {
+    ...(email && { email }),
+    ...(first_name && { first_name }),
+    ...(last_name && { last_name }),
+    ...(username && { username }),
+    ...(user === "agent" && { is_agent: true }),
+  };
+
+  if (Object.keys(errors).length > 0) {
+    return {
+      errors,
+      success: "",
+      formEmail: email || "",
+      formFirstName: first_name || "",
+      formLastName: last_name || "",
+      formUsername: username || "",
+    };
+  }
+
+  try {
+    const response = await updateUser(id, data, user);
+    console.log(response);
+    if (response.error) {
+      const backend_errors = signUpError(response);
+      return {
+        errors: backend_errors,
+        success: "",
+        formEmail: email || "",
+        formFirstName: first_name || "",
+        formLastName: last_name || "",
+        formUsername: username || "",
+      };
+    }
+    return {
+      errors,
+      success: response.success,
+      formEmail: "",
+      formFirstName: "",
+      formLastName: "",
+      formUsername: "",
+    };
+  } catch (error) {
+    console.error(error);
+    errors.general = error.message || "An unexpected error occurred";
+    return {
+      errors,
+      success: "",
+      formEmail: email || "",
+      formFirstName: first_name || "",
+      formLastName: last_name || "",
+      formUsername: username || "",
+    };
+  }
 };
 
 export const createUserAction = async (user, prevState, formdata) => {
