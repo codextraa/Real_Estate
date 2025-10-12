@@ -5,25 +5,6 @@ const HTTPS = process.env.HTTPS === "true";
 export class ApiClient {
   constructor(baseURL) {
     this.baseURL = baseURL;
-    this.lastRequestTimes = new Map(); // Track last request times per endpoint
-    this.THROTTLE_TIME = 2000; // 2 seconds
-  }
-
-  async throttle(endpoint) {
-    const now = Date.now();
-    const lastRequestTime = this.lastRequestTimes.get(endpoint) || 0;
-    const timeSinceLastRequest = now - lastRequestTime;
-
-    if (timeSinceLastRequest < this.THROTTLE_TIME) {
-      const waitTime = this.THROTTLE_TIME - timeSinceLastRequest;
-      console.warn(
-        `Throttling: Waiting ${waitTime / 1000} seconds before sending request to ${endpoint}`,
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-    }
-
-    this.lastRequestTimes.set(endpoint, Date.now());
   }
 
   async handleErrors(response) {
@@ -101,8 +82,6 @@ export class ApiClient {
     additionalOptions = {},
     isMultipart = false,
   ) {
-    await this.throttle(endpoint);
-
     const accessToken = await getAccessTokenFromSession();
     const url = `${this.baseURL}${endpoint}`;
 

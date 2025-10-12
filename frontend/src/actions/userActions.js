@@ -2,7 +2,7 @@
 
 import { createUser } from "@/libs/api";
 
-export const signUpError = (response) => {
+const signUpError = (response) => {
   if (typeof response.error === "object") {
     const errorMessages = {};
 
@@ -30,57 +30,36 @@ export const signUpError = (response) => {
         response.error.last_name[0].slice(1).toLowerCase();
     }
 
-    if (response.error.phone_number) {
-      errorMessages["phone_number"] =
-        response.error.phone_number[0][0].toUpperCase() +
-        response.error.phone_number[0].slice(1).toLowerCase();
+    if (response.error.company_name) {
+      errorMessages["company_name"] =
+        response.error.company_name[0][0].toUpperCase() +
+        response.error.company_name[0].slice(1).toLowerCase();
     }
 
     // Check for each possible attribute and append its messages
     if (response.error.password) {
-      const passErrorMessages = [];
-      const error = response.error.password;
-
-      if (error.short) {
-        passErrorMessages.push(...[error.short]);
+      if (Array.isArray(response.error.password)) {
+        errorMessages["password"] = response.error.password.join(" ");
+      } else {
+        errorMessages["password"] = response.error.password;
       }
-      if (error.upper) {
-        passErrorMessages.push(...[error.upper]);
-      }
-      if (error.lower) {
-        passErrorMessages.push(...[error.lower]);
-      }
-      if (error.number) {
-        passErrorMessages.push(...[error.number]);
-      }
-      if (error.special) {
-        passErrorMessages.push(...[error.special]);
-      }
-
-      if (passErrorMessages.length === 0) {
-        passErrorMessages.push(
-          ...[error[0][0].toUpperCase() + error[0].slice(1).toLowerCase()],
-        );
-      }
-
-      errorMessages["password"] = passErrorMessages.join(" ");
     }
 
     // Combine messages into a single string with \n between each
-    return { error: errorMessages };
+    return errorMessages;
   }
   // If it's not an object, return the error as is (string or other type)
-  return { error: { error: response.error } };
+  return { general: response.error };
 };
 
-export const createUserAction = async (formdata, user = "user") => {
+export const createUserAction = async (user, prevState, formdata) => {
   const email = formdata.get("email");
   const username = formdata.get("username");
   const password = formdata.get("password");
   const c_password = formdata.get("c_password");
   const first_name = formdata.get("first_name");
   const last_name = formdata.get("last_name");
-  const address = formdata.get("address");
+  const company_name = formdata.get("company_name");
 
   const errors = {};
 
@@ -93,31 +72,29 @@ export const createUserAction = async (formdata, user = "user") => {
   if (!password) {
     errors.password = "Password is required";
   }
+
   if (!c_password) {
     errors.c_password = "Confirm Password is required";
   }
+
   if (password !== c_password) {
     errors.c_password = "Passwords do not match";
   }
 
-  if (!first_name) {
-    errors.first_name = "First name is required";
-  }
-
-  if (!last_name) {
-    errors.last_name = "Last name is required";
-  }
-
-  if (!username) {
-    errors.username = "Username is required";
-  }
-
-  if (!address) {
-    errors.address = "Address is required";
+  if (user === "agent" && !company_name) {
+    errors.company_name = "Company Name is required";
   }
 
   if (Object.keys(errors).length > 0) {
-    return { errors };
+    return {
+      errors,
+      success: "",
+      formEmail: email || "",
+      formFirstName: first_name || "",
+      formLastName: last_name || "",
+      formUsername: username || "",
+      formCompanyName: company_name || "",
+    };
   }
 
   const data = {
@@ -126,21 +103,46 @@ export const createUserAction = async (formdata, user = "user") => {
     c_password,
     ...(first_name && { first_name }),
     ...(last_name && { last_name }),
-    ...(address && { address }),
     ...(username && { username }),
-    ...(user === "admin" && { is_staff: true }),
+    ...(company_name && { company_name }),
+    ...(user === "agent" && { is_agent: true }),
   };
 
   try {
-    const response = await createUser(data);
+    const response = await createUser(data, user);
+    console.log(response);
     if (response.error) {
-      return signUpError(response);
+      const backend_errors = signUpError(response);
+      return {
+        errors: backend_errors,
+        success: "",
+        formEmail: email || "",
+        formFirstName: first_name || "",
+        formLastName: last_name || "",
+        formUsername: username || "",
+        formCompanyName: company_name || "",
+      };
     }
-    return { success: response.success };
+    return {
+      errors,
+      success: response.success,
+      formEmail: "",
+      formFirstName: "",
+      formLastName: "",
+      formUsername: "",
+      formCompanyName: "",
+    };
   } catch (error) {
     console.error(error);
+    errors.general = error.message || "An unexpected error occurred";
     return {
-      error: error.message || "An error occurred during user creation.",
+      errors,
+      success: "",
+      formEmail: email || "",
+      formFirstName: first_name || "",
+      formLastName: last_name || "",
+      formUsername: username || "",
+      formCompanyName: company_name || "",
     };
   }
 };

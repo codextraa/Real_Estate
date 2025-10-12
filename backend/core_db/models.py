@@ -6,7 +6,7 @@ from django.contrib.auth.models import (
 )
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, RegexValidator
-from .validators import validate_password_complexity
+from backend.validators import validate_password_complexity
 
 
 class UserManager(BaseUserManager):
@@ -82,7 +82,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def set_password(self, raw_password):
         """Validates raw password before hashing"""
-        validate_password_complexity(raw_password)
+        if not raw_password:
+            raise ValidationError({"password": "Password is required"})
+        errors = validate_password_complexity(raw_password)
+        if len(errors["password"]) > 0:
+            raise ValidationError(errors)
         super().set_password(raw_password)
 
     def save(self, *args, **kwargs):

@@ -10,7 +10,6 @@
   align-items: center;
   background: #f7f7f7;
   position: relative; /* For absolute positioning of children if needed, but flex is better */
-  padding: 20px;
 }
 
 .container {
@@ -68,26 +67,13 @@
 /*
  * Mobile Styles (Max width 600px)
  */
-@media (max-width: 600px) {
-  .background {
-    padding: 0;
-  }
 
-  .title {
-    /* Adjust for mobile view */
-    position: static; /* Remove absolute positioning */
-    margin: 20px auto 0;
-    font-size: 60px; /* Smaller font for mobile */
-    text-align: center;
-    width: 100%;
-  }
-
+@media (max-width: 900px) {
   .container {
     /* Stack the form and image vertically */
     flex-direction: column;
     width: 100%;
     height: auto;
-    margin-top: 10px;
   }
 
   .formContainer {
@@ -95,7 +81,32 @@
     width: 90%;
     height: auto;
     min-height: 450px;
-    border-radius: 30px;
+    opacity: 1;
+    margin: 10px auto;
+    padding: 20px 0;
+  }
+
+  .image {
+    /* Hide the image on smaller screens to prioritize the form */
+    display: none;
+  }
+}
+
+@media (max-width: 500px) {
+  .container {
+    /* Stack the form and image vertically */
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    margin-top: 0px;
+  }
+
+  .formContainer {
+    /* Full width, smaller height, less border radius */
+    width: 90%;
+    height: auto;
+    min-height: 450px;
+    border-radius: 50px;
     opacity: 1;
     margin: 10px auto;
     padding: 20px 0;

@@ -1,0 +1,287 @@
+/* --- Desktop Styles (Based on the 645px wide form element) --- */
+
+.form {
+  /* Styles for the main form container */
+  /* Auto height is better than fixed */
+  width: 100%;
+  height: 92%;
+  border-radius: 93px;
+  max-width: 635px;
+  background: linear-gradient(224.13deg, #e0edf6 -39.4%, #415261 140.57%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem; /* Space between major sections */
+}
+
+/* --- Typography: Titles and Text --- */
+
+.title {
+  /* "Estate" text style */
+  font-family: var(--font-koh-santepheap);
+  font-weight: 400;
+  font-size: 115px;
+  color: #13252e;
+  line-height: 1;
+  text-align: center;
+  margin-top: -70px;
+  margin-left: 50px;
+}
+
+.subTitle {
+  /* "Welcome!" text style */
+  font-family: var(--font-quando);
+  font-weight: 400;
+  font-size: 53px;
+  color: #13252e;
+  text-align: center;
+  width: 278px;
+  height: 66px;
+  margin-top: 10px;
+  font-style: Regular;
+  line-height: 100%;
+  letter-spacing: 0%;
+}
+
+/* --- Main Content and Input Containers --- */
+
+.mainContainer {
+  /* A wrapper for the form's content below the main title */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-left: 50px;
+  border-radius: 93px;
+  width: 416px;
+  padding-bottom: 120px;
+}
+
+.formInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  max-width: 625px;
+  border-radius: 93px;
+}
+
+.inputContainer {
+  /* Wrapper for each input field, hint, and error text */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* --- Input Fields --- */
+
+.input {
+  /* Base style for all text/email/password inputs */
+  width: 100%;
+  height: 42px;
+  padding-left: 15px;
+  padding-right: 15px;
+
+  /* Color and border styles from hint */
+  background: none;
+  border: 2px solid #415261;
+  border-radius: 93px;
+
+  /* Typography for input text */
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 16px;
+  color: #13252e;
+
+  /* Placeholder color for a more subtle look */
+  &::placeholder {
+    color: #14242c;
+    font-weight: 700;
+  }
+}
+
+.input:focus {
+  outline: none;
+  border-color: #13252e;
+  box-shadow: 0 0 2px rgba(19, 37, 46, 0.5);
+}
+
+/* --- Password Field Specific Styles --- */
+
+.passwordContainer {
+  /* Container for password input and eye button */
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 42px;
+  border-radius: 93px;
+}
+
+.passwordContainer .input {
+  /* Input inside the password container needs to adjust padding */
+  padding-right: 50px;
+}
+
+/* --- Error and Success Message Containers --- */
+
+.errorContainer,
+.successContainer {
+  /* General message containers (Error/Success banner under Welcome!) */
+  width: 100%;
+  height: 42px;
+  border-radius: 93px;
+
+  font-family: var(--font-merriweather);
+  font-weight: 400;
+  font-size: 1rem; /* ~16px */
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: -10px;
+}
+
+.errorContainer {
+  /* Error banner style (Red background, White text as per image) */
+  background: #980000;
+  color: #ffffff;
+}
+
+.successContainer {
+  /* Success banner style (Green background, White text as per image) */
+  background: #2c7701;
+  color: #ffffff;
+}
+
+/* --- Error and Hint Text Styles --- */
+
+.errorText {
+  /* Specific error message below an input field */
+  color: #a50000;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 12px;
+  margin-top: 0.2rem;
+  margin-left: 18px;
+}
+
+.inputHint {
+  /* Hint text below an input field (Username/Password criteria) */
+  color: #13252e;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 12px;
+  /* margin-top: 0.3rem; */
+  margin-left: 18px; /* Indent to align with input text */
+}
+
+/* --- Button Container (FormButton styling is assumed to be in a separate file) --- */
+
+.buttonContainer {
+  width: 100%;
+}
+
+/* --- Sign Up Last Section --- */
+
+.signUpLast {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 1.125rem; /* ~18px */
+  color: #13252e;
+}
+
+.signUpLink {
+  color: #13252e;
+  text-decoration: underline;
+  margin-left: 0.5rem;
+}
+
+/* --- Mobile/Small Screen Styles (Max-width 600px) --- */
+
+@media (max-width: 900px) {
+  .form {
+    width: 90%;
+    max-width: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 50px;
+  }
+
+  .mainContainer {
+    margin-left: 0px;
+    width: 90%;
+    gap: 0.2rem;
+    padding-bottom: 10px;
+    margin-top: -10px;
+  }
+
+  .title {
+    font-size: 5rem; /* Smaller title on mobile */
+    text-align: center;
+    margin-top: -40px;
+    margin-left: 0px;
+  }
+
+  .subTitle {
+    display: flex;
+    margin-top: 0px;
+    font-size: 2.5rem; /* Smaller subtitle on mobile */
+    align-items: center;
+    justify-content: center;
+  }
+
+  .errorContainer,
+  .successContainer {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .inputContainer {
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .formInputContainer {
+    gap: 0.3rem;
+    padding: 0;
+    padding-bottom: 20px;
+  }
+
+  .input {
+    /* height: 3rem;
+    font-size: 0.9rem; */
+
+    height: 38px;
+    font-size: 14px;
+  }
+  .inputHint {
+    margin-top: -10px;
+  }
+
+  .passwordContainer {
+    height: 3rem;
+  }
+
+  .buttonContainer {
+    height: 38px;
+    font-size: 14px;
+    margin-top: 0;
+
+    margin-bottom: 20px;
+  }
+
+  .signUpLast {
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .signUpLink {
+    font-size: 16px;
+    text-align: center;
+  }
+}
