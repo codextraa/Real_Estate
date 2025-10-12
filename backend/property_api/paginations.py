@@ -1,7 +1,7 @@
-from backend.paginations import CustomePagination
+from backend.paginations import CustomPagination
 
-class PropertyPagination(CustomePagination):
+
+class PropertyPagination(CustomPagination):
     """Custom pagination class for Property."""
 
     page_size = 12
-

@@ -8,6 +8,7 @@ class CustomPagination(PageNumberPagination):
     Base class for custom pagination.
     Contains common settings and the standard response structure.
     """
+
     page_size_query_param = "page_size"
     max_page_size = 50
 
