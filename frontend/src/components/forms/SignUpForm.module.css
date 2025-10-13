@@ -6,8 +6,9 @@
   width: 100%;
   height: 92%;
   border-radius: 93px;
-  max-width: 635px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   background: linear-gradient(224.13deg, #e0edf6 -39.4%, #415261 140.57%);
+  border-radius: 93px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,7 +25,7 @@
   color: #13252e;
   line-height: 1;
   text-align: center;
-  margin-top: -70px;
+  margin-top: -55px;
   margin-left: 50px;
 }
 
@@ -47,14 +48,14 @@
 
 .mainContainer {
   /* A wrapper for the form's content below the main title */
-
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
   margin-left: 50px;
   border-radius: 93px;
-  width: 416px;
+  width: 70%;
+  max-width: 416px;
   padding-bottom: 120px;
 }
 
@@ -63,7 +64,7 @@
   flex-direction: column;
   gap: 1.5rem;
   padding: 1rem 0;
-  max-width: 625px;
+  width: 100%;
   border-radius: 93px;
 }
 
@@ -199,9 +200,20 @@
   margin-left: 0.5rem;
 }
 
+@media (max-width: 900px) {
+  .title {
+    margin-left: 0;
+  }
+
+  .mainContainer {
+    width: 80%;
+    margin-left: 0;
+  }
+}
+
 /* --- Mobile/Small Screen Styles (Max-width 600px) --- */
 
-@media (max-width: 900px) {
+@media (max-width: 500px) {
   .form {
     width: 90%;
     max-width: 90%;
