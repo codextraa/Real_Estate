@@ -37,9 +37,11 @@ export const createUser = async (data, userType) => {
   return apiClient.post("/auth-api/users/", data);
 };
 
-export const updateUser = async (id, data, userType) => {
-  if (userType === "agent") {
-    return apiClient.patch(`/auth-api/agents/${id}/`, data);
+export const updateUser = async (id, data, userType, isImage = false) => {
+  const base_url = userType === "agent" ? "agents" : "users";
+
+  if (isImage) {
+    return apiClient.patch(`/auth-api/${base_url}/${id}/`, data, {}, true);
   }
-  return apiClient.patch(`/auth-api/users/${id}/`, data);
+  return apiClient.patch(`/auth-api/${base_url}/${id}/`, data);
 };

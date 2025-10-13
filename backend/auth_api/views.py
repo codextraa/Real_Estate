@@ -350,7 +350,10 @@ class UserViewSet(ModelViewSet):
 
         if response.status_code == status.HTTP_200_OK:
             return Response(
-                {"success": "User profile updated successfully."},
+                {
+                    "success": "User profile updated successfully.",
+                    "data": response.data,
+                },
                 status=status.HTTP_200_OK,
             )
 
