@@ -57,6 +57,8 @@ export const updateUserAction = async (id, user, prevState, formdata) => {
   const first_name = formdata.get("first_name");
   const last_name = formdata.get("last_name");
   const username = formdata.get("username");
+  const password = formdata.get("password");
+  const c_password = formdata.get("c_password");
 
   const errors = {};
 
@@ -65,17 +67,25 @@ export const updateUserAction = async (id, user, prevState, formdata) => {
   } else if (!email.includes("@")) {
     errors.email = "Email is invalid";
   }
+  if (!password) {
+    errors.password = "Password is required";
+  }
 
-  // if (user === "agent" && !company_name) {
-  //   errors.company_name = "Company Name is required";
-  // }
+  if (!c_password) {
+    errors.c_password = "Confirm Password is required";
+  }
+
+  if (password !== c_password) {
+    errors.c_password = "Passwords do not match";
+  }
 
   const data = {
     ...(email && { email }),
     ...(first_name && { first_name }),
     ...(last_name && { last_name }),
     ...(username && { username }),
-    ...(user === "agent" && { is_agent: true }),
+    ...(password && { password }),
+    ...(c_password && { c_password }),
   };
 
   if (Object.keys(errors).length > 0) {
