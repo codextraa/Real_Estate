@@ -4,6 +4,7 @@ from datetime import timedelta
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -15,6 +16,7 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from backend.renderers import ViewRenderer
 from backend.mixins import http_method_mixin
+from core_db.models import Agent
 from .paginations import UserPagination
 from .filters import UserFilter
 from .serializers import (
@@ -403,24 +405,44 @@ class AgentViewSet(ModelViewSet):
 
     def get_queryset(self):  # pylint: disable=R0911
         """Queryset for User View."""
+        user = self.request.user
+
         if self.action == "list":
             if self.request.user.is_staff:
-                return get_user_model().objects.all()
-            return get_user_model().objects.none()
+                return Agent.objects.all().select_related("user")
+            return Agent.objects.none()
 
         if self.action == "retrieve":
             if self.request.user.is_staff:
-                return get_user_model().objects.all()
+                return Agent.objects.all().select_related("user")
             if self.request.user.is_agent:
-                return get_user_model().objects.filter(is_staff=False)
+                return Agent.objects.filter(user__is_staff=False).select_related("user")
 
-            allowed_user_queryset = Q(pk=self.request.user.pk) | Q(is_agent=True)
-            return get_user_model().objects.filter(allowed_user_queryset)
+            allowed_user_queryset = Q(user__pk=user.pk) | Q(user__is_agent=True)
+            return Agent.objects.filter(allowed_user_queryset).select_related("user")
 
         # create, update, partial_update, destroy
         if self.request.user.is_superuser:
-            return get_user_model().objects.all()
-        return get_user_model().objects.filter(pk=self.request.user.pk)
+            return Agent.objects.all().select_related("user")
+        return Agent.objects.filter(user=user).select_related("user")
+
+    def get_object(self):
+        """
+        Retrieves an Agent object by filtering its related User's ID (pk in URL).
+        It also enforces the permissions defined in get_queryset for the current action.
+        """
+        lookup_value = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+
+        if not lookup_value:
+            return super().get_object()
+
+        queryset = self.get_queryset()
+
+        obj = get_object_or_404(queryset, user_id=lookup_value)
+
+        self.check_object_permissions(self.request, obj)
+
+        return obj
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
