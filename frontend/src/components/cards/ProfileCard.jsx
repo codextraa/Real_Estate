@@ -1,4 +1,4 @@
-import styles from "./ProfileCard.module.css";
+ import styles from "./ProfileCard.module.css";
 import ProfileForm from "@/components/forms/ProfileForm";
 
 export default function ProfileCard({ userData }) {

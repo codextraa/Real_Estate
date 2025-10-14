@@ -70,7 +70,7 @@
   opacity: 0.5;
 }
 
-.signUpButton {
+.globalButton {
   width: 100%;
   max-width: 543px;
   height: 48px;
@@ -85,26 +85,26 @@
   transition: all 0.3s ease;
 }
 
-.signUpButton:hover {
+.globalButton:hover {
   background: #233e4f;
   transform: translateY(-2px);
 }
 
-.signUpButton:active {
+.globalButton:active {
   background: #0c151b;
   transform: translateY(1px);
 }
 
 /* Mobile */
 @media (max-width: 768px) {
-  .signUpButton {
-    font-size: 18px;
+  .globalButton  {
+    font-size: 18px; 
     height: 45px;
   }
 }
 
 @media (max-width: 480px) {
-  .signUpButton {
+  .globalButton  {
     font-size: 16px;
     height: 42px;
   }
