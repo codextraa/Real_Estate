@@ -16,8 +16,14 @@ from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from backend.renderers import ViewRenderer
 from backend.mixins import http_method_mixin
+from backend.schema_serializers import (
+    LoginRequestSerializer,
+    LoginResponseSerializer,
+    ErrorResponseSerializer,
+)
 from core_db.models import Agent
 from .paginations import UserPagination
 from .filters import UserFilter
@@ -161,6 +167,68 @@ def check_user_id(user_id):
     return check_user_validity(user.email)
 
 
+@extend_schema(
+    # General documentation for the POST method
+    summary="User Login and Token Acquisition",
+    description=(
+        "Authenticates the user with email and password. "
+        "If valid, an OTP is sent to the registered email."
+    ),
+    tags=["Authentication"],
+    # Define the request body schema
+    request=LoginRequestSerializer,
+    # Define the possible responses and link them to serializers/examples
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            response=LoginResponseSerializer,
+            description="Successful authentication. Returns JWT tokens and user metadata.",
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description=(
+                "Bad Request. Occurs on invalid credentials, deactivated account, "
+                "missing email/password, or other pre-auth failures."
+            ),
+        ),
+        status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Internal Server Error.",
+        ),
+    },
+    # Provide concrete examples for better API reference UI
+    examples=[
+        OpenApiExample(
+            name="Successful Agent Login",
+            response_only=True,
+            status_codes=["200"],
+            value={
+                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-1",
+                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
+                "user_id": 101,
+                "user_role": "Agent",
+                "access_token_expiry": (now() + timedelta(hours=1)).isoformat(),
+            },
+        ),
+        OpenApiExample(
+            name="Invalid Credentials Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Invalid credentials"},
+        ),
+        OpenApiExample(
+            name="Deactivated Account Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Account is deactivated. Contact your admin"},
+        ),
+        OpenApiExample(
+            name="Missing Email/Password Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Email and password are required"},
+        ),
+    ],
+)
 class LoginView(TokenObtainPairView):
     """Login View."""
 
