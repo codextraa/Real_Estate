@@ -113,24 +113,6 @@
 /* Buttons.module.css */
 
 /* Navigation Buttons */
-.NavSignUpButton {
-  font-family: var(--font-old-standard-tt);
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 100%;
-  color: #13252e;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 5px 0;
-  transition: opacity 0.3s ease;
-  letter-spacing: 0%;
-}
-
-.NavSignUpButton:hover {
-  opacity: 0.7;
-}
-
 .NavLogInButton {
   font-family: var(--font-old-standard-tt);
   font-weight: 700;
@@ -150,6 +132,24 @@
 .NavLogInButton:hover {
   background: rgba(19, 37, 46, 0.5);
   transform: translateY(-2px);
+}
+
+.NavSignUpButton {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 100%;
+  color: #13252e;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px 0;
+  transition: opacity 0.3s ease;
+  letter-spacing: 0%;
+}
+
+.NavSignUpButton:hover {
+  opacity: 0.7;
 }
 
 /* Homepage Button */
