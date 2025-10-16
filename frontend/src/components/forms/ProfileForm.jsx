@@ -6,7 +6,7 @@ import { updateUserAction } from "@/actions/userActions";
 import { useActionState, useState } from "react";
 import { redirect } from "next/navigation";
 
-export default function ProfileForm({ userData }) {
+export default function EditProfileForm({ userData }) {
   const initialState = {
     errors: {},
     success: "",
@@ -40,6 +40,7 @@ export default function ProfileForm({ userData }) {
   return (
     <Form action={formActions} className={styles.Form}>
       <div className={styles.inputFormContainer}>
+        <h1 className={styles.title}>Edit Profile Information</h1>
         <div className={styles.inputContainer}>
           <label htmlFor="email">Email Address</label>
           <input

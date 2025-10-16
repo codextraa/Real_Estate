@@ -39,9 +39,9 @@ export function EyeButton({ action, showPassword, isPending }) {
   );
 }
 
-export function SignUpButton({ text }) {
+export function GlobalButton({ text, onClick }) {
   return (
-    <button type="button" className={styles.signUpButton}>
+    <button type="button" className={styles.globalButton} onClick={onClick}>
       {text}
     </button>
   );
