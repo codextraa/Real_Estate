@@ -1,0 +1,66 @@
+.background {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(117.07deg, #b0c9d8 1.74%, #415261 97.5%);
+  font-family: var(--font-old-standard-tt);
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- Logo Animation --- */
+.logo {
+  animation: pulse 1.6s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.7;
+  }
+}
+
+/* --- Text --- */
+.text {
+  font-weight: 700;
+  font-size: 30px;
+  color: #13252e;
+  margin-top: 40px;
+  text-align: center;
+  letter-spacing: 0%;
+  line-height: 100%;
+}
+
+/* --- Dots Animation --- */
+.dots {
+  display: inline-block;
+  width: 1.5em;
+  text-align: left;
+}
+
+.dots::after {
+  content: '';
+  animation: dots 1.5s steps(3, end) infinite;
+}
+
+@keyframes dots {
+  0% {
+    content: '';
+  }
+  33% {
+    content: '.';
+  }
+  66% {
+    content: '..';
+  }
+  100% {
+    content: '...';
+  }
+}

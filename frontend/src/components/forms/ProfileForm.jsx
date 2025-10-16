@@ -17,9 +17,10 @@ export default function EditProfileForm({ userData }) {
   };
 
   const [state, formActions, isPending] = useActionState(
-    updateUserAction.bind(userData.id, null, userData),
+    updateUserAction.bind(null, userData.id, userData),
     initialState,
   );
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 

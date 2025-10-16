@@ -7,4 +7,3 @@ export default function Error({ error, reset }) {
     <GlobalErrorModal error={error} reset={reset} />
   );
 }
-

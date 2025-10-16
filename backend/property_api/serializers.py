@@ -3,6 +3,8 @@ from core_db.models import Property
 
 
 class PropertySerializer(serializers.ModelSerializer):
+    """Property serializer for property model."""
+
     class Meta:
         model = Property
         fields = [
@@ -39,10 +41,12 @@ class PropertySerializer(serializers.ModelSerializer):
 
 
 class PropertyImageSerializer(serializers.ModelSerializer):
+    """Property image serializer for property model."""
+
     class Meta:
         model = Property
-        fields = ("id", "image_url")
-        read_only_fields = ("id",)
+        fields = ["id", "image_url"]
+        read_only_fields = ["id"]
 
     def validate_image_url(self, value):
         """Validate property image"""
@@ -79,13 +83,7 @@ class PropertyListSerializer(serializers.ModelSerializer):
             "description",
         ]
 
-        read_only_fields = [
-            "id",
-            "slug",
-            "title",
-            "image_url",
-            "description",
-        ]
+        read_only_fields = fields
 
 
 class PropertyRetrieveSerializer(serializers.ModelSerializer):
@@ -107,16 +105,4 @@ class PropertyRetrieveSerializer(serializers.ModelSerializer):
             "image_url",
         ]
 
-        read_only_fields = [
-            "id",
-            "agent",
-            "title",
-            "description",
-            "beds",
-            "baths",
-            "price",
-            "area_sqft",
-            "address",
-            "slug",
-            "image_url",
-        ]
+        read_only_fields = fields
