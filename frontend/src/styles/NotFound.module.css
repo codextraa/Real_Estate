@@ -28,19 +28,16 @@
   border-radius: 35px;
   backdrop-filter: blur(40px);
 
-  
   display: flex;
   flex-direction: column;
-  justify-content: center; 
+  justify-content: center;
   align-items: center;
-  gap: 30px; 
-
+  gap: 30px;
 }
 
 /*
   Container for the 404 icon.
 */
-
 
 .errorContainer img {
   object-fit: cover;

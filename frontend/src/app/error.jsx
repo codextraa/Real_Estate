@@ -11,37 +11,35 @@ export default function Error({ error, reset }) {
   }, [error]);
 
   return (
-        <div>
-          <div className={styles.image}>
+    <div>
+      <div className={styles.image}>
+        <Image
+          src="/real-estate/real-estate.jpg"
+          alt="Modern city buildings representing real estate"
+          fill
+          priority
+        />
+      </div>
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
           <Image
-            src="/real-estate/real-estate.jpg"
-            alt="Modern city buildings representing real estate"
-            fill
+            src="/assets/global-error.svg"
+            alt="Error"
+            width={359}
+            height={352}
+            className={styles.errorIcon}
             priority
+            loading="eager"
           />
-          </div>
-          <div className={styles.container}>
-            <div className={styles.errorContainer}>
-              <Image
-                src="/assets/global-error.svg"
-                alt="Error"
-                width={359}
-                height={352}
-                className={styles.errorIcon}
-                priority
-                loading="eager"
-              />
-            </div>
-            <div className={styles.errorTextContainer}>
-              <div className={styles.errorTitle}>Oops!</div>
-              <div className={styles.errorMessage}>Something went wrong</div>
-              <div className={styles.button}>
-                <GlobalButton text="Go Back" onClick={() => reset()} />
-              </div>
-            </div>
+        </div>
+        <div className={styles.errorTextContainer}>
+          <div className={styles.errorTitle}>Oops!</div>
+          <div className={styles.errorMessage}>Something went wrong</div>
+          <div className={styles.button}>
+            <GlobalButton text="Go Back" onClick={() => reset()} />
           </div>
         </div>
-        
-        
+      </div>
+    </div>
   );
 }
