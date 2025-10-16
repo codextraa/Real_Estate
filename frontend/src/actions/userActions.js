@@ -1,8 +1,9 @@
 "use server";
 
 import { createUser } from "@/libs/api";
+import { updateUser } from "@/libs/api";
 
-const signUpError = (response) => {
+const userError = (response) => {
   if (typeof response.error === "object") {
     const errorMessages = {};
 
@@ -52,14 +53,14 @@ const signUpError = (response) => {
   return { general: response.error };
 };
 
-export const createUserAction = async (user, prevState, formdata) => {
-  const email = formdata.get("email");
-  const username = formdata.get("username");
-  const password = formdata.get("password");
-  const c_password = formdata.get("c_password");
-  const first_name = formdata.get("first_name");
-  const last_name = formdata.get("last_name");
-  const company_name = formdata.get("company_name");
+export const createUserAction = async (user, prevState, formData) => {
+  const email = formData.get("email");
+  const username = formData.get("username");
+  const password = formData.get("password");
+  const c_password = formData.get("c_password");
+  const first_name = formData.get("first_name");
+  const last_name = formData.get("last_name");
+  const company_name = formData.get("company_name");
 
   const errors = {};
 
@@ -112,7 +113,7 @@ export const createUserAction = async (user, prevState, formdata) => {
     const response = await createUser(data, user);
     console.log(response);
     if (response.error) {
-      const backend_errors = signUpError(response);
+      const backend_errors = userError(response);
       return {
         errors: backend_errors,
         success: "",
@@ -143,6 +144,103 @@ export const createUserAction = async (user, prevState, formdata) => {
       formLastName: last_name || "",
       formUsername: username || "",
       formCompanyName: company_name || "",
+    };
+  }
+};
+
+export const updateUserAction = async (id, user, prevState, formData) => {
+  const email = formData.get("email");
+  const first_name = formData.get("first_name");
+  const last_name = formData.get("last_name");
+  const username = formData.get("username");
+  const password = formData.get("password");
+  const c_password = formData.get("c_password");
+  const company_name = formData.get("company_name");
+  const bio = formData.get("bio");
+  // image_url datatype needs proper handling
+  const image_url = formData.get("image_url");
+
+  const errors = {};
+
+  if (password !== c_password) {
+    errors.c_password = "Passwords do not match";
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return {
+      errors,
+      success: "",
+      formEmail: email || "",
+      formFirstName: first_name || "",
+      formLastName: last_name || "",
+      formUsername: username || "",
+      formCompanyName: company_name || "",
+      formBio: bio || "",
+      formImageUrl: image_url || "",
+    };
+  }
+
+  try {
+    let response;
+    const isNewImageUploaded = image_url instanceof File && image_url.size > 0;
+
+    if (isNewImageUploaded) {
+      // formdata should not contain email
+      response = await updateUser(id, formData, user, true);
+    } else {
+      const data = {
+        ...(first_name && { first_name }),
+        ...(last_name && { last_name }),
+        ...(username && { username }),
+        ...(password && { password }),
+        ...(c_password && { c_password }),
+        ...(company_name && { company_name }),
+        ...(bio && { bio }),
+      };
+
+      response = await updateUser(id, data, user);
+    }
+
+    // console.log(response);
+    if (response.error) {
+      const backend_errors = userError(response);
+      return {
+        errors: backend_errors,
+        success: "",
+        formEmail: email || "",
+        formFirstName: first_name || "",
+        formLastName: last_name || "",
+        formUsername: username || "",
+        formCompanyName: company_name || "",
+        formBio: bio || "",
+        formImageUrl: image_url || "",
+      };
+    }
+
+    return {
+      errors,
+      success: response.success,
+      formEmail: response.data.email || "",
+      formFirstName: response.data.first_name || "",
+      formLastName: response.data.last_name || "",
+      formUsername: response.data.username || "",
+      formCompanyName: response.data.company_name || "",
+      formBio: response.data.bio || "",
+      formImageUrl: response.data.image_url || "",
+    };
+  } catch (error) {
+    console.error(error);
+    errors.general = error.message || "An unexpected error occurred";
+    return {
+      errors,
+      success: "",
+      formEmail: email || "",
+      formFirstName: first_name || "",
+      formLastName: last_name || "",
+      formUsername: username || "",
+      formCompanyName: company_name || "",
+      formBio: bio || "",
+      formImageUrl: image_url || "",
     };
   }
 };

@@ -232,6 +232,29 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
 }
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Real Estate API",
+    "DESCRIPTION": "API for Real Estate",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SECURITY": [
+        {
+            "NEXT_API_SECRET_KEY": [],  # Custom API Key
+        }
+    ],
+    # Define the security schemes
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "NEXT_API_SECRET_KEY": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "NEXT-X-API-KEY",
+                "description": "NEXT JS Frontend API Key (required alongside JWT)",
+            },
+        }
+    },
+}
+
 # CORS Settings
 
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(

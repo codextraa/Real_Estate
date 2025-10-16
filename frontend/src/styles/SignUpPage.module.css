@@ -58,18 +58,20 @@
 .signUpPageContainer {
   /* Main container for the split layout */
   display: flex;
+  justify-content: center;
+  max-width: 100%;
   width: 1280px; /* Adjust as needed, but aims for a wide container */
   height: auto;
-  margin-top: 80px; /* Pushed down to account for the title position */
+  margin-top: 50px; /* Pushed down to account for the title position */
   margin-bottom: 80px; /* Pushed down to account for the title position */
   border-radius: 93px;
-  padding: 20px 0 20px 20px;
+  padding: 0 20px 0 20px;
   overflow: hidden;
   position: relative;
 }
 
 .signUpPictureContainer {
-  width: 680px;
+  width: 613px;
   position: relative;
   border-radius: 93px;
   overflow: hidden; /* Important to keep the image within the border radius */
@@ -87,20 +89,43 @@
 
 .signUpPageFormContainer {
   /* Right side with the form */
-  width: 723px; /* Equal split with the image */
+  width: 625px; /* Equal split with the image */
   margin-left: -90px;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
+  padding-top: 5px;
   z-index: 0;
 }
 
 /* --- Fallback/Initial Page Card Container (when user is not set) --- */
 
+@media (max-width: 900px) {
+  .signUpPageContainer {
+    /* Stack the form and image vertically */
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+  }
+
+  .signUpPageFormContainer {
+    /* Full width, smaller height, less border radius */
+    width: 95%;
+    height: auto;
+    opacity: 1;
+    margin: 10px auto;
+    padding: 30px 0;
+  }
+
+  .signUpPictureContainer {
+    /* Hide the image on smaller screens to prioritize the form */
+    display: none;
+  }
+}
+
 /* --- Mobile/Small Screen Styles (Max-width 600px, roughly iPhone 6/SE) --- */
 
-@media (max-width: 900px) {
+@media (max-width: 500px) {
   .signUpBackground {
     padding: 0;
     align-items: flex-start; /* Start content from the top on mobile */
@@ -109,8 +134,8 @@
   .signUpPageContainer {
     flex-direction: column; /* Stack the image and form vertically */
     width: 100%;
-    padding: 30px;
-    margin-top: 20px;
+    padding: 0;
+    margin-top: 10px;
     margin-bottom: 20px;
     min-height: 100vh;
     border-radius: 0px;
