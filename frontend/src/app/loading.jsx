@@ -14,9 +14,7 @@ export default function Loading() {
       </div>
       <div className={styles.text}>
         Loading
-        <span className={styles.dots}>
-          ...
-        </span>
+        <span className={styles.dots}>...</span>
       </div>
     </div>
   );

@@ -13,7 +13,6 @@ export default function Page() {
         fill
         priority
       />
-      
 
       <div className={styles.container}>
         <div className={styles.content}>Estate</div>

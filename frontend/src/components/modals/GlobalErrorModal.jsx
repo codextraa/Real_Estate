@@ -1,16 +1,14 @@
 "use client";
 
-import { GlobalButton } from "@/components/buttons/Buttons"; 
-import { useEffect } from 'react'
+import { GlobalButton } from "@/components/buttons/Buttons";
+import { useEffect } from "react";
 import styles from "@/styles/GlobalErrorModal.module.css";
 import Image from "next/image";
 
-
 export default function GlobalError({ error, reset }) {
-  
   useEffect(() => {
-    console.error(error)
-  }, [error])
+    console.error(error);
+  }, [error]);
 
   return (
     <div className={styles.errorContainer}>
@@ -24,17 +22,10 @@ export default function GlobalError({ error, reset }) {
         loading="eager"
       />
       <div className={styles.errorTextContainer}>
-        <div className={styles.errorTitle}>
-          Oops! 
-        </div>
-        <div className={styles.errorMessage}>
-          Something went wrong
-        </div>
+        <div className={styles.errorTitle}>Oops!</div>
+        <div className={styles.errorMessage}>Something went wrong</div>
         <div className={styles.button}>
-          <GlobalButton
-            text="Go Back" 
-            onClick={() => reset()} 
-          /> 
+          <GlobalButton text="Go Back" onClick={() => reset()} />
         </div>
       </div>
     </div>

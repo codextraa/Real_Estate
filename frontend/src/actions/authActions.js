@@ -14,7 +14,7 @@ export const getUserIdAction = async () => {
   } catch (error) {
     console.error(error);
     return null;
-  } 
+  }
 };
 
 export const getUserRoleAction = async () => {

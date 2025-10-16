@@ -9,12 +9,14 @@ export default function Navbar() {
   const isHomePage = pathname === "/";
 
   if (pathname === "/auth/login" || pathname === "/auth/signup") {
-    return null; 
+    return null;
   }
 
   return (
     <nav className={styles.navbar}>
-      <Link href="/" className={styles.logo}>Estate</Link>
+      <Link href="/" className={styles.logo}>
+        Estate
+      </Link>
       <div className={styles.navLinks}>
         {isHomePage && (
           <NavButton
@@ -25,11 +27,11 @@ export default function Navbar() {
         )}
         {!isHomePage && (
           <div>
-             <NavButton
+            <NavButton
               className={styles.NavButton1}
               text="My Listing"
               href="/auth/signup"
-             />
+            />
             <NavButton
               className={styles.NavButton1}
               text="Create"

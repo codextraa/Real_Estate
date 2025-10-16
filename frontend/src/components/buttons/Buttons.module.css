@@ -97,14 +97,14 @@
 
 /* Mobile */
 @media (max-width: 768px) {
-  .globalButton  {
-    font-size: 18px; 
+  .globalButton {
+    font-size: 18px;
     height: 45px;
   }
 }
 
 @media (max-width: 480px) {
-  .globalButton  {
+  .globalButton {
     font-size: 16px;
     height: 42px;
   }

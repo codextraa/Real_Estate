@@ -17,7 +17,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -46,21 +47,21 @@
 }
 
 .dots::after {
-  content: '';
+  content: "";
   animation: dots 1.5s steps(3, end) infinite;
 }
 
 @keyframes dots {
   0% {
-    content: '';
+    content: "";
   }
   33% {
-    content: '.';
+    content: ".";
   }
   66% {
-    content: '..';
+    content: "..";
   }
   100% {
-    content: '...';
+    content: "...";
   }
 }
