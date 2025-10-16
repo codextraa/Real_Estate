@@ -1,6 +1,5 @@
 import styles from "@/styles/Interface.module.css";
 import { HomePageButton } from "@/components/buttons/Buttons";
-import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import Image from "next/image";
 export default function Page() {
@@ -14,7 +13,6 @@ export default function Page() {
         fill
         priority
       />
-      <Navbar />
 
       <div className={styles.container}>
         <div className={styles.content}>Estate</div>

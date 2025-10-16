@@ -5,6 +5,8 @@ from core_db.models import User, Agent
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """User serializer for user model."""
+
     class Meta:
         model = User
         fields = [
@@ -13,7 +15,6 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
-            "address",
             "is_superuser",
             "is_active",
             "is_staff",
@@ -58,13 +59,9 @@ class UserSerializer(serializers.ModelSerializer):
 
         if first_name:
             attrs["first_name"] = attrs["first_name"].title()
-        else:
-            attrs["first_name"] = None
 
         if last_name:
             attrs["last_name"] = attrs["last_name"].title()
-        else:
-            attrs["last_name"] = None
 
         return attrs
 
@@ -85,16 +82,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "slug",
         ]
 
-        read_only_fields = [
-            "id",
-            "email",
-            "username",
-            "is_active",
-            "is_agent",
-            "is_staff",
-            "is_superuser",
-            "slug",
-        ]
+        read_only_fields = fields
 
 
 class UserRetrieveSerializer(serializers.ModelSerializer):
@@ -108,22 +96,15 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
-            "address",
             "slug",
         ]
 
-        read_only_fields = [
-            "id",
-            "email",
-            "username",
-            "first_name",
-            "last_name",
-            "address",
-            "slug",
-        ]
+        read_only_fields = fields
 
 
 class AgentSerializer(serializers.ModelSerializer):
+    """Agent serializer for agent model."""
+
     class Meta:
         model = Agent
         fields = [
@@ -136,6 +117,7 @@ class AgentSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
+            "image_url",
         ]
 
     def create(self, validated_data):
@@ -163,10 +145,12 @@ class AgentSerializer(serializers.ModelSerializer):
 
 
 class AgentImageSerializer(serializers.ModelSerializer):
+    """Agent image serializer for agent model."""
+
     class Meta:
         model = Agent
-        fields = ("id", "image_url")
-        read_only_fields = ("id",)
+        fields = ["id", "image_url"]
+        read_only_fields = ["id"]
 
     def validate_image_url(self, value):
         """Validate image"""
@@ -190,3 +174,37 @@ class AgentImageSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
 
         return value
+
+
+class AgentListSerializer(serializers.ModelSerializer):
+    """List agent serializer."""
+
+    user = UserListSerializer(read_only=True)
+
+    class Meta:
+        model = Agent
+        fields = [
+            "id",
+            "user",
+            "company_name",
+        ]
+
+        read_only_fields = fields
+
+
+class AgentRetrieveSerializer(serializers.ModelSerializer):
+    """Get agent by id serializer."""
+
+    user = UserRetrieveSerializer(read_only=True)
+
+    class Meta:
+        model = Agent
+        fields = [
+            "id",
+            "user",
+            "company_name",
+            "bio",
+            "image_url",
+        ]
+
+        read_only_fields = fields

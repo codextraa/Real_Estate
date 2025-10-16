@@ -7,10 +7,10 @@ class PropertyFilter(django_filters.FilterSet):
     """Property Filter"""
 
     search = django_filters.CharFilter(method="filter_search_set")
-    beds = django_filters.NumberFilter()
-    baths = django_filters.NumberFilter()
-    price = django_filters.RangeFilter()
-    area_sqft = django_filters.RangeFilter()
+    beds = django_filters.CharFilter(method="filter_beds_and_baths")
+    baths = django_filters.CharFilter(method="filter_beds_and_baths")
+    price = django_filters.RangeFilter(method="filter_price_and_area_sqft")
+    area_sqft = django_filters.RangeFilter(method="filter_price_and_area_sqft")
 
     class Meta:
         model = Property
@@ -25,3 +25,40 @@ class PropertyFilter(django_filters.FilterSet):
             | Q(description__icontains=value)
             | Q(address__icontains=value)
         )
+
+    def filter_beds_and_baths(self, queryset, name, value):
+        """
+        Filter Property by number of beds and baths
+        """
+        min_value = 1
+        value_str = str(value).strip()
+
+        if value_str.lower() == "8+":
+            filter_kwargs = {f"{name}__gte": 8}
+            return queryset.filter(**filter_kwargs)
+
+        try:
+            num_value = int(value_str)
+            num_value = max(num_value, min_value)
+            filter_kwargs = {name: num_value}
+            return queryset.filter(**filter_kwargs)
+        except ValueError:
+            return queryset
+
+    def filter_price_and_area_sqft(self, queryset, name, value):
+        """
+        Filter Property by price and area
+        """
+        min_value, max_value = value
+
+        if min_value is None or min_value < 1:
+            min_value = 1
+        if max_value is None:
+            filter_kwargs = {f"{name}__gte": min_value}
+            return queryset.filter(**filter_kwargs)
+
+        filter_kwargs = {
+            f"{name}__gte": min_value,
+            f"{name}__lte": max_value,
+        }
+        return queryset.filter(**filter_kwargs)

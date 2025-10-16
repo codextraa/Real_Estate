@@ -3,6 +3,8 @@ from core_db.models import Property
 
 
 class PropertySerializer(serializers.ModelSerializer):
+    """Property serializer for property model."""
+
     class Meta:
         model = Property
         fields = [
@@ -21,17 +23,9 @@ class PropertySerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
+            "image_url",
             "slug",
         ]
-
-    def create(self, validated_data):
-        image_url = validated_data.pop("image_url", None)
-
-        if not image_url:
-            default_image_path = "property_images/default_property_image.jpg"
-            validated_data["image_url"] = default_image_path
-
-        return Property.objects.create(**validated_data)
 
     def validate(self, attrs):
         """Validate all data"""
@@ -42,19 +36,19 @@ class PropertySerializer(serializers.ModelSerializer):
 
         if title:
             attrs["title"] = attrs["title"].title()
-        else:
-            attrs["title"] = None
 
         return attrs
 
 
 class PropertyImageSerializer(serializers.ModelSerializer):
+    """Property image serializer for property model."""
+
     class Meta:
         model = Property
-        fields = ("id", "image_url")
-        read_only_fields = ("id",)
+        fields = ["id", "image_url"]
+        read_only_fields = ["id"]
 
-    def validate_property_image_url(self, value):
+    def validate_image_url(self, value):
         """Validate property image"""
         if not value:
             raise serializers.ValidationError("Property image is required.")
@@ -89,13 +83,7 @@ class PropertyListSerializer(serializers.ModelSerializer):
             "description",
         ]
 
-        read_only_fields = [
-            "id",
-            "slug",
-            "title",
-            "image_url",
-            "description",
-        ]
+        read_only_fields = fields
 
 
 class PropertyRetrieveSerializer(serializers.ModelSerializer):
@@ -117,16 +105,4 @@ class PropertyRetrieveSerializer(serializers.ModelSerializer):
             "image_url",
         ]
 
-        read_only_fields = [
-            "id",
-            "agent",
-            "title",
-            "description",
-            "beds",
-            "baths",
-            "price",
-            "area_sqft",
-            "address",
-            "slug",
-            "image_url",
-        ]
+        read_only_fields = fields

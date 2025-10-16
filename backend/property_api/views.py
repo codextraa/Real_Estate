@@ -1,22 +1,33 @@
 # Create your views here.
-from rest_framework.permissions import IsAuthenticated
+import os
+from django.conf import settings
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from backend.renderers import ViewRenderer
+from rest_framework.viewsets import ModelViewSet
 from backend.mixins import http_method_mixin
+from backend.renderers import ViewRenderer
 from core_db.models import Property
+from .filters import PropertyFilter
+from .paginations import PropertyPagination
 from .serializers import (
-    PropertySerializer,
+    PropertyImageSerializer,
     PropertyListSerializer,
     PropertyRetrieveSerializer,
+    PropertySerializer,
 )
 
 
 class PropertyViewSet(ModelViewSet):
+    """Property Viewset."""
+
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
     renderer_classes = [ViewRenderer]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PropertyFilter
+    pagination_class = PropertyPagination
     permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
@@ -43,19 +54,40 @@ class PropertyViewSet(ModelViewSet):
         """Create new property."""
         current_user = self.request.user
 
-        # pylint: disable=R0801
+        if "slug" in request.data or "agent" in request.data:  # pylint: disable=R0916
+            return Response(
+                {"error": "Forbidden fields cannot be updated."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         if not current_user.is_agent:
             return Response(
                 {"error": "You do not have permission to create a property."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        request.data["agent"] = current_user
-        response = super().create(request, *args, **kwargs)
+        request_data = request.data.copy()
+        property_image = request_data.pop("property_image", None)
+        default_property_image = "property_images/default_image.jpg"
 
-        if response.status_code != status.HTTP_201_CREATED:
-            return response
+        request_data["agent"] = current_user
+        serializer = self.get_serializer(data=request_data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
 
+        property_obj = serializer.instance
+
+        if property_image:
+            property_image_serializer = PropertyImageSerializer(
+                property_obj, data={"image_url": property_image}
+            )
+            property_image_serializer.is_valid(raise_exception=True)
+            property_image_serializer.save()
+        else:
+            property_obj.image_url = default_property_image
+            property_obj.save()
+
+        # pylint: disable=R0801
         return Response(
             {"success": "Property created successfully."},
             status=status.HTTP_201_CREATED,
@@ -86,34 +118,74 @@ class PropertyViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        response = super().update(request, *args, **kwargs)
+        request_data = request.data.copy()
+        property_image = request_data.pop("property_image", None)
+        old_image_path = None
+        default_property_image = "property_images/default_image.jpg"
 
-        if response.status_code == status.HTTP_200_OK:
-            return Response(
-                {"success": "Property updated successfully.", "data": response.data},
-                status=status.HTTP_200_OK,
+        if property_image:
+            if (
+                property_instance.image_url
+                and property_instance.image_url.name != default_property_image
+            ):
+                old_image_path = os.path.join(
+                    settings.MEDIA_ROOT, property_instance.image_url.name
+                )
+
+            property_image_serializer = PropertyImageSerializer(
+                property_instance, data={"image_url": property_image}
             )
+            property_image_serializer.is_valid(raise_exception=True)
+            property_image_serializer.save()
 
-        return response
+            if os.path.exists(old_image_path):
+                os.remove(old_image_path)
+
+        partial = kwargs.pop("partial", False)
+        serializer = self.get_serializer(
+            property_instance, data=request_data, partial=partial
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(
+            {"success": "Property updated successfully.", "data": serializer.data},
+            status=status.HTTP_200_OK,
+        )
 
     def destroy(self, request, *args, **kwargs):
+        """Allow only agents and superusers to delete their own property."""
         current_user = self.request.user
         property_instance = self.get_object()
 
-        if not current_user != property_instance.agent.user:
+        if current_user != property_instance.agent.user:
             return Response(
                 {"error": "You are not authorized to delete this property."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        default_property_image = "property_images/default_image.jpg"
+        old_property_image = None
+
+        if (
+            property_instance.image_url
+            and property_instance.image_url.name != default_property_image
+        ):
+            old_property_image = os.path.join(
+                settings.MEDIA_ROOT, property_instance.image_url.name
+            )
+
         response = super().destroy(request, *args, **kwargs)
+
+        if os.path.exists(old_property_image):
+            os.remove(old_property_image)
 
         if response.status_code == status.HTTP_204_NO_CONTENT:
             return Response(
                 {
                     "success": f"Property {property_instance.title} deleted successfully."
                 },
-                status=status.HTTP_200_OK,
+                status=status.HTTP_204_NO_CONTENT,
             )
 
         return response
