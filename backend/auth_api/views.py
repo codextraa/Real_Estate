@@ -26,6 +26,8 @@ from .serializers import (
     UserListSerializer,
     UserRetrieveSerializer,
     AgentSerializer,
+    AgentListSerializer,
+    AgentRetrieveSerializer,
     AgentImageSerializer,
 )
 
@@ -70,7 +72,7 @@ def check_create_request_data(request):
     return current_user
 
 
-def check_update_request_data(request):
+def check_update_request_data(user_instance, request):
     """Check if update request data is valid."""
 
     current_user = request.user
@@ -89,6 +91,12 @@ def check_update_request_data(request):
     ):
         return Response(
             {"error": "Forbidden fields cannot be updated."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if current_user.id != user_instance.id and not current_user.is_superuser:
+        return Response(
+            {"error": "You do not have permission to update this user."},
             status=status.HTTP_403_FORBIDDEN,
         )
 
@@ -347,20 +355,13 @@ class UserViewSet(ModelViewSet):
         if not_allowed_method:
             return not_allowed_method
 
-        current_user = self.request.user
         user = self.get_object()
         # pylint: enable=R0801
 
-        check_integrity = check_update_request_data(request)
+        check_integrity = check_update_request_data(user, request)
 
         if isinstance(check_integrity, Response):
             return check_integrity
-
-        if current_user.id != user.id and not current_user.is_superuser:
-            return Response(
-                {"error": "You do not have permission to update this user."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
 
         response = super().update(request, *args, **kwargs)
 
@@ -380,7 +381,7 @@ class UserViewSet(ModelViewSet):
         current_user = self.request.user
         user_to_delete = self.get_object()
 
-        if not current_user.is_superuser or current_user.id != user_to_delete.id:
+        if not current_user.is_superuser and current_user.id != user_to_delete.id:
             return Response(
                 {"error": "You are not authorized to delete this user."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -411,7 +412,7 @@ class AgentViewSet(ModelViewSet):
     serializer_class = AgentSerializer
     renderer_classes = [ViewRenderer]
     authentication_classes = [JWTAuthentication]  # Using jwtoken
-    filter_backends = [DjangoFilterBackend]
+    pagination_class = UserPagination
     http_method_names = ["get", "post", "patch", "delete"]
 
     def get_permissions(self):
@@ -463,6 +464,14 @@ class AgentViewSet(ModelViewSet):
 
         return obj
 
+    def get_serializer_class(self):
+        """Assign serializer based on action."""
+        if self.action == "list":
+            return AgentListSerializer
+        if self.action == "retrieve":
+            return AgentRetrieveSerializer
+        return super().get_serializer_class()
+
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
 
@@ -510,20 +519,14 @@ class AgentViewSet(ModelViewSet):
         if not_allowed_method:
             return not_allowed_method
 
-        current_user = self.request.user
         agent = self.get_object()
+        user_instance = agent.user
         # pylint: enable=R0801
 
-        check_integrity = check_update_request_data(request)
+        check_integrity = check_update_request_data(user_instance, request)
 
         if isinstance(check_integrity, Response):
             return check_integrity
-
-        if not current_user.is_superuser or current_user.id != agent.user.id:
-            return Response(
-                {"error": "You are not authorized to update this user."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
 
         request_data = request.data.copy()
         agent_keys = ["company_name", "bio", "profile_image"]
@@ -535,7 +538,6 @@ class AgentViewSet(ModelViewSet):
                 agent_request_data[key] = request_data[key]
                 user_request_data.pop(key)
 
-        user_instance = agent.user
         user_serializer = UserSerializer(
             user_instance, data=user_request_data, partial=True
         )
@@ -552,17 +554,18 @@ class AgentViewSet(ModelViewSet):
             ):
                 old_image_path = os.path.join(settings.MEDIA_ROOT, agent.image_url.name)
 
-            image_serializer = AgentImageSerializer(
+            agent_image_serializer = AgentImageSerializer(
                 agent, data={"image_url": profile_image}
             )
-            image_serializer.is_valid(raise_exception=True)
-            image_serializer.save()
+            agent_image_serializer.is_valid(raise_exception=True)
+            agent_image_serializer.save()
 
             if os.path.exists(old_image_path):
                 os.remove(old_image_path)
 
+        partial = kwargs.pop("partial", False)
         agent_serializer = self.get_serializer(
-            agent, data=agent_request_data, partial=True
+            agent, data=agent_request_data, partial=partial
         )
         agent_serializer.is_valid(raise_exception=True)
         self.perform_update(agent_serializer)
@@ -586,27 +589,27 @@ class AgentViewSet(ModelViewSet):
         current_user = self.request.user
         agent_to_delete = self.get_object()
 
-        if not current_user.is_superuser or current_user.id != agent_to_delete.user.id:
+        if not current_user.is_superuser and current_user.id != agent_to_delete.user.id:
             return Response(
                 {"error": "You are not authorized to delete this user."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
         default_profile_image = "/profile_images/default_profile.jpg"
-        image_to_delete = None
+        old_agent_image = None
 
         if (
             agent_to_delete.image_url
             and agent_to_delete.image_url.name != default_profile_image
         ):
-            image_to_delete = os.path.join(
+            old_agent_image = os.path.join(
                 settings.MEDIA_ROOT, agent_to_delete.image_url.name
             )
 
         response = super().destroy(request, *args, **kwargs)
 
-        if os.path.exists(image_to_delete):
-            os.remove(image_to_delete)
+        if os.path.exists(old_agent_image):
+            os.remove(old_agent_image)
 
         if response.status_code == status.HTTP_204_NO_CONTENT:
             return Response(

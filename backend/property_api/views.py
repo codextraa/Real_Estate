@@ -1,23 +1,27 @@
 # Create your views here.
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.response import Response
+import os
+from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
-from backend.renderers import ViewRenderer
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 from backend.mixins import http_method_mixin
+from backend.renderers import ViewRenderer
 from core_db.models import Property
-from .paginations import PropertyPagination
 from .filters import PropertyFilter
+from .paginations import PropertyPagination
 from .serializers import (
-    PropertySerializer,
     PropertyImageSerializer,
     PropertyListSerializer,
     PropertyRetrieveSerializer,
+    PropertySerializer,
 )
 
 
 class PropertyViewSet(ModelViewSet):
+    """Property Viewset."""
+
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
     renderer_classes = [ViewRenderer]
@@ -50,6 +54,12 @@ class PropertyViewSet(ModelViewSet):
         """Create new property."""
         current_user = self.request.user
 
+        if "slug" in request.data or "agent" in request.data:  # pylint: disable=R0916
+            return Response(
+                {"error": "Forbidden fields cannot be updated."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         if not current_user.is_agent:
             return Response(
                 {"error": "You do not have permission to create a property."},
@@ -68,11 +78,11 @@ class PropertyViewSet(ModelViewSet):
         property_obj = serializer.instance
 
         if property_image:
-            image_serializer = PropertyImageSerializer(
+            property_image_serializer = PropertyImageSerializer(
                 property_obj, data={"image_url": property_image}
             )
-            image_serializer.is_valid(raise_exception=True)
-            image_serializer.save()
+            property_image_serializer.is_valid(raise_exception=True)
+            property_image_serializer.save()
         else:
             property_obj.image_url = default_property_image
             property_obj.save()
@@ -110,20 +120,28 @@ class PropertyViewSet(ModelViewSet):
 
         request_data = request.data.copy()
         property_image = request_data.pop("property_image", None)
+        old_image_path = None
+        default_property_image = "property_images/default_image.jpg"
 
-        # note: image different but similar name bug
-        if (
-            property_image
-            and property_image.name != property_instance.image_url.name.split("/")[-1]
-        ):
-            image_serializer = PropertyImageSerializer(
+        if property_image:
+            if (
+                property_instance.image_url
+                and property_instance.image_url.name != default_property_image
+            ):
+                old_image_path = os.path.join(
+                    settings.MEDIA_ROOT, property_instance.image_url.name
+                )
+
+            property_image_serializer = PropertyImageSerializer(
                 property_instance, data={"image_url": property_image}
             )
-            image_serializer.is_valid(raise_exception=True)
-            image_serializer.save()
+            property_image_serializer.is_valid(raise_exception=True)
+            property_image_serializer.save()
+
+            if os.path.exists(old_image_path):
+                os.remove(old_image_path)
 
         partial = kwargs.pop("partial", False)
-
         serializer = self.get_serializer(
             property_instance, data=request_data, partial=partial
         )
@@ -136,6 +154,7 @@ class PropertyViewSet(ModelViewSet):
         )
 
     def destroy(self, request, *args, **kwargs):
+        """Allow only agents and superusers to delete their own property."""
         current_user = self.request.user
         property_instance = self.get_object()
 
@@ -146,13 +165,20 @@ class PropertyViewSet(ModelViewSet):
             )
 
         default_property_image = "property_images/default_image.jpg"
+        old_property_image = None
+
         if (
             property_instance.image_url
             and property_instance.image_url.name != default_property_image
         ):
-            property_instance.image_url.delete(save=False)
+            old_property_image = os.path.join(
+                settings.MEDIA_ROOT, property_instance.image_url.name
+            )
 
         response = super().destroy(request, *args, **kwargs)
+
+        if os.path.exists(old_property_image):
+            os.remove(old_property_image)
 
         if response.status_code == status.HTTP_204_NO_CONTENT:
             return Response(
