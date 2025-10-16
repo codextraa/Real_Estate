@@ -1,5 +1,6 @@
 """Views for Auth API."""  # pylint: disable=C0302
 
+import os
 from datetime import timedelta
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
@@ -10,6 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.db.models import Q
@@ -24,11 +26,12 @@ from .serializers import (
     UserListSerializer,
     UserRetrieveSerializer,
     AgentSerializer,
+    AgentImageSerializer,
 )
 
 
-def check_request_data(request):
-    """Check if request data is valid."""
+def check_create_request_data(request):
+    """Check if create request data is valid."""
 
     current_user = request.user
     if "is_superuser" in request.data:
@@ -62,6 +65,31 @@ def check_request_data(request):
     if password != c_password:
         return Response(
             {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return current_user
+
+
+def check_update_request_data(request):
+    """Check if update request data is valid."""
+
+    current_user = request.user
+
+    if "email" in request.data:
+        return Response(
+            {"error": "You cannot update the email field."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if (
+        "slug" in request.data  # pylint: disable=R0916
+        or "is_active" in request.data
+        or "is_staff" in request.data
+        or "is_superuser" in request.data
+    ):
+        return Response(
+            {"error": "Forbidden fields cannot be updated."},
+            status=status.HTTP_403_FORBIDDEN,
         )
 
     return current_user
@@ -294,7 +322,7 @@ class UserViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Create new user and send email verification link."""
 
-        check_integrity = check_request_data(request)
+        check_integrity = check_create_request_data(request)
 
         if isinstance(check_integrity, Response):
             return check_integrity
@@ -323,22 +351,10 @@ class UserViewSet(ModelViewSet):
         user = self.get_object()
         # pylint: enable=R0801
 
-        if "email" in request.data:
-            return Response(
-                {"error": "You cannot update the email field."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        check_integrity = check_update_request_data(request)
 
-        if (
-            "slug" in request.data  # pylint: disable=R0916
-            or "is_active" in request.data
-            or "is_staff" in request.data
-            or "is_superuser" in request.data
-        ):
-            return Response(
-                {"error": "Forbidden fields cannot be updated."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        if isinstance(check_integrity, Response):
+            return check_integrity
 
         if current_user.id != user.id and not current_user.is_superuser:
             return Response(
@@ -453,13 +469,13 @@ class AgentViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Create Agent Profile"""
 
-        check_integrity = check_request_data(request)
+        check_integrity = check_create_request_data(request)
 
         if isinstance(check_integrity, Response):
             return check_integrity
 
         request_data = request.data.copy()
-        agent_keys = ["company_name", "bio", "image_url"]
+        agent_keys = ["company_name", "bio", "profile_image"]
         user_request_data = request_data
         agent_request_data = {}
 
@@ -485,3 +501,117 @@ class AgentViewSet(ModelViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
+
+    def update(self, request, *args, **kwargs):  # pylint: disable=R0914
+        """Update Agent Profile"""
+
+        not_allowed_method = self.http_method_not_allowed(request)
+
+        if not_allowed_method:
+            return not_allowed_method
+
+        current_user = self.request.user
+        agent = self.get_object()
+        # pylint: enable=R0801
+
+        check_integrity = check_update_request_data(request)
+
+        if isinstance(check_integrity, Response):
+            return check_integrity
+
+        if not current_user.is_superuser or current_user.id != agent.user.id:
+            return Response(
+                {"error": "You are not authorized to update this user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        request_data = request.data.copy()
+        agent_keys = ["company_name", "bio", "profile_image"]
+        user_request_data = request_data
+        agent_request_data = {}
+
+        for key in user_request_data.keys():
+            if key in agent_keys:
+                agent_request_data[key] = request_data[key]
+                user_request_data.pop(key)
+
+        user_instance = agent.user
+        user_serializer = UserSerializer(
+            user_instance, data=user_request_data, partial=True
+        )
+        user_serializer.is_valid(raise_exception=True)
+        user_serializer.save()
+
+        profile_image = request.data.pop("profile_image", None)
+        old_image_path = None
+
+        if profile_image:
+            if (
+                agent.image_url
+                and agent.image_url.name != "profile_images/default_profile.jpg"
+            ):
+                old_image_path = os.path.join(settings.MEDIA_ROOT, agent.image_url.name)
+
+            image_serializer = AgentImageSerializer(
+                agent, data={"image_url": profile_image}
+            )
+            image_serializer.is_valid(raise_exception=True)
+            image_serializer.save()
+
+            if os.path.exists(old_image_path):
+                os.remove(old_image_path)
+
+        agent_serializer = self.get_serializer(
+            agent, data=agent_request_data, partial=True
+        )
+        agent_serializer.is_valid(raise_exception=True)
+        self.perform_update(agent_serializer)
+
+        updated_agent_serializer = self.get_serializer(agent)
+        response_data = updated_agent_serializer.data
+        user_serializer = UserSerializer(user_instance)
+        response_data["user"] = user_serializer.data
+
+        return Response(
+            {
+                "success": "Agent updated successfully",
+                "data": response_data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        """Destroy Agent Profile"""
+
+        current_user = self.request.user
+        agent_to_delete = self.get_object()
+
+        if not current_user.is_superuser or current_user.id != agent_to_delete.user.id:
+            return Response(
+                {"error": "You are not authorized to delete this user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        default_profile_image = "/profile_images/default_profile.jpg"
+        image_to_delete = None
+
+        if (
+            agent_to_delete.image_url
+            and agent_to_delete.image_url.name != default_profile_image
+        ):
+            image_to_delete = os.path.join(
+                settings.MEDIA_ROOT, agent_to_delete.image_url.name
+            )
+
+        response = super().destroy(request, *args, **kwargs)
+
+        if os.path.exists(image_to_delete):
+            os.remove(image_to_delete)
+
+        if response.status_code == status.HTTP_204_NO_CONTENT:
+            return Response(
+                {"success": "Agent profile deleted successfully."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+
+        return response

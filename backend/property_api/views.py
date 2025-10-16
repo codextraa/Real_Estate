@@ -111,6 +111,7 @@ class PropertyViewSet(ModelViewSet):
         request_data = request.data.copy()
         property_image = request_data.pop("property_image", None)
 
+        # note: image different but similar name bug
         if (
             property_image
             and property_image.name != property_instance.image_url.name.split("/")[-1]
@@ -121,7 +122,7 @@ class PropertyViewSet(ModelViewSet):
             image_serializer.is_valid(raise_exception=True)
             image_serializer.save()
 
-        partial = kwargs.pop("partial", True)
+        partial = kwargs.pop("partial", False)
 
         serializer = self.get_serializer(
             property_instance, data=request_data, partial=partial
