@@ -14,7 +14,7 @@ class RefreshTokenRequestSerializer(serializers.Serializer):  # pylint: disable=
     refresh = serializers.CharField(required=True)
 
 
-class LoginResponseSerializer(serializers.Serializer):
+class LoginResponseSerializer(serializers.Serializer):  # pylint: disable=W0223
     """Custom response structure for successful login (HTTP 200)."""
 
     access_token = serializers.CharField(
@@ -35,7 +35,7 @@ class LoginResponseSerializer(serializers.Serializer):
     )
 
 
-class ErrorResponseSerializer(serializers.Serializer):
+class ErrorResponseSerializer(serializers.Serializer):  # pylint: disable=W0223
     """Standard error response structure (HTTP 400, 429, 500)."""
 
     error = serializers.CharField(

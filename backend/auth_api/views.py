@@ -203,7 +203,7 @@ def check_user_id(user_id):
             status_codes=["200"],
             value={
                 "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-1",
-                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
+                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUz1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
                 "user_id": 101,
                 "user_role": "Agent",
                 "access_token_expiry": (now() + timedelta(hours=1)).isoformat(),
