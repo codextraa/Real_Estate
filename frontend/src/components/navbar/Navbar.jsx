@@ -1,9 +1,5 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import { NavButton } from "@/components/buttons/Buttons";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import styles from "./Navbar.module.css";
 import {
   getUserIdAction,
@@ -11,26 +7,9 @@ import {
   logoutAction,
 } from "@/actions/authActions"; // Assuming authAction.js is in /actions
 
-export default function Navbar() {
-  const [userId, setUserId] = useState(null);
-  const [userRole, setUserRole] = useState(null);
-  const pathname = usePathname();
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const id = await getUserIdAction();
-        const role = await getUserRoleAction();
-        setUserId(id);
-        setUserRole(role);
-      } catch (error) {
-        console.error("Failed to fetch user session data:", error);
-        setUserId(null);
-        setUserRole(null);
-      }
-    };
-    fetchUserData();
-  }, [pathname]);
+export default async function Navbar() {
+  const userId = await getUserIdAction();
+  const userRole = await getUserRoleAction();
 
   const loggedInBaseButtons = [
     { text: "Profile", href: "/profile" },
@@ -40,31 +19,25 @@ export default function Navbar() {
   let navButtons = [];
 
   if (userId && userRole) {
-    switch (userRole) {
-      case "super_user":
-        navButtons = [
-          { text: "All Listings", href: "/" },
-          { text: "Create Admin", href: "/" },
-          ...loggedInBaseButtons,
-        ];
-        break;
-      case "admin":
-        navButtons = [
-          { text: "All Listings", href: "/" },
-          { text: "Create", href: "/" },
-          ...loggedInBaseButtons,
-        ];
-        break;
-      case "agent":
-        navButtons = [
-          { text: "My Listings", href: "/" },
-          { text: "Create", href: "/" },
-          ...loggedInBaseButtons,
-        ];
-        break;
-      default:
-        navButtons = loggedInBaseButtons;
-        break;
+    if (userRole === "super_user") {
+      navButtons = [
+        { text: "All Listings", href: "/" },
+        { text: "Create Admin", href: "/" },
+        ...loggedInBaseButtons,
+      ];
+    } else if (userRole === "admin") {
+      navButtons = [
+        { text: "All Listings", href: "/" },
+        ...loggedInBaseButtons,
+      ];
+    } else if (userRole === "agent") {
+      navButtons = [
+        { text: "My Listings", href: "/" },
+        { text: "Create", href: "/" },
+        ...loggedInBaseButtons,
+      ];
+    } else {
+      navButtons = loggedInBaseButtons;
     }
   } else {
     navButtons = [
@@ -73,7 +46,7 @@ export default function Navbar() {
     ];
   }
 
-  return pathname === "/auth/login" || pathname === "/auth/signup" ? null : (
+  return (
     <nav className={styles.navbar}>
       <Link href="/" className={styles.logo}>
         Estate
@@ -84,8 +57,8 @@ export default function Navbar() {
           <NavButton
             key={index}
             text={button.text}
-            href={button.href}
-            onClick={button.onClick}
+            href={button.href ? button.href : null}
+            onClick={button.onClick ? button.onClick : null}
           />
         ))}
       </div>
