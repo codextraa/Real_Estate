@@ -17,6 +17,10 @@ export const login = async (data) => {
   return apiClient.post("/auth-api/login/", data);
 };
 
+export const logout = async () => {
+  return await apiClient.post("/auth-api/logout/");
+};
+
 export const getUser = async (id) => {
   console.log(`[NETWORK CALL] Fetching user ${id} from the external API.`);
   return apiClient.get(`/auth-api/users/${id}/`, {
