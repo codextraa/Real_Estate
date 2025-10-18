@@ -47,17 +47,21 @@ export function GlobalButton({ text, onClick }) {
   );
 }
 
-export function NavButton({ text, href }) {
+export function NavButton({ text, href, onClick }) {
   const router = useRouter();
 
   const handleClick = () => {
-    if (href) {
+    if (onClick) {
+      onClick();
+    } else if (!onClick && href) {
       router.push(href);
     }
   };
 
   const buttonClass =
-    text === "Log In" ? styles.NavLogInButton : styles.NavSignUpButton;
+    text === "Login" || text === "Logout"
+      ? styles.NavLogInButton
+      : styles.NavSignUpButton;
 
   return (
     <button type="button" className={buttonClass} onClick={handleClick}>

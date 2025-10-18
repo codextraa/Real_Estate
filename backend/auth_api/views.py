@@ -2,6 +2,7 @@
 
 import os
 from datetime import timedelta
+from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
@@ -16,8 +17,18 @@ from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from backend.renderers import ViewRenderer
 from backend.mixins import http_method_mixin
+from backend.schema_serializers import (
+    LoginRequestSerializer,
+    LoginResponseSerializer,
+    ErrorResponseSerializer,
+    LogoutRequestSerializer,
+    RefreshTokenRequestSerializer,
+    UserCreateRequestSerializer,
+    UserUpdateRequestSerializer,
+)
 from core_db.models import Agent
 from .paginations import UserPagination
 from .filters import UserFilter
@@ -161,6 +172,68 @@ def check_user_id(user_id):
     return check_user_validity(user.email)
 
 
+@extend_schema(
+    # General documentation for the POST method
+    summary="User Login and Token Acquisition",
+    description=(
+        "Authenticates the user with email and password. "
+        "If valid, an access token and refresh token are returned."
+    ),
+    tags=["Authentication"],
+    # Define the request body schema
+    request=LoginRequestSerializer,
+    # Define the possible responses and link them to serializers/examples
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            response=LoginResponseSerializer,
+            description="Successful authentication. Returns JWT tokens and user metadata.",
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description=(
+                "Bad Request. Occurs on invalid credentials, deactivated account, "
+                "missing email/password, or other pre-auth failures."
+            ),
+        ),
+        status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Internal Server Error.",
+        ),
+    },
+    # Provide concrete examples for better API reference UI
+    examples=[
+        OpenApiExample(
+            name="Successful Agent Login",
+            response_only=True,
+            status_codes=["200"],
+            value={
+                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-1",
+                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUz1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
+                "user_id": 101,
+                "user_role": "Agent",
+                "access_token_expiry": (now() + timedelta(hours=1)).isoformat(),
+            },
+        ),
+        OpenApiExample(
+            name="Invalid Credentials Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Invalid credentials"},
+        ),
+        OpenApiExample(
+            name="Deactivated Account Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Account is deactivated. Contact your admin"},
+        ),
+        OpenApiExample(
+            name="Missing Email/Password Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Email and password are required"},
+        ),
+    ],
+)
 class LoginView(TokenObtainPairView):
     """Login View."""
 
@@ -210,6 +283,165 @@ class LoginView(TokenObtainPairView):
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
+@extend_schema(
+    # General documentation for the POST method
+    summary="User Logout",
+    description=(
+        "Logout by blacklisting the refresh token."
+    ),
+    tags=["Authentication"],
+    # Define the request body schema
+    request=LogoutRequestSerializer,
+    # Define the possible responses and link them to serializers/examples
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            response=LoginResponseSerializer,
+            description="Successful logout.",
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description=(
+                "Bad Request. Missing tokens."
+            ),
+        ),
+        status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Internal Server Error.",
+        ),
+    },
+    examples=[
+        OpenApiExample(
+            name="Successful Logout",
+            response_only=True,
+            status_codes=["200"],
+            value={"success": "Logged out successfully"},
+        ),
+        OpenApiExample(
+            name="Missing Tokens Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Tokens are required"},
+        ),
+    ],
+)
+class LogoutView(APIView):
+    """
+    Logout by blacklisting the refresh token.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    renderer_classes = [ViewRenderer]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            # Extract tokens from the request
+            refresh_token = request.data.get("refresh")
+
+            if not refresh_token:
+                return Response(
+                    {"error": "Tokens are required"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Blacklist refresh token
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response(
+                {"success": "Logged out successfully"}, status=status.HTTP_200_OK
+            )
+
+        except Exception as e:  # pylint: disable=W0718
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@extend_schema(
+    # General documentation for the POST method
+    summary="Refresh Access Token",
+    description=(
+        "Exchanges a valid refresh token for a new access token. "
+        "Also returns the refresh token and updated user metadata."
+    ),
+    tags=["Authentication"],
+    # Define the request body schema
+    request=RefreshTokenRequestSerializer,
+    # Define the possible responses and link them to serializers/examples
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            response=LoginResponseSerializer,
+            description="Successful token refresh. Returns a new access token and the same refresh token.",
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description=(
+                "Bad Request. Occurs on a missing 'refresh' token or an invalid token format."
+            ),
+        ),
+        status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Unauthorized. Occurs when the refresh token is expired, invalid, or blacklisted.",
+        ),
+        status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Internal Server Error.",
+        ),
+    },
+    # Provide concrete examples for better API reference UI
+    examples=[
+        OpenApiExample(
+            name="Successful Token Refresh",
+            response_only=True,
+            status_codes=["200"],
+            value={
+                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-NEW-SHORT-LIVED-JWT-TOKEN-PART-1",
+                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUz1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
+                "user_id": 101,
+                "user_role": "Agent",
+                # Note: TimeDelta is 5 minutes for refresh endpoint in your code
+                "access_token_expiry": (now() + timedelta(minutes=5)).isoformat(),
+            },
+        ),
+        OpenApiExample(
+            name="Missing Refresh Token Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Tokens are required"},
+        ),
+        OpenApiExample(
+            name="Invalid/Expired Refresh Token Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Invalid tokens"},
+        ),
+        OpenApiExample(
+            name="Invalid Refresh Token Error",
+            response_only=True,
+            status_codes=["401"],
+            value={"error": "Invalid Refresh Token"},
+        ),
+        OpenApiExample(
+            name="Invalid Session Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Invalid Session"},
+        ),
+        OpenApiExample(
+            name="Invalid Credentials Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Invalid credentials"},
+        ),
+        OpenApiExample(
+            name="Account Deactivated Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error":  "Account is deactivated. Contact your admin"},
+        ),
+    ],
+)
 
 class RefreshTokenView(TokenRefreshView):
     """Refresh Token View generates JWT access token using the refresh token."""
@@ -327,6 +559,9 @@ class UserViewSet(ModelViewSet):
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
 
+
+
+
     def create(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Create new user and send email verification link."""
 
@@ -345,6 +580,7 @@ class UserViewSet(ModelViewSet):
             {"success": "User created successfully."},
             status=status.HTTP_201_CREATED,
         )
+
 
     def update(self, request, *args, **kwargs):
         """Allow only users to update their own profile. SuperUser can update any profile.
@@ -375,6 +611,8 @@ class UserViewSet(ModelViewSet):
             )
 
         return response
+
+
 
     def destroy(self, request, *args, **kwargs):
         """Allow only superusers to delete normal or staff users and clean up profile image."""

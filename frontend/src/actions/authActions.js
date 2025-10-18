@@ -1,12 +1,13 @@
 "use server";
 
-import { login } from "@/libs/api";
+import { login, logout } from "@/libs/api";
 import {
   getUserIdFromSession,
   getUserRoleFromSession,
   setSessionCookie,
-  // deleteSessionCookie,
+  deleteSessionCookie,
 } from "@/libs/cookie";
+import { redirect } from "next/navigation";
 
 export const getUserIdAction = async () => {
   try {
@@ -90,15 +91,8 @@ export const loginAction = async (prevState, formData) => {
   }
 };
 
-// export const logoutAction = async () => {
-//   /* eslint-disable no-useless-catch */
-//   try {
-//     // Logout from the backend
-//     await logout();
-//     // Delete the session cookie
-//     await deleteSessionCookie();
-//   } catch (error) {
-//     // Throw the NEXT REDIRECT error (otherwise it won't work)
-//     throw error;
-//   }
-// };
+export const logoutAction = async () => {
+  await logout();
+  await deleteSessionCookie();
+  redirect("/");
+};
