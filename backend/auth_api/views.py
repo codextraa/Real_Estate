@@ -27,7 +27,6 @@ from backend.schema_serializers import (
     LogoutRequestSerializer,
     RefreshTokenRequestSerializer,
     UserCreateRequestSerializer,
-    UserUpdateRequestSerializer,
 )
 from core_db.models import Agent
 from .paginations import UserPagination
@@ -287,9 +286,7 @@ class LoginView(TokenObtainPairView):
 @extend_schema(
     # General documentation for the POST method
     summary="User Logout",
-    description=(
-        "Logout by blacklisting the refresh token."
-    ),
+    description=("Logout by blacklisting the refresh token."),
     tags=["Authentication"],
     # Define the request body schema
     request=LogoutRequestSerializer,
@@ -301,9 +298,7 @@ class LoginView(TokenObtainPairView):
         ),
         status.HTTP_400_BAD_REQUEST: OpenApiResponse(
             response=ErrorResponseSerializer,
-            description=(
-                "Bad Request. Missing tokens."
-            ),
+            description=("Bad Request. Missing tokens."),
         ),
         status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
             response=ErrorResponseSerializer,
@@ -372,7 +367,9 @@ class LogoutView(APIView):
     responses={
         status.HTTP_200_OK: OpenApiResponse(
             response=LoginResponseSerializer,
-            description="Successful token refresh. Returns a new access token and the same refresh token.",
+            description=("Successful token refresh. "
+            "Returns a new access token and the same refresh token.",
+            )
         ),
         status.HTTP_400_BAD_REQUEST: OpenApiResponse(
             response=ErrorResponseSerializer,
@@ -382,7 +379,10 @@ class LogoutView(APIView):
         ),
         status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
             response=ErrorResponseSerializer,
-            description="Unauthorized. Occurs when the refresh token is expired, invalid, or blacklisted.",
+            description=(
+                "Unauthorized. "
+                "Occurs when the refresh token is expired, invalid, or blacklisted.",
+            ),
         ),
         status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
             response=ErrorResponseSerializer,
@@ -396,7 +396,10 @@ class LogoutView(APIView):
             response_only=True,
             status_codes=["200"],
             value={
-                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-NEW-SHORT-LIVED-JWT-TOKEN-PART-1",
+                "access_token": (
+                    "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9."
+                    "A-NEW-SHORT-LIVED-JWT-TOKEN-PART-1",
+                ),
                 "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUz1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
                 "user_id": 101,
                 "user_role": "Agent",
@@ -438,11 +441,10 @@ class LogoutView(APIView):
             name="Account Deactivated Error",
             response_only=True,
             status_codes=["400"],
-            value={"error":  "Account is deactivated. Contact your admin"},
+            value={"error": "Account is deactivated. Contact your admin"},
         ),
     ],
 )
-
 class RefreshTokenView(TokenRefreshView):
     """Refresh Token View generates JWT access token using the refresh token."""
 
@@ -559,9 +561,126 @@ class UserViewSet(ModelViewSet):
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
 
-
-
-
+    @extend_schema(
+        summary="Create New User",
+        description="Registers a new user account. Does not require authentication.",
+        tags=["User Management"],
+        request=UserCreateRequestSerializer,
+        responses={
+            status.HTTP_201_CREATED: OpenApiResponse(
+                response=UserSerializer,
+                description="User created successfully. Returns a success message.",
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("Bad Request. "
+                "Occurs on missing required fields, invalid data format, or duplicate email.",
+                ),
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. User does not have staff or superuser privileges.",
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful User Creation",
+                response_only=True,
+                status_codes=["201"],
+                value={"success": "User created successfully."},
+            ),
+            OpenApiExample(
+                name="Creating SuperUser Error",
+                response_only=True,
+                status_codes=["403"],
+                value={
+                    "error": "You do not have permission to create a superuser. Contact Developer."
+                },
+            ),
+            OpenApiExample(
+                name="Creating Admin Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to create an admin user."},
+            ),
+            OpenApiExample(
+                name="Updating Forbidden fields.",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "Forbidden fields cannot be updated."},
+            ),
+            OpenApiExample(
+                name="Password Confirmation Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Please confirm your password."},
+            ),
+            OpenApiExample(
+                name="Password Matching Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Passwords do not match."},
+            ),
+            OpenApiExample(
+                name="Username Already Exists Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"username": ["User with this username already exists."]}
+                },
+            ),
+            OpenApiExample(
+                name="Username Too Short Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "username": ["Username must be at least 6 characters long."]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Email Already Exists Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "email": [
+                            "User with this email already exists.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Invalid Email Address Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "email": [
+                            "Enter a valid email address.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Password Complexity Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "password": [
+                            "Password must be at least 8 characters.",
+                            "Password must contain at least one uppercase letter.",
+                            "Password must contain at least one number.",
+                            "Password must contain at least one special character.",
+                        ]
+                    }
+                },
+            ),
+        ],
+    )
     def create(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Create new user and send email verification link."""
 
@@ -581,6 +700,64 @@ class UserViewSet(ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @extend_schema(
+        summary="List All Users",
+        description=("Returns a paginated list of all user accounts. "
+        "Access is restricted to staff/superusers.",
+        ),
+        tags=["User Management"],
+        request=None,
+        responses={
+            # drf-spectacular automatically handles pagination wrapping for ModelViewSet list action
+            status.HTTP_200_OK: UserListSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. User does not have staff or superuser privileges.",
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Forbidden Access",
+                response_only=True,
+                status_codes=["403"],
+                value={"detail": "You do not have permission to perform this action."},
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        """List all users."""
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve Single User Details",
+        description="Returns the details of a specific user by ID.",
+        tags=["User Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: UserRetrieveSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("Not Found. "
+                "The user ID does not exist "
+                "or the authenticated user does not have permission to view it.",
+                ),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"detail": "Not found."},
+            ),
+        ],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific user."""
+        return super().retrieve(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         """Allow only users to update their own profile. SuperUser can update any profile.
@@ -611,8 +788,6 @@ class UserViewSet(ModelViewSet):
             )
 
         return response
-
-
 
     def destroy(self, request, *args, **kwargs):
         """Allow only superusers to delete normal or staff users and clean up profile image."""
