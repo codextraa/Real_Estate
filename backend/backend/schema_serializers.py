@@ -70,9 +70,6 @@ class UserUpdateRequestSerializer(serializers.Serializer):  # pylint: disable=W0
     All fields are optional for partial updates.
     """
 
-    email = serializers.EmailField(
-        required=False, help_text="New unique email address."
-    )
     password = serializers.CharField(
         required=False,
         write_only=True,
@@ -82,14 +79,3 @@ class UserUpdateRequestSerializer(serializers.Serializer):  # pylint: disable=W0
     username = serializers.CharField(required=False, help_text="New unique username.")
     first_name = serializers.CharField(required=False, allow_blank=True)
     last_name = serializers.CharField(required=False, allow_blank=True)
-
-    is_active = serializers.BooleanField(
-        required=False, help_text="User account status (Admin/Superuser only)."
-    )
-    is_staff = serializers.BooleanField(
-        required=False,
-        help_text="Designates if user can log into this admin site (Superuser only).",
-    )
-    is_agent = serializers.BooleanField(
-        required=False, help_text="Designates if the user is an agent (Superuser only)."
-    )

@@ -27,6 +27,7 @@ from backend.schema_serializers import (
     LogoutRequestSerializer,
     RefreshTokenRequestSerializer,
     UserCreateRequestSerializer,
+    UserUpdateRequestSerializer,
 )
 from core_db.models import Agent
 from .paginations import UserPagination
@@ -367,9 +368,10 @@ class LogoutView(APIView):
     responses={
         status.HTTP_200_OK: OpenApiResponse(
             response=LoginResponseSerializer,
-            description=("Successful token refresh. "
-            "Returns a new access token and the same refresh token.",
-            )
+            description=(
+                "Successful token refresh. "
+                "Returns a new access token and the same refresh token.",
+            ),
         ),
         status.HTTP_400_BAD_REQUEST: OpenApiResponse(
             response=ErrorResponseSerializer,
@@ -573,8 +575,9 @@ class UserViewSet(ModelViewSet):
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                description=("Bad Request. "
-                "Occurs on missing required fields, invalid data format, or duplicate email.",
+                description=(
+                    "Bad Request. "
+                    "Occurs on missing required fields, invalid data format, or duplicate email.",
                 ),
             ),
             status.HTTP_403_FORBIDDEN: OpenApiResponse(
@@ -702,8 +705,9 @@ class UserViewSet(ModelViewSet):
 
     @extend_schema(
         summary="List All Users",
-        description=("Returns a paginated list of all user accounts. "
-        "Access is restricted to staff/superusers.",
+        description=(
+            "Returns a paginated list of all user accounts. "
+            "Access is restricted to staff/superusers.",
         ),
         tags=["User Management"],
         request=None,
@@ -740,9 +744,10 @@ class UserViewSet(ModelViewSet):
             status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
             status.HTTP_404_NOT_FOUND: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                description=("Not Found. "
-                "The user ID does not exist "
-                "or the authenticated user does not have permission to view it.",
+                description=(
+                    "Not Found. "
+                    "The user ID does not exist "
+                    "or the authenticated user does not have permission to view it.",
                 ),
             ),
         },
@@ -788,6 +793,60 @@ class UserViewSet(ModelViewSet):
             )
 
         return response
+
+    @extend_schema(
+        summary="Update User Profile (Partial)",
+        description="Partially updates an existing user profile (PATCH method).",
+        tags=["User Management"],
+        request=UserUpdateRequestSerializer,
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserSerializer,
+                description="User profile updated successfully. Returns the updated user object.",
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Bad Request. Occurs on invalid field values or data integrity errors.",
+            ),
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Success",
+                status_codes=["200"],
+                value={
+                    "success": "User profile updated successfully.",
+                    "data": {
+                        "id": 1,
+                        "email": "new@example.com",
+                        "username": "newusername",
+                    },
+                },
+            ),
+            OpenApiExample(
+                name="Email Field Update Error.",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You cannot update the email field"},
+            ),
+            OpenApiExample(
+                name="Forbidden Fields Update Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "Forbidden fields cannot be updated."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to update this user."},
+            ),
+        ],
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         """Allow only superusers to delete normal or staff users and clean up profile image."""
