@@ -848,6 +848,53 @@ class UserViewSet(ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
+    @extend_schema(
+        summary="Delete User Profile",
+        description="Deletes a user profile by ID.",
+        tags=["User Management"],
+        request=None,
+        responses={
+            status.HTTP_204_NO_CONTENT: OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {"success": {"type": "string"}},
+                },
+                description="User Profile Deleted Successfully.",
+            ),
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("User ID Not Found or Does not exist. "),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful User Deletion",
+                response_only=True,
+                status_codes=["204"],
+                value={"success": "User Profile Deleted Successfully."},
+            ),
+            OpenApiExample(
+                name="User ID Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "User ID Not Found or Does not exist."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Delete Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You are not authorized to delete this user."},
+            ),
+            OpenApiExample(
+                name="Superuser Delete Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You cannot delete superusers."},
+            ),
+        ],
+    )
     def destroy(self, request, *args, **kwargs):
         """Allow only superusers to delete normal or staff users and clean up profile image."""
         current_user = self.request.user
