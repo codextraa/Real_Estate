@@ -6,8 +6,14 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from backend.mixins import http_method_mixin
 from backend.renderers import ViewRenderer
+from backend.schema_serializers import (
+    PropertyCreateRequestSerializer,
+    PropertyUpdateRequestSerializer,
+    ErrorResponseSerializer,
+)
 from core_db.models import Property
 from .filters import PropertyFilter
 from .paginations import PropertyPagination
@@ -29,6 +35,7 @@ class PropertyViewSet(ModelViewSet):
     filterset_class = PropertyFilter
     pagination_class = PropertyPagination
     permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "post", "patch", "delete"]
 
     def get_serializer_class(self):
         """Assign serializer based on action."""
@@ -50,6 +57,71 @@ class PropertyViewSet(ModelViewSet):
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
 
+    @extend_schema(
+        summary="Create New Property",
+        description="Allows an authenticated **Agent** to create a new property listing.",
+        tags=["Property Management"],
+        request=PropertyCreateRequestSerializer,
+        responses={
+            status.HTTP_201_CREATED: OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {"success": {"type": "string"}},
+                },
+                description="Property created successfully. Returns a simple success object.",
+            ),
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. User is not an Agent or tried to set forbidden fields.",
+            ),
+            status.HTTP_400_BAD_REQUEST: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful Creation",
+                response_only=True,
+                status_codes=["201"],
+                value={"success": "Property created successfully."},
+            ),
+            OpenApiExample(
+                name="Not an Agent Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to create a property."},
+            ),
+            OpenApiExample(
+                name="Forbidden Field Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "Forbidden fields cannot be updated."},
+            ),
+            OpenApiExample(
+                name="Image Size Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "image_url": ["Property image size should not exceed 2MB."]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Image Type Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"image_url": ["Property image type should be JPEG, PNG"]}
+                },
+            ),
+            OpenApiExample(
+                name="Missing Image Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": {"image_url": ["Property image is required."]}},
+            ),
+        ],
+    )
     def create(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Create new property."""
         current_user = self.request.user
@@ -92,6 +164,83 @@ class PropertyViewSet(ModelViewSet):
             {"success": "Property created successfully."},
             status=status.HTTP_201_CREATED,
         )
+
+    @extend_schema(
+        summary="Update Property Listing (Partial)",
+        description=(
+            "Partially updates an existing property listing (**PATCH** method). "
+            "Only the agent who created the property can update it. PUT is not allowed."
+        ),
+        tags=["Property Management"],
+        # Use the request serializer for partial/full updates
+        request=PropertyUpdateRequestSerializer,
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=PropertySerializer,
+                description=("Property updated successfully. "
+                "Returns a success message and the updated property object.",
+                ),
+            ),
+            status.HTTP_400_BAD_REQUEST: ErrorResponseSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("Forbidden. User is not the property's agent, "
+                "or attempted to set forbidden fields ('slug' or 'agent').",
+                ),
+            ),
+            status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful Partial Update",
+                response_only=True,
+                status_codes=["200"],
+                value={
+                    "success": "Property updated successfully.",
+                    "data": {
+                        "id": 1,
+                        "title": "New Title",
+                        "price": 500000.00,
+                        "address": "123 Main St",
+                        "image_url": "/media/new_image.jpg",
+                    },
+                },
+            ),
+            OpenApiExample(
+                name="Unauthorized Update Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to update this property."},
+            ),
+            OpenApiExample(
+                name="Forbidden Field Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "Forbidden fields cannot be updated."},
+            ),
+            OpenApiExample(
+                name="Image Size Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "image_url": ["Property image size should not exceed 2MB."]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Image Type Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"image_url": ["Property image type should be JPEG, PNG"]}
+                },
+            ),
+        ],
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         """Allow only agents to update their own property.
@@ -153,6 +302,59 @@ class PropertyViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(
+        summary="Delete Property Listing",
+        description=("Deletes a property listing by ID. "
+        "Only the agent  who created the property and Superuser can delete it.",
+        ),
+        tags=["Property Management"],
+        request=None,
+        responses={
+            # Your view returns a body with 204, which is non-standard but must be documented.
+            status.HTTP_204_NO_CONTENT: OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {"success": {"type": "string"}},
+                },
+                description=(
+                    "Property Deleted Successfully. "
+                    "Returns a success message with 204 status.",
+                ),
+            ),
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. User is not the property's agent.",
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("Not Found. "
+                "The property ID does not exist or "
+                "the authenticated user does not have permission to access it.",
+                ),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful Deletion",
+                response_only=True,
+                status_codes=["204"],
+                value={"success": "Property [Title] deleted successfully."},
+            ),
+            OpenApiExample(
+                name="Unauthorized Delete Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You are not authorized to delete this property."},
+            ),
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"detail": "Not found."},
+            ),
+        ],
+    )
     def destroy(self, request, *args, **kwargs):
         """Allow only agents and superusers to delete their own property."""
         current_user = self.request.user
