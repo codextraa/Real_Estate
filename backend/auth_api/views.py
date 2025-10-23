@@ -175,16 +175,13 @@ def check_user_id(user_id):
 
 
 @extend_schema(
-    # General documentation for the POST method
     summary="User Login and Token Acquisition",
     description=(
         "Authenticates the user with email and password. "
         "If valid, an access token and refresh token are returned."
     ),
     tags=["Authentication"],
-    # Define the request body schema
     request=LoginRequestSerializer,
-    # Define the possible responses and link them to serializers/examples
     responses={
         status.HTTP_200_OK: OpenApiResponse(
             response=LoginResponseSerializer,
@@ -202,7 +199,6 @@ def check_user_id(user_id):
             description="Internal Server Error.",
         ),
     },
-    # Provide concrete examples for better API reference UI
     examples=[
         OpenApiExample(
             name="Successful Agent Login",
@@ -258,7 +254,6 @@ class LoginView(TokenObtainPairView):
             if isinstance(user, Response):
                 return user
 
-            # Check if password is correct
             if not user.check_password(password):
                 return Response(
                     {"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
@@ -287,13 +282,10 @@ class LoginView(TokenObtainPairView):
 
 
 @extend_schema(
-    # General documentation for the POST method
     summary="User Logout",
     description=("Logout by blacklisting the refresh token."),
     tags=["Authentication"],
-    # Define the request body schema
     request=LogoutRequestSerializer,
-    # Define the possible responses and link them to serializers/examples
     responses={
         status.HTTP_200_OK: OpenApiResponse(
             response=LoginResponseSerializer,
@@ -334,7 +326,6 @@ class LogoutView(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            # Extract tokens from the request
             refresh_token = request.data.get("refresh")
 
             if not refresh_token:
@@ -342,7 +333,6 @@ class LogoutView(APIView):
                     {"error": "Tokens are required"}, status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Blacklist refresh token
             token = RefreshToken(refresh_token)
             token.blacklist()
 
@@ -987,7 +977,6 @@ class AgentViewSet(ModelViewSet):
             allowed_user_queryset = Q(user__pk=user.pk) | Q(user__is_agent=True)
             return Agent.objects.filter(allowed_user_queryset).select_related("user")
 
-        # create, update, partial_update, destroy
         if self.request.user.is_superuser:
             return Agent.objects.all().select_related("user")
         return Agent.objects.filter(user=user).select_related("user")
@@ -1151,13 +1140,54 @@ class AgentViewSet(ModelViewSet):
         agent = agent_serializer.save()
         agent.image_url = "profile_images/default_profile.jpg"
         agent.save()
-
         return Response(
             {
                 "success": "Agent created successfully",
             },
             status=status.HTTP_201_CREATED,
         )
+
+    # pylint: disable=R0801
+    @extend_schema(
+        summary="List All Agents",
+        description=("Returns a paginated list of all Agent accounts. "),
+        tags=["Agent Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: AgentListSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+        },
+    )
+    def list(self, request, *args, **kwargs):
+        """List all Agents."""
+        return super().list(request, *args, **kwargs)
+
+
+    @extend_schema(
+        summary="Retrieve Single Agent Details",
+        description="Returns the details of a specific agent by ID.",
+        tags=["Agent Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: UserRetrieveSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("Not Found. " "The agent ID does not exist "),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"detail": "Not found."},
+            ),
+        ],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific user."""
+        return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
         summary="Update Agent Profile (Partial)",
@@ -1273,6 +1303,7 @@ class AgentViewSet(ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
+    # pylint: enable=R0801
     def update(self, request, *args, **kwargs):  # pylint: disable=R0914
         """Update Agent Profile"""
 
@@ -1283,7 +1314,6 @@ class AgentViewSet(ModelViewSet):
 
         agent = self.get_object()
         user_instance = agent.user
-        # pylint: enable=R0801
 
         check_integrity = check_update_request_data(user_instance, request)
 
@@ -1353,8 +1383,9 @@ class AgentViewSet(ModelViewSet):
         responses={
             status.HTTP_204_NO_CONTENT: OpenApiResponse(
                 response=AgentSerializer,
-                description=("Agent profile deleted successfully."
-                "Returns a success message with 204 status.",
+                description=(
+                    "Agent profile deleted successfully."
+                    "Returns a success message with 204 status.",
                 ),
             ),
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,

@@ -1,4 +1,3 @@
-# Create your views here.
 import os
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
@@ -158,12 +157,51 @@ class PropertyViewSet(ModelViewSet):
         else:
             property_obj.image_url = default_property_image
             property_obj.save()
-
-        # pylint: disable=R0801
         return Response(
             {"success": "Property created successfully."},
             status=status.HTTP_201_CREATED,
         )
+
+    # pylint: disable=R0801
+    @extend_schema(
+        summary="List All Properties",
+        description=("Returns a paginated list of all Properties. "),
+        tags=["Property Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: PropertyListSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+        },
+    )
+    def list(self, request, *args, **kwargs):
+        """List all properties."""
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve Single Property Details",
+        description="Returns the details of a specific property by ID.",
+        tags=["Property Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: PropertyRetrieveSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("Not Found. " "The Property ID does not exist "),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"detail": "Not found."},
+            ),
+        ],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific property."""
+        return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
         summary="Update Property Listing (Partial)",
@@ -172,21 +210,22 @@ class PropertyViewSet(ModelViewSet):
             "Only the agent who created the property can update it. PUT is not allowed."
         ),
         tags=["Property Management"],
-        # Use the request serializer for partial/full updates
         request=PropertyUpdateRequestSerializer,
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=PropertySerializer,
-                description=("Property updated successfully. "
-                "Returns a success message and the updated property object.",
+                description=(
+                    "Property updated successfully. "
+                    "Returns a success message and the updated property object.",
                 ),
             ),
             status.HTTP_400_BAD_REQUEST: ErrorResponseSerializer,
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                description=("Forbidden. User is not the property's agent, "
-                "or attempted to set forbidden fields ('slug' or 'agent').",
+                description=(
+                    "Forbidden. User is not the property's agent, "
+                    "or attempted to set forbidden fields ('slug' or 'agent').",
                 ),
             ),
             status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
@@ -242,6 +281,7 @@ class PropertyViewSet(ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
+    # pylint: enable=R0801
     def update(self, request, *args, **kwargs):
         """Allow only agents to update their own property.
         Patch method allowed, Put method not allowed"""
@@ -253,7 +293,6 @@ class PropertyViewSet(ModelViewSet):
 
         current_user = self.request.user
         property_instance = self.get_object()
-        # pylint: enable=R0801
 
         if "slug" in request.data or "agent" in request.data:  # pylint: disable=R0916
             return Response(
@@ -304,20 +343,17 @@ class PropertyViewSet(ModelViewSet):
 
     @extend_schema(
         summary="Delete Property Listing",
-        description=("Deletes a property listing by ID. "
-        "Only the agent  who created the property and Superuser can delete it.",
+        description=(
+            "Deletes a property listing by ID. "
+            "Only the agent  who created the property and Superuser can delete it.",
         ),
         tags=["Property Management"],
         request=None,
         responses={
-            # Your view returns a body with 204, which is non-standard but must be documented.
             status.HTTP_204_NO_CONTENT: OpenApiResponse(
-                response={
-                    "type": "object",
-                    "properties": {"success": {"type": "string"}},
-                },
+                response=PropertySerializer,
                 description=(
-                    "Property Deleted Successfully. "
+                    "Property deleted successfully."
                     "Returns a success message with 204 status.",
                 ),
             ),
@@ -328,10 +364,7 @@ class PropertyViewSet(ModelViewSet):
             ),
             status.HTTP_404_NOT_FOUND: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                description=("Not Found. "
-                "The property ID does not exist or "
-                "the authenticated user does not have permission to access it.",
-                ),
+                description="The property ID does not exist or not found",
             ),
         },
         examples=[
