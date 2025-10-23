@@ -90,6 +90,12 @@ def check_update_request_data(user_instance, request):
 
     current_user = request.user
 
+    if current_user.id != user_instance.id and not current_user.is_superuser:
+        return Response(
+            {"error": "You do not have permission to update this user."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     if "email" in request.data:
         return Response(
             {"error": "You cannot update the email field."},
@@ -107,11 +113,19 @@ def check_update_request_data(user_instance, request):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    if current_user.id != user_instance.id and not current_user.is_superuser:
-        return Response(
-            {"error": "You do not have permission to update this user."},
-            status=status.HTTP_403_FORBIDDEN,
-        )
+    password = request.data.get("password")
+    if password:
+        if not request.data.get("c_password"):
+            return Response(
+                {"error": "Please confirm your password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        c_password = request.data.pop("c_password")
+        if password != c_password:
+            return Response(
+                {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
     return current_user
 
@@ -696,7 +710,6 @@ class UserViewSet(ModelViewSet):
         tags=["User Management"],
         request=None,
         responses={
-            # drf-spectacular automatically handles pagination wrapping for ModelViewSet list action
             status.HTTP_200_OK: UserListSerializer,
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: OpenApiResponse(
@@ -709,7 +722,7 @@ class UserViewSet(ModelViewSet):
                 name="Forbidden Access",
                 response_only=True,
                 status_codes=["403"],
-                value={"detail": "You do not have permission to perform this action."},
+                value={"error": "You do not have permission to perform this action."},
             ),
         ],
     )
@@ -740,7 +753,19 @@ class UserViewSet(ModelViewSet):
                 name="Not Found Error",
                 response_only=True,
                 status_codes=["404"],
-                value={"detail": "Not found."},
+                value={"error": "Not found."},
+            ),
+            OpenApiExample(
+                name="Forbidden Access",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to perform this action."},
+            ),
+            OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
             ),
         ],
     )
@@ -771,6 +796,7 @@ class UserViewSet(ModelViewSet):
             return Response(
                 {
                     "success": "User profile updated successfully.",
+                    # need to return User retrieve serializer object
                     "data": response.data,
                 },
                 status=status.HTTP_200_OK,
@@ -802,6 +828,7 @@ class UserViewSet(ModelViewSet):
                 status_codes=["200"],
                 value={
                     "success": "User profile updated successfully.",
+                    # need to return User retrieve serializer object
                     "data": {
                         "id": 1,
                         "email": "new@example.com",
@@ -810,10 +837,28 @@ class UserViewSet(ModelViewSet):
                 },
             ),
             OpenApiExample(
+                name="Method Not Allowed",
+                response_only=True,
+                status_codes=["405"],
+                value={"error": "PUT operation not allowed."},
+            ),
+            OpenApiExample(
                 name="Unauthorized User Update Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You do not have permission to update this user."},
+            ),
+            OpenApiExample(
+                name="Updating Email field",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You cannot update the email field."},
+            ),
+            OpenApiExample(
+                name="Updating Forbidden fields.",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "Forbidden fields cannot be updated."},
             ),
             OpenApiExample(
                 name="Password Confirmation Error",
@@ -1161,7 +1206,6 @@ class AgentViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         """List all Agents."""
         return super().list(request, *args, **kwargs)
-
 
     @extend_schema(
         summary="Retrieve Single Agent Details",

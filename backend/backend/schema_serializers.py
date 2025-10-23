@@ -57,11 +57,22 @@ class UserCreateRequestSerializer(serializers.Serializer):  # pylint: disable=W0
         style={"input_type": "password"},
         help_text="Mandatory password, must meet complexity requirements.",
     )
+    c_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        style={"input_type": "password"},
+        help_text="Mandatory password, must meet complexity requirements.",
+    )
     username = serializers.CharField(
-        required=True, help_text="Mandatory unique username."
+        required=False, help_text="Mandatory unique username."
     )
     first_name = serializers.CharField(required=False, allow_blank=True)
     last_name = serializers.CharField(required=False, allow_blank=True)
+    is_staff = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text="Designates whether the user is a staff member.",
+    )
 
 
 class UserUpdateRequestSerializer(serializers.Serializer):  # pylint: disable=W0223
@@ -75,6 +86,12 @@ class UserUpdateRequestSerializer(serializers.Serializer):  # pylint: disable=W0
         write_only=True,
         style={"input_type": "password"},
         help_text="New password (optional). Must meet complexity requirements if provided.",
+    )
+    c_password = serializers.CharField(
+        required=False,
+        write_only=True,
+        style={"input_type": "password"},
+        help_text="Mandatory password, must meet complexity requirements.",
     )
     username = serializers.CharField(required=False, help_text="New unique username.")
     first_name = serializers.CharField(required=False, allow_blank=True)
