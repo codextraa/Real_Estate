@@ -130,9 +130,6 @@ class PropertyCreateRequestSerializer(serializers.Serializer):  # pylint: disabl
     area_sqft = serializers.IntegerField(
         required=False, min_value=0, help_text="Area in square feet."
     )
-    is_available = serializers.BooleanField(
-        required=False, default=True, help_text="Availability status."
-    )
 
     # Representing the file upload for schema documentation
     property_image = serializers.FileField(
@@ -203,6 +200,12 @@ class AgentCreateRequestSerializer(serializers.Serializer):  # pylint: disable=W
         style={"input_type": "password"},
         help_text="Mandatory password, must meet complexity requirements.",
     )
+    c_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        style={"input_type": "password"},
+        help_text="Mandatory password, must meet complexity requirements.",
+    )
     username = serializers.CharField(
         required=True, help_text="Mandatory unique username."
     )
@@ -228,6 +231,12 @@ class AgentUpdateRequestSerializer(serializers.Serializer):  # pylint: disable=W
         write_only=True,
         style={"input_type": "password"},
         help_text="New password (optional). Must meet complexity requirements if provided.",
+    )
+    c_password = serializers.CharField(
+        required=False,
+        write_only=True,
+        style={"input_type": "password"},
+        help_text="Mandatory password, must meet complexity requirements.",
     )
     username = serializers.CharField(required=False, help_text="New unique username.")
     first_name = serializers.CharField(required=False, allow_blank=True)
