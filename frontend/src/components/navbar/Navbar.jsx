@@ -1,15 +1,49 @@
-"use client";
-
-import { usePathname } from "next/navigation";
 import { NavButton } from "@/components/buttons/Buttons";
+import Link from "next/link";
 import styles from "./Navbar.module.css";
+import {
+  getUserIdAction,
+  getUserRoleAction,
+  logoutAction,
+} from "@/actions/authActions"; // Assuming authAction.js is in /actions
 
-export default function Navbar() {
-  const pathname = usePathname();
-  const isHomePage = pathname === "/";
+export default async function Navbar() {
+  const userId = await getUserIdAction();
+  const userRole = await getUserRoleAction();
 
-  if (pathname === "/auth/login" || pathname === "/auth/signup") {
-    return null;
+  const loggedInBaseButtons = [
+    { text: "Profile", href: "/profile" },
+    { text: "Logout", onClick: logoutAction },
+  ];
+
+  let navButtons = [];
+
+  if (userId && userRole) {
+    if (userRole === "super_user") {
+      navButtons = [
+        { text: "All Listings", href: "/" },
+        { text: "Create Admin", href: "/" },
+        ...loggedInBaseButtons,
+      ];
+    } else if (userRole === "admin") {
+      navButtons = [
+        { text: "All Listings", href: "/" },
+        ...loggedInBaseButtons,
+      ];
+    } else if (userRole === "agent") {
+      navButtons = [
+        { text: "My Listings", href: "/" },
+        { text: "Create", href: "/" },
+        ...loggedInBaseButtons,
+      ];
+    } else {
+      navButtons = loggedInBaseButtons;
+    }
+  } else {
+    navButtons = [
+      { text: "Sign Up", href: "/auth/signup" },
+      { text: "Login", href: "/auth/login" },
+    ];
   }
 
   return (
@@ -17,39 +51,16 @@ export default function Navbar() {
       <Link href="/" className={styles.logo}>
         Estate
       </Link>
-      <div className={styles.navLinks}>
-        {isHomePage && (
-          <NavButton
-            className={styles.NavButton1}
-            text="Sign Up"
-            href="/auth/signup"
-          />
-        )}
-        {!isHomePage && (
-          <div>
-            <NavButton
-              className={styles.NavButton1}
-              text="My Listing"
-              href="/auth/signup"
-            />
-            <NavButton
-              className={styles.NavButton1}
-              text="Create"
-              href="/auth/signup"
-            />
-            <NavButton
-              className={styles.NavButton1}
-              text="Profile"
-              href="/profile"
-            />
-          </div>
-        )}
 
-        <NavButton
-          className={styles.NavButton2}
-          text="Login"
-          href="/auth/login"
-        />
+      <div className={styles.navLinks}>
+        {navButtons.map((button, index) => (
+          <NavButton
+            key={index}
+            text={button.text}
+            href={button.href ? button.href : null}
+            onClick={button.onClick ? button.onClick : null}
+          />
+        ))}
       </div>
     </nav>
   );
