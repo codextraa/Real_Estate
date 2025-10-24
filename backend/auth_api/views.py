@@ -2,6 +2,7 @@
 
 import os
 from datetime import timedelta
+from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
@@ -23,6 +24,12 @@ from backend.schema_serializers import (
     LoginRequestSerializer,
     LoginResponseSerializer,
     ErrorResponseSerializer,
+    LogoutRequestSerializer,
+    RefreshTokenRequestSerializer,
+    UserCreateRequestSerializer,
+    UserUpdateRequestSerializer,
+    AgentCreateRequestSerializer,
+    AgentUpdateRequestSerializer,
 )
 from core_db.models import Agent
 from .paginations import UserPagination
@@ -83,6 +90,12 @@ def check_update_request_data(user_instance, request):
 
     current_user = request.user
 
+    if current_user.id != user_instance.id and not current_user.is_superuser:
+        return Response(
+            {"error": "You do not have permission to update this user."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     if "email" in request.data:
         return Response(
             {"error": "You cannot update the email field."},
@@ -100,11 +113,19 @@ def check_update_request_data(user_instance, request):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    if current_user.id != user_instance.id and not current_user.is_superuser:
-        return Response(
-            {"error": "You do not have permission to update this user."},
-            status=status.HTTP_403_FORBIDDEN,
-        )
+    password = request.data.get("password")
+    if password:
+        if not request.data.get("c_password"):
+            return Response(
+                {"error": "Please confirm your password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        c_password = request.data.pop("c_password")
+        if password != c_password:
+            return Response(
+                {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
     return current_user
 
@@ -168,16 +189,13 @@ def check_user_id(user_id):
 
 
 @extend_schema(
-    # General documentation for the POST method
     summary="User Login and Token Acquisition",
     description=(
         "Authenticates the user with email and password. "
-        "If valid, an OTP is sent to the registered email."
+        "If valid, an access token and refresh token are returned."
     ),
     tags=["Authentication"],
-    # Define the request body schema
     request=LoginRequestSerializer,
-    # Define the possible responses and link them to serializers/examples
     responses={
         status.HTTP_200_OK: OpenApiResponse(
             response=LoginResponseSerializer,
@@ -195,7 +213,6 @@ def check_user_id(user_id):
             description="Internal Server Error.",
         ),
     },
-    # Provide concrete examples for better API reference UI
     examples=[
         OpenApiExample(
             name="Successful Agent Login",
@@ -251,7 +268,6 @@ class LoginView(TokenObtainPairView):
             if isinstance(user, Response):
                 return user
 
-            # Check if password is correct
             if not user.check_password(password):
                 return Response(
                     {"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
@@ -279,6 +295,164 @@ class LoginView(TokenObtainPairView):
             )
 
 
+@extend_schema(
+    summary="User Logout",
+    description=("Logout by blacklisting the refresh token."),
+    tags=["Authentication"],
+    request=LogoutRequestSerializer,
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            response=LoginResponseSerializer,
+            description="Successful logout.",
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description=("Bad Request. Missing tokens."),
+        ),
+        status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Internal Server Error.",
+        ),
+    },
+    examples=[
+        OpenApiExample(
+            name="Successful Logout",
+            response_only=True,
+            status_codes=["200"],
+            value={"success": "Logged out successfully"},
+        ),
+        OpenApiExample(
+            name="Missing Tokens Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Tokens are required"},
+        ),
+    ],
+)
+class LogoutView(APIView):
+    """
+    Logout by blacklisting the refresh token.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    renderer_classes = [ViewRenderer]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            refresh_token = request.data.get("refresh")
+
+            if not refresh_token:
+                return Response(
+                    {"error": "Tokens are required"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response(
+                {"success": "Logged out successfully"}, status=status.HTTP_200_OK
+            )
+
+        except Exception as e:  # pylint: disable=W0718
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@extend_schema(
+    # General documentation for the POST method
+    summary="Refresh Access Token",
+    description=(
+        "Exchanges a valid refresh token for a new access token. "
+        "Also returns the refresh token and updated user metadata."
+    ),
+    tags=["Authentication"],
+    # Define the request body schema
+    request=RefreshTokenRequestSerializer,
+    # Define the possible responses and link them to serializers/examples
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            response=LoginResponseSerializer,
+            description=(
+                "Successful token refresh. "
+                "Returns a new access token and the same refresh token.",
+            ),
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description=(
+                "Bad Request. Occurs on a missing 'refresh' token or an invalid token format."
+            ),
+        ),
+        status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description=(
+                "Unauthorized. "
+                "Occurs when the refresh token is expired, invalid, or blacklisted.",
+            ),
+        ),
+        status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Internal Server Error.",
+        ),
+    },
+    # Provide concrete examples for better API reference UI
+    examples=[
+        OpenApiExample(
+            name="Successful Token Refresh",
+            response_only=True,
+            status_codes=["200"],
+            value={
+                "access_token": (
+                    "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9."
+                    "A-NEW-SHORT-LIVED-JWT-TOKEN-PART-1",
+                ),
+                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUz1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
+                "user_id": 101,
+                "user_role": "Agent",
+                # Note: TimeDelta is 5 minutes for refresh endpoint in your code
+                "access_token_expiry": (now() + timedelta(minutes=5)).isoformat(),
+            },
+        ),
+        OpenApiExample(
+            name="Missing Refresh Token Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Tokens are required"},
+        ),
+        OpenApiExample(
+            name="Invalid/Expired Refresh Token Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Invalid tokens"},
+        ),
+        OpenApiExample(
+            name="Invalid Refresh Token Error",
+            response_only=True,
+            status_codes=["401"],
+            value={"error": "Invalid Refresh Token"},
+        ),
+        OpenApiExample(
+            name="Invalid Session Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Invalid Session"},
+        ),
+        OpenApiExample(
+            name="Invalid Credentials Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Invalid credentials"},
+        ),
+        OpenApiExample(
+            name="Account Deactivated Error",
+            response_only=True,
+            status_codes=["400"],
+            value={"error": "Account is deactivated. Contact your admin"},
+        ),
+    ],
+)
 class RefreshTokenView(TokenRefreshView):
     """Refresh Token View generates JWT access token using the refresh token."""
 
@@ -395,6 +569,119 @@ class UserViewSet(ModelViewSet):
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
 
+    @extend_schema(
+        summary="Create New User",
+        description="Registers a new user account. Does not require authentication.",
+        tags=["User Management"],
+        request=UserCreateRequestSerializer,
+        responses={
+            status.HTTP_201_CREATED: OpenApiResponse(
+                response=UserSerializer,
+                description="User created successfully. Returns a success message.",
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=(
+                    "Bad Request. "
+                    "Occurs on missing required fields, invalid data format, or duplicate email.",
+                ),
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. User does not have staff or superuser privileges.",
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful User Creation",
+                response_only=True,
+                status_codes=["201"],
+                value={"success": "User created successfully."},
+            ),
+            OpenApiExample(
+                name="Creating Admin Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to create an admin user."},
+            ),
+            OpenApiExample(
+                name="Updating Forbidden fields.",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "Forbidden fields cannot be updated."},
+            ),
+            OpenApiExample(
+                name="Password Confirmation Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Please confirm your password."},
+            ),
+            OpenApiExample(
+                name="Password Matching Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Passwords do not match."},
+            ),
+            OpenApiExample(
+                name="Username Already Exists Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"username": ["User with this username already exists."]}
+                },
+            ),
+            OpenApiExample(
+                name="Username Too Short Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "username": ["Username must be at least 6 characters long."]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Email Already Exists Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "email": [
+                            "User with this email already exists.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Invalid Email Address Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "email": [
+                            "Enter a valid email address.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Password Complexity Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "password": [
+                            "Password must be at least 8 characters.",
+                            "Password must contain at least one uppercase letter.",
+                            "Password must contain at least one number.",
+                            "Password must contain at least one special character.",
+                        ]
+                    }
+                },
+            ),
+        ],
+    )
     def create(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Create new user and send email verification link."""
 
@@ -413,6 +700,78 @@ class UserViewSet(ModelViewSet):
             {"success": "User created successfully."},
             status=status.HTTP_201_CREATED,
         )
+
+    @extend_schema(
+        summary="List All Users",
+        description=(
+            "Returns a paginated list of all user accounts. "
+            "Access is restricted to staff/superusers.",
+        ),
+        tags=["User Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: UserListSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. User does not have staff or superuser privileges.",
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Forbidden Access",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to perform this action."},
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        """List all users."""
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve Single User Details",
+        description="Returns the details of a specific user by ID.",
+        tags=["User Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: UserRetrieveSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=(
+                    "Not Found. "
+                    "The user ID does not exist "
+                    "or the authenticated user does not have permission to view it.",
+                ),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Not found."},
+            ),
+            OpenApiExample(
+                name="Forbidden Access",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to perform this action."},
+            ),
+            OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+        ],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific user."""
+        return super().retrieve(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         """Allow only users to update their own profile. SuperUser can update any profile.
@@ -434,16 +793,194 @@ class UserViewSet(ModelViewSet):
         response = super().update(request, *args, **kwargs)
 
         if response.status_code == status.HTTP_200_OK:
+            retrieve_serializer = UserRetrieveSerializer(user)
             return Response(
                 {
                     "success": "User profile updated successfully.",
-                    "data": response.data,
+                    "data": retrieve_serializer.data,
                 },
                 status=status.HTTP_200_OK,
             )
 
         return response
 
+    @extend_schema(
+        summary="Update User Profile (Partial)",
+        description="Partially updates an existing user profile (PATCH method).",
+        tags=["User Management"],
+        request=UserUpdateRequestSerializer,
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserRetrieveSerializer,
+                description="User profile updated successfully. Returns the updated user object.",
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Bad Request. Occurs on invalid field values or data integrity errors.",
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Unauthorized. User is not authenticated.",
+            ),
+            status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
+            status.HTTP_405_METHOD_NOT_ALLOWED: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Success",
+                status_codes=["200"],
+                value={
+                    "success": "User profile updated successfully.",
+                    "data": {
+                        "id": 1,
+                        "first_name": "Updated",
+                        "last_name": "User",
+                        "email": "1b8Xu@example.com",
+                        "username": "updateduser",
+                        "slug": "updateduser",
+                    },
+                },
+            ),
+            OpenApiExample(
+                name="Method Not Allowed",
+                response_only=True,
+                status_codes=["405"],
+                value={"error": "PUT operation not allowed."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Not found."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to update this user."},
+            ),
+            OpenApiExample(
+                name="Updating Email field",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You cannot update the email field."},
+            ),
+            OpenApiExample(
+                name="Updating Forbidden fields.",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "Forbidden fields cannot be updated."},
+            ),
+            OpenApiExample(
+                name="Password Confirmation Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Please confirm your password."},
+            ),
+            OpenApiExample(
+                name="Password Matching Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Passwords do not match."},
+            ),
+            OpenApiExample(
+                name="Username Already Exists Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"username": ["User with this username already exists."]}
+                },
+            ),
+            OpenApiExample(
+                name="Username Too Short Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "username": ["Username must be at least 6 characters long."]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Password Complexity Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "password": [
+                            "Password must be at least 8 characters.",
+                            "Password must contain at least one uppercase letter.",
+                            "Password must contain at least one number.",
+                            "Password must contain at least one special character.",
+                        ]
+                    }
+                },
+            ),
+        ],
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Delete User Profile",
+        description="Deletes a user profile by ID.",
+        tags=["User Management"],
+        request=None,
+        responses={
+            status.HTTP_204_NO_CONTENT: OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {"success": {"type": "string"}},
+                },
+                description="User Profile Deleted Successfully.",
+            ),
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("User ID Not Found or Does not exist. "),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful User Deletion",
+                response_only=True,
+                status_codes=["204"],
+                value={"success": "User Profile Deleted Successfully."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="User ID Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "User ID Not Found or Does not exist."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Delete Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You are not authorized to delete this user."},
+            ),
+            OpenApiExample(
+                name="Superuser Delete Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You cannot delete superusers."},
+            ),
+        ],
+    )
     def destroy(self, request, *args, **kwargs):
         """Allow only superusers to delete normal or staff users and clean up profile image."""
         current_user = self.request.user
@@ -509,7 +1046,6 @@ class AgentViewSet(ModelViewSet):
             allowed_user_queryset = Q(user__pk=user.pk) | Q(user__is_agent=True)
             return Agent.objects.filter(allowed_user_queryset).select_related("user")
 
-        # create, update, partial_update, destroy
         if self.request.user.is_superuser:
             return Agent.objects.all().select_related("user")
         return Agent.objects.filter(user=user).select_related("user")
@@ -543,6 +1079,132 @@ class AgentViewSet(ModelViewSet):
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
 
+    @extend_schema(
+        summary="Register New Agent",
+        description="Creates a new Agent profile and related User account.",
+        tags=["Agent Management"],
+        request=AgentCreateRequestSerializer,
+        responses={
+            status.HTTP_201_CREATED: OpenApiResponse(
+                response=AgentSerializer,
+                description="Agent created successfully. Returns a success message.",
+            ),
+            status.HTTP_400_BAD_REQUEST: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful Agent Creation",
+                response_only=True,
+                status_codes=["201"],
+                value={"success": "Agent created successfully"},
+            ),
+            OpenApiExample(
+                name="Creating Admin Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to create an admin user."},
+            ),
+            OpenApiExample(
+                name="Updating Forbidden fields.",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "Forbidden fields cannot be updated."},
+            ),
+            OpenApiExample(
+                name="Password Confirmation Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Please confirm your password."},
+            ),
+            OpenApiExample(
+                name="Password Matching Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Passwords do not match."},
+            ),
+            OpenApiExample(
+                name="Username Already Exists Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"username": ["User with this username already exists."]}
+                },
+            ),
+            OpenApiExample(
+                name="Username Too Short Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "username": ["Username must be at least 6 characters long."]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Email Already Exists Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "email": [
+                            "User with this email already exists.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Invalid Email Address Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "email": [
+                            "Enter a valid email address.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Password Complexity Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "password": [
+                            "Password must be at least 8 characters.",
+                            "Password must contain at least one uppercase letter.",
+                            "Password must contain at least one number.",
+                            "Password must contain at least one special character.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Company Name Exceeds Max Length Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "company_name": [
+                            "Company name must be less than 255 characters.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Bio Exceeds Max Length Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "bio": [
+                            "Bio must be less than 150 characters.",
+                        ]
+                    }
+                },
+            ),
+        ],
+    )
     def create(self, request, *args, **kwargs):
         """Create Agent Profile"""
 
@@ -571,7 +1233,6 @@ class AgentViewSet(ModelViewSet):
         agent = agent_serializer.save()
         agent.image_url = "profile_images/default_profile.jpg"
         agent.save()
-
         return Response(
             {
                 "success": "Agent created successfully",
@@ -579,6 +1240,229 @@ class AgentViewSet(ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    # pylint: disable=R0801
+    @extend_schema(
+        summary="List All Agents",
+        description=("Returns a paginated list of all Agent accounts. "),
+        tags=["Agent Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: AgentListSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+        },
+    )
+    def list(self, request, *args, **kwargs):
+        """List all Agents."""
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve Single Agent Details",
+        description="Returns the details of a specific agent by ID.",
+        tags=["Agent Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: UserRetrieveSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("Not Found. " "The agent ID does not exist "),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Not found."},
+            ),
+        ],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific user."""
+        return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Update Agent Profile (Partial)",
+        description=(
+            "Partially updates the Agent's profile (User data and Agent data). "
+            "Only the respective user or a Superuser can update this profile."
+        ),
+        tags=["Agent Management"],
+        request={
+            "application/json": AgentUpdateRequestSerializer,
+            "multipart/form-data": AgentUpdateRequestSerializer,
+        },
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=AgentRetrieveSerializer,
+                description=(
+                    "Agent updated successfully."
+                    "Returns a success message and the full updated Agent data.",
+                ),
+            ),
+            status.HTTP_400_BAD_REQUEST: ErrorResponseSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. User cannot update this profile.",
+            ),
+            status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
+            status.HTTP_405_METHOD_NOT_ALLOWED: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful Update",
+                response_only=True,
+                status_codes=["200"],
+                value={
+                    "success": "Agent updated successfully",
+                    "data": {
+                        "id": 1,
+                        "company_name": "Updated Co.",
+                        "bio": "Updated bio",
+                        "profile_image": "profile_images/default_profile.jpg",
+                        "user": {
+                            "id": 1,
+                            "first_name": "Updated",
+                            "last_name": "User",
+                            "email": "1b8Xu@example.com",
+                            "username": "updateduser",
+                            "slug": "updateduser",
+                        },
+                    },
+                },
+            ),
+            OpenApiExample(
+                name="Method Not Allowed",
+                response_only=True,
+                status_codes=["405"],
+                value={"error": "PUT operation not allowed."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Not found."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to update this user."},
+            ),
+            OpenApiExample(
+                name="Updating Email field",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You cannot update the email field."},
+            ),
+            OpenApiExample(
+                name="Updating Forbidden fields.",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "Forbidden fields cannot be updated."},
+            ),
+            OpenApiExample(
+                name="Password Confirmation Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Please confirm your password."},
+            ),
+            OpenApiExample(
+                name="Password Matching Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Passwords do not match."},
+            ),
+            OpenApiExample(
+                name="Username Already Exists Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"username": ["User with this username already exists."]}
+                },
+            ),
+            OpenApiExample(
+                name="Username Too Short Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "username": ["Username must be at least 6 characters long."]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Password Complexity Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "password": [
+                            "Password must be at least 8 characters.",
+                            "Password must contain at least one uppercase letter.",
+                            "Password must contain at least one number.",
+                            "Password must contain at least one special character.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Company Name Exceeds Max Length Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "company_name": [
+                            "Company name must be less than 255 characters.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Bio Exceeds Max Length Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "bio": [
+                            "Bio must be less than 150 characters.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Image Type Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": {"profile_image": ["Image type should be JPEG, PNG"]}},
+            ),
+            OpenApiExample(
+                name="Image Size Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"profile_image": ["Image size should not exceed 2MB."]}
+                },
+            ),
+            OpenApiExample(
+                name="Image Required Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": {"profile_image": ["Image is Required."]}},
+            ),
+        ],
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    # pylint: enable=R0801
     def update(self, request, *args, **kwargs):  # pylint: disable=R0914
         """Update Agent Profile"""
 
@@ -589,7 +1473,6 @@ class AgentViewSet(ModelViewSet):
 
         agent = self.get_object()
         user_instance = agent.user
-        # pylint: enable=R0801
 
         check_integrity = check_update_request_data(user_instance, request)
 
@@ -638,19 +1521,63 @@ class AgentViewSet(ModelViewSet):
         agent_serializer.is_valid(raise_exception=True)
         self.perform_update(agent_serializer)
 
-        updated_agent_serializer = self.get_serializer(agent)
-        response_data = updated_agent_serializer.data
-        user_serializer = UserSerializer(user_instance)
-        response_data["user"] = user_serializer.data
+        response_serializer = AgentRetrieveSerializer(agent)
 
         return Response(
             {
                 "success": "Agent updated successfully",
-                "data": response_data,
+                "data": response_serializer.data,
             },
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(
+        summary="Delete Agent Profile",
+        description="Deletes an Agent profile and their related User account by User ID.",
+        tags=["Agent Management"],
+        request=None,
+        responses={
+            status.HTTP_204_NO_CONTENT: OpenApiResponse(
+                response=AgentSerializer,
+                description=(
+                    "Agent profile deleted successfully."
+                    "Returns a success message with 204 status.",
+                ),
+            ),
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. User is not authorized to delete this profile.",
+            ),
+            status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful Deletion",
+                response_only=True,
+                status_codes=["204"],
+                value={"success": "Agent profile deleted successfully."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Unauthorized Delete Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You are not authorized to delete this user."},
+            ),
+            OpenApiExample(
+                name="User ID Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "User ID Not Found or Does not exist."},
+            ),
+        ],
+    )
     def destroy(self, request, *args, **kwargs):
         """Destroy Agent Profile"""
 

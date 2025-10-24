@@ -20,14 +20,9 @@ export default function ProfileCard({ userData }) {
           <GlobalButton
             text="Edit Profile"
             onClick={() => {
-              userData.user ? (
-                <EditProfileForm userData={userData.user} />
-              ) : (
-                <EditProfileForm userData={userData} />
-              );
+              <EditProfileForm userData={userData} />;
             }}
           />
-          {/* agent edit profile                           customer edit profile */}
         </div>
       </div>
     </div>

@@ -1,0 +1,159 @@
+.background {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.background img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  filter: blur(4px);
+  transform: scale(1.02);
+}
+
+.container {
+  /* Dimensions based on 955x664 for the reference layout, but made responsive */
+  position: relative;
+  width: 955px;
+  height: 664px;
+
+  /* Glass-morphism effect */
+  background: rgba(247, 247, 247, 0.7); /* #F7F7F7B2 */
+  border: 3px solid #415261;
+  border-radius: 35px;
+  backdrop-filter: blur(40px);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+}
+
+/*
+  Container for the 404 icon.
+*/
+
+.errorContainer img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  filter: blur(0px);
+  transform: scale(1.02);
+}
+
+/*
+  Styles for the SVG image (404 icon with building).
+*/
+.errorIcon {
+  width: 100%;
+  height: auto;
+  max-width: 349px;
+  max-height: 247px;
+  object-fit: contain;
+  display: block;
+}
+
+/*
+  Container for the "Error 404", "Page Not Found", and "Back to Home" button.
+*/
+.errorTextContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 15px; /* Spacing between the title, message, and button */
+}
+
+/*
+  Styles for the "Error 404" title.
+*/
+.errorTitle {
+  /* Original guide: font-size: 35px, font-family: Old Standard TT, color implied from background: #13252E (Dark/Black) */
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 35px;
+  color: #13252e; /* Dark, almost black color */
+  line-height: 1.2;
+}
+
+/*
+  Styles for the "Page Not Found" message.
+*/
+.errorMessage {
+  /* Original guide: font-size: 25px, font-family: Old Standard TT, color implied from background: #13252E (Dark/Black) */
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 25px;
+  color: #13252e;
+  line-height: 1.2;
+  margin-bottom: 20px; /* Extra space before the button */
+}
+
+/*
+  Container for the GlobalButton component.
+*/
+.button {
+  /* width: 209px; height: 46px; (Original guide for button container) */
+  width: 209px; /* Set a fixed width for the button container */
+  max-width: 100%;
+  height: 46px;
+}
+
+/* ------------------------------------------------------------------- */
+/* RESPONSIVENESS                          */
+/* ------------------------------------------------------------------- */
+
+/*
+  Styles for tablets and smaller desktops (around 800px)
+*/
+@media (max-width: 1000px) {
+  .container {
+    width: 90%;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .errorIcon {
+    max-width: 280px;
+    max-height: 200px;
+  }
+}
+
+/*
+  Styles for Mobile Phones (up to iPhone 6 size ~375px wide)
+*/
+@media (max-width: 500px) {
+  .container {
+    border-radius: 20px;
+    padding: 15px;
+    width: 95%;
+    height: 95%;
+    gap: 15px;
+  }
+
+  .errorIcon {
+    max-width: 200px; /* Make the icon smaller on mobile */
+    max-height: 140px;
+  }
+
+  .errorTitle {
+    font-size: 30px; /* Smaller title font */
+  }
+
+  .errorMessage {
+    font-size: 20px; /* Smaller message font */
+    margin-bottom: 10px;
+  }
+
+  .button {
+    width: 180px; /* Smaller button width */
+    height: 40px; /* Smaller button height */
+  }
+}

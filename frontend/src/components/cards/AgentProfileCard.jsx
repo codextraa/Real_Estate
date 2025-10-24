@@ -1,5 +1,5 @@
 import styles from "./AgentProfileCard.module.css";
-import EditProfileForm from "@/components/forms/ProfileForm";
+import EditProfileForm2 from "@/components/forms/ProfileForm";
 import { GlobalButton } from "@/components/buttons/Buttons";
 import { Home } from "next/navigation";
 
@@ -34,18 +34,13 @@ export default function AgentProfileCard({ userData }) {
         </div>
 
         <div className={styles.buttonContainer}>
-          <div className={styles.editButton}>
+          <div className={styles.button}>
             <GlobalButton
               text="Edit Profile"
               onClick={() => {
-                userData.user ? (
-                  <EditProfileForm userData={userData.user} />
-                ) : (
-                  <EditProfileForm userData={userData} />
-                );
+                <EditProfileForm2 userData={userData.user} />;
               }}
             />
-            {/* agent edit profile                           customer edit profile */}
           </div>
           <div className={styles.viewListingsButton}>
             <GlobalButton

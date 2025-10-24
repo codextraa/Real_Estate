@@ -1,0 +1,187 @@
+.image {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.image::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(5px);
+  z-index: 1;
+}
+
+/* 
+  The main container for the error page, ensuring it covers the full viewport.
+*/
+
+/* .image {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+} */
+
+/*
+  The semi-transparent, bordered container that holds the error content.
+  The styling recreates the glass-morphism effect from the reference image.
+*/
+.container {
+  /* Dimensions based on 955x664 for the reference layout, but made responsive */
+  width: 90%;
+  max-width: 955px;
+  height: 75%;
+  max-height: 664px;
+
+  /* Glass-morphism effect */
+  background: rgba(247, 247, 247, 0.7); /* #F7F7F7B2 */
+  border: 3px solid #415261;
+  border-radius: 35px;
+  backdrop-filter: blur(40px);
+
+  /* Layout: Split into two columns for the icon and the text content */
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly; /* Evenly space the icon and text block */
+  align-items: center;
+  padding: 40px; /* Inner padding */
+  z-index: 10; /* Ensure it is above the background image */
+}
+
+/*
+  Container for the error image/icon (the crane).
+  The width/height should accommodate the Next.js Image component's intrinsic size.
+*/
+.errorContainer {
+  /* width: 359px; height: 352px; (Original guide) */
+  flex-shrink: 0; /* Prevents it from shrinking too much */
+}
+
+/*
+  Styles for the SVG image (crane icon).
+  The original guide was for the container, but applying the dimensions here for safety.
+*/
+.errorIcon {
+  width: 100%;
+  height: auto;
+  max-width: 359px;
+  max-height: 352px;
+  object-fit: contain;
+}
+
+/*
+  Container for the "Oops!", "Something went wrong", and "Go Back" button.
+*/
+.errorTextContainer {
+  /* width: 257px; height: 199px; (Original guide) */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* Center the text and button horizontally */
+  text-align: center;
+  gap: 20px; /* Spacing between the title, message, and button */
+  padding-left: 20px; /* Add some space from the icon on desktop */
+}
+
+/*
+  Styles for the "Oops!" title.
+*/
+.errorTitle {
+  /* Original guide: font-size: 50px, font-family: Old Standard TT, color implied from background: #13252E (Dark/Black) */
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 50px;
+  color: #13252e; /* Dark, almost black color */
+  line-height: 1.2;
+}
+
+/*
+  Styles for the "Something went wrong" message.
+*/
+.errorMessage {
+  /* Original guide: font-size: 25px, font-family: Old Standard TT, color implied from background: #000000 (Black) */
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 25px;
+  color: #000000;
+  line-height: 1.2;
+}
+
+/*
+  Container for the GlobalButton component.
+*/
+.button {
+  /* width: 257px; height: 46px; (Original guide for button container) */
+  width: 257px; /* Set a fixed width for the button container to control its size */
+  max-width: 100%; /* Ensure it doesn't overflow on small screens */
+  height: 46px;
+  /* Assuming GlobalButton itself handles the background and text color based on the image reference (dark background, light text) */
+}
+
+/* ------------------------------------------------------------------- */
+/* RESPONSIVENESS                          */
+/* ------------------------------------------------------------------- */
+
+/*
+  Styles for tablets and smaller desktops (around 800px)
+*/
+@media (max-width: 850px) {
+  .container {
+    /* Slightly less wide, allow for more height on shorter screens */
+    width: 90%;
+    height: 90%;
+    max-width: 700px;
+    flex-direction: column; /* Stack the icon and text vertically */
+    justify-content: center;
+    gap: 30px;
+    padding: 20px;
+  }
+
+  .errorIcon {
+    max-width: 300px;
+    max-height: 300px;
+  }
+
+  .errorTextContainer {
+    padding-left: 0;
+    gap: 15px;
+  }
+}
+
+/*
+  Styles for Mobile Phones (up to iPhone 6/7/8/SE size ~375px wide)
+*/
+@media (max-width: 500px) {
+  .container {
+    border-radius: 20px; /* Smaller border radius for small screens */
+    padding: 15px;
+    width: 95%; /* Take up most of the screen width */
+    height: 95%; /* Take up most of the screen height */
+  }
+
+  .errorIcon {
+    max-width: 200px; /* Make the icon smaller on mobile */
+    max-height: 200px;
+  }
+
+  .errorTitle {
+    font-size: 36px; /* Smaller title font */
+  }
+
+  .errorMessage {
+    font-size: 20px; /* Smaller message font */
+  }
+
+  .button {
+    width: 200px; /* Smaller button width */
+    height: 40px; /* Smaller button height */
+  }
+}
