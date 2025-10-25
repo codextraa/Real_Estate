@@ -51,8 +51,8 @@
   Styles for the SVG image (404 icon with building).
 */
 .errorIcon {
-  width: 100%;
-  height: auto;
+  /* width: 100%; */
+  /* height: auto; */
   max-width: 349px;
   max-height: 247px;
   object-fit: contain;
@@ -115,26 +115,29 @@
 */
 @media (max-width: 1000px) {
   .container {
-    width: 90%;
+    width: 80%;
+    height: 80%;
     gap: 20px;
     padding: 20px;
+   
   }
 
   .errorIcon {
-    max-width: 280px;
-    max-height: 200px;
+    width: 50%;
+    height: 50%;
   }
 }
 
 /*
   Styles for Mobile Phones (up to iPhone 6 size ~375px wide)
 */
+
+
 @media (max-width: 500px) {
   .container {
     border-radius: 20px;
     padding: 15px;
-    width: 95%;
-    height: 95%;
+    width: 75%;
     gap: 15px;
   }
 
@@ -157,3 +160,12 @@
     height: 40px; /* Smaller button height */
   }
 }
+
+
+/* @media (max-height: 800px) {
+  .container {
+    height: 80%;
+   
+  }
+
+} */

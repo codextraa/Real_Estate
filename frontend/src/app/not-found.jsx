@@ -15,28 +15,29 @@ export default function NotFound() {
           fill
           priority
         />
-        <div className={styles.container}>
-          <div className={styles.errorContainer}>
-            <Image
-              src="/assets/global-not-found.svg"
-              alt="Not Found"
-              width={349}
-              height={247}
-              className={styles.errorIcon}
-              priority
-            />
-          </div>
-          <div className={styles.errorTextContainer}>
-            <div className={styles.errorTitle}>Error 404</div>
-            <div className={styles.errorMessage}>Page Not Found</div>
-            <div className={styles.button}>
-              <Link href="/">
-                <GlobalButton text="Back to Home" />
-              </Link>
-            </div>
+      </div>
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <Image
+            src="/assets/global-not-found.svg"
+            alt="Not Found"
+            width={349}
+            height={247}
+            className={styles.errorIcon}
+            priority
+          />
+        </div>
+        <div className={styles.errorTextContainer}>
+          <div className={styles.errorTitle}>Error 404</div>
+          <div className={styles.errorMessage}>Page Not Found</div>
+          <div className={styles.button}>
+            <Link href="/">
+              <GlobalButton text="Back to Home" />
+            </Link>
           </div>
         </div>
       </div>
+      
     </div>
   );
 }

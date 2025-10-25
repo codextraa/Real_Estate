@@ -1,19 +1,19 @@
-.image {
+.background {
   position: relative;
-  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   height: 100vh;
   overflow: hidden;
 }
 
-.image::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
+.background img {
+  object-fit: cover;
   width: 100%;
   height: 100%;
-  backdrop-filter: blur(5px);
-  z-index: 1;
+  filter: blur(4px);
+  transform: scale(1.02);
 }
 
 /* 
@@ -36,10 +36,9 @@
 */
 .container {
   /* Dimensions based on 955x664 for the reference layout, but made responsive */
-  width: 90%;
-  max-width: 955px;
-  height: 75%;
-  max-height: 664px;
+  position: relative;
+  width: 955px;
+  height: 664px;
 
   /* Glass-morphism effect */
   background: rgba(247, 247, 247, 0.7); /* #F7F7F7B2 */
@@ -60,18 +59,21 @@
   Container for the error image/icon (the crane).
   The width/height should accommodate the Next.js Image component's intrinsic size.
 */
-.errorContainer {
-  /* width: 359px; height: 352px; (Original guide) */
-  flex-shrink: 0; /* Prevents it from shrinking too much */
-}
 
+.errorContainer img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  filter: blur(0px);
+  transform: scale(1.02);
+}
 /*
   Styles for the SVG image (crane icon).
   The original guide was for the container, but applying the dimensions here for safety.
 */
 .errorIcon {
-  width: 100%;
-  height: auto;
+  /* width: 100%;
+  height: auto; */
   max-width: 359px;
   max-height: 352px;
   object-fit: contain;
@@ -133,27 +135,28 @@
 /*
   Styles for tablets and smaller desktops (around 800px)
 */
-@media (max-width: 850px) {
+@media (max-width:1000px) {
   .container {
     /* Slightly less wide, allow for more height on shorter screens */
-    width: 90%;
-    height: 90%;
-    max-width: 700px;
-    flex-direction: column; /* Stack the icon and text vertically */
-    justify-content: center;
-    gap: 30px;
+    width: 80%;
+    height: 80%;
+    /* max-width: 700px;
+    flex-direction: column; 
+    justify-content: center; */
+    
+    gap: 20px;
     padding: 20px;
   }
 
   .errorIcon {
-    max-width: 300px;
-    max-height: 300px;
+    width: 50%;
+    height: 50%;
   }
 
-  .errorTextContainer {
+  /* .errorTextContainer {
     padding-left: 0;
     gap: 15px;
-  }
+  } */
 }
 
 /*
@@ -161,19 +164,25 @@
 */
 @media (max-width: 500px) {
   .container {
+    flex-direction: column; 
     border-radius: 20px; /* Smaller border radius for small screens */
     padding: 15px;
-    width: 95%; /* Take up most of the screen width */
-    height: 95%; /* Take up most of the screen height */
+    width: 75%; /* Take up most of the screen width */
+    gap: 15px;
   }
 
   .errorIcon {
     max-width: 200px; /* Make the icon smaller on mobile */
-    max-height: 200px;
+    max-height: 140px;
   }
 
   .errorTitle {
-    font-size: 36px; /* Smaller title font */
+    font-size: 30px; /* Smaller title font */
+  }
+
+  .errorTextContainer {
+    padding-left: 0;
+    gap: 15px;
   }
 
   .errorMessage {
@@ -181,7 +190,7 @@
   }
 
   .button {
-    width: 200px; /* Smaller button width */
+    width: 180px; /* Smaller button width */
     height: 40px; /* Smaller button height */
   }
 }

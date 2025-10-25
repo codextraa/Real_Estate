@@ -11,7 +11,7 @@ export default function Error({ error, reset }) {
   }, [error]);
 
   return (
-    <div>
+    <div className={styles.background}>
       <div className={styles.image}>
         <Image
           src="/real-estate/real-estate.jpg"

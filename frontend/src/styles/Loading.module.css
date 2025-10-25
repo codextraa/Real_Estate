@@ -1,67 +1,144 @@
+/* --- Imports --- */
+/* Assume CSS variables from :root in globals.css are accessible */
+
+/* --- Base Keyframes for Animations --- */
+
+/* Keyframes for the dot animation: progressively showing one, two, then three dots */
+@keyframes loading-dots {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0;
+    content: ".";
+  }
+  50% {
+    opacity: 1;
+    content: "..";
+  }
+  75%, 100% {
+    opacity: 1;
+    content: "...";
+  }
+}
+
+/* --- Core Layout & Background (.background) --- */
+
 .background {
+  /* Dimensions based on the main layout (1280px x 832px) for large screens */
   width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(117.07deg, #b0c9d8 1.74%, #415261 97.5%);
-  font-family: var(--font-old-standard-tt);
+  
+  /* Background gradient from your specifications */
+  background: linear-gradient(117.07deg, #B0C9D8 1.74%, #415261 97.5%);
+  
+  position: fixed; /* Ensures it covers the entire viewport */
+  top: 0;
+  left: 0;
+  z-index: 9999; /* Ensure it's on top of other content */
+  
+  /* Use a subtle transition for smooth fading if the component mounts/unmounts */
+  transition: opacity 0.3s ease-in-out; 
+}
+
+/* --- Logo Container (.logoContainer) --- */
+
+.logoContainer {
+  /* Base dimensions from your specifications (105px x 105px) */
+  width: 105px;
+  height: 105px;
   position: relative;
-  overflow: hidden;
+  margin-bottom: 20px; /* Space between logo and text */
 }
 
-/* --- Logo Animation --- */
+/* --- Logo Animation (.logo) --- */
+
 .logo {
-  animation: pulse 1.6s infinite ease-in-out;
+  display: block;
+  /* Apply the rotation animation defined in globals.css for the spinner effect */
+  animation: spinner-rotate 1.5s linear infinite; 
+  /* Set color to match the text color (#13252E) in case the SVG uses 'currentColor' */
+  color: #13252E;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.15);
-    opacity: 0.7;
-  }
-}
 
-/* --- Text --- */
+/* --- Text Container (.text) --- */
+
 .text {
+  /* Styling from your specifications */
+  width: auto;
+  height: auto;
+  
+  font-family: var(--font-old-standard-tt); 
   font-weight: 700;
+  font-style: normal; /* Use 'normal' instead of 'Bold' */
   font-size: 30px;
-  color: #13252e;
-  margin-top: 40px;
-  text-align: center;
+  line-height: 1; 
   letter-spacing: 0%;
-  line-height: 100%;
+  text-align: center;
+  
+  /* Text color based on the specified background: #13252E */
+  color: #13252E;
+  
+  /* Add a subtle shadow for depth against the gradient */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* --- Dots Animation --- */
+/* --- Dots Animation (.dots) --- */
+
 .dots {
   display: inline-block;
-  width: 1.5em;
-  text-align: left;
+  overflow: hidden;
+  vertical-align: bottom;
+  /* Hides the '...' in the HTML, allowing us to generate them via :after */
+  visibility: hidden; 
+  
+  /* Set width explicitly to prevent text jumping */
+  width: 1.5em; 
+  
+  /* Fallback text-shadow animation for better browser support */
+  animation: loading-dots-shadow 1.5s infinite steps(4, end); 
 }
 
-.dots::after {
-  content: "";
-  animation: dots 1.5s steps(3, end) infinite;
+/* Alternative, more robust keyframes using text-shadow */
+@keyframes loading-dots-shadow {
+  0% { text-shadow: none; }
+  25% { text-shadow: 0.3em 0 0 transparent; } /* Hidden 1st dot */
+  50% { text-shadow: 0.3em 0 0 #13252E; } /* Show 1st dot */
+  75% { text-shadow: 0.3em 0 0 #13252E, 0.6em 0 0 #13252E; } /* Show 2nd dot */
+  100% { text-shadow: 0.3em 0 0 #13252E, 0.6em 0 0 #13252E, 0.9em 0 0 #13252E; } /* Show 3rd dot */
 }
 
-@keyframes dots {
-  0% {
-    content: "";
+
+/* --- Responsive Styles (Mobile Optimization) --- */
+
+/* For devices up to 768px (Tablet portrait) */
+@media (max-width: 768px) {
+  .logoContainer {
+    width: 85px;
+    height: 85px;
+    margin-bottom: 15px;
   }
-  33% {
-    content: ".";
+
+  .text {
+    font-size: 24px;
   }
-  66% {
-    content: "..";
+}
+
+/* For mobile phones (e.g., iPhone 6/7/8 size and smaller - up to 414px) */
+@media (max-width: 414px) {
+  .logoContainer {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 10px;
   }
-  100% {
-    content: "...";
+
+  .text {
+    font-size: 18px;
+    font-weight: 400; /* Lighter weight for smaller screens */
   }
 }
