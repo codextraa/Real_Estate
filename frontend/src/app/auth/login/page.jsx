@@ -4,9 +4,6 @@ import Image from "next/image";
 
 export default function LoginPage() {
   const imageUrl = "/real-estate/real-estate.jpg";
-  const errorData = null;
-  // This line will cause the error: Cannot read properties of null (reading 'value')
-  console.log(errorData.value);
 
   return (
     <div className={styles.background}>

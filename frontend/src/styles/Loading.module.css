@@ -16,7 +16,8 @@
     opacity: 1;
     content: "..";
   }
-  75%, 100% {
+  75%,
+  100% {
     opacity: 1;
     content: "...";
   }
@@ -32,17 +33,17 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  
+
   /* Background gradient from your specifications */
-  background: linear-gradient(117.07deg, #B0C9D8 1.74%, #415261 97.5%);
-  
+  background: linear-gradient(117.07deg, #b0c9d8 1.74%, #415261 97.5%);
+
   position: fixed; /* Ensures it covers the entire viewport */
   top: 0;
   left: 0;
   z-index: 9999; /* Ensure it's on top of other content */
-  
+
   /* Use a subtle transition for smooth fading if the component mounts/unmounts */
-  transition: opacity 0.3s ease-in-out; 
+  transition: opacity 0.3s ease-in-out;
 }
 
 /* --- Logo Container (.logoContainer) --- */
@@ -60,11 +61,10 @@
 .logo {
   display: block;
   /* Apply the rotation animation defined in globals.css for the spinner effect */
-  animation: spinner-rotate 1.5s linear infinite; 
+  animation: spinner-rotate 1.5s linear infinite;
   /* Set color to match the text color (#13252E) in case the SVG uses 'currentColor' */
-  color: #13252E;
+  color: #13252e;
 }
-
 
 /* --- Text Container (.text) --- */
 
@@ -72,18 +72,18 @@
   /* Styling from your specifications */
   width: auto;
   height: auto;
-  
-  font-family: var(--font-old-standard-tt); 
+
+  font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-style: normal; /* Use 'normal' instead of 'Bold' */
   font-size: 30px;
-  line-height: 1; 
+  line-height: 1;
   letter-spacing: 0%;
   text-align: center;
-  
+
   /* Text color based on the specified background: #13252E */
-  color: #13252E;
-  
+  color: #13252e;
+
   /* Add a subtle shadow for depth against the gradient */
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -95,24 +95,38 @@
   overflow: hidden;
   vertical-align: bottom;
   /* Hides the '...' in the HTML, allowing us to generate them via :after */
-  visibility: hidden; 
-  
+  visibility: hidden;
+
   /* Set width explicitly to prevent text jumping */
-  width: 1.5em; 
-  
+  width: 1.5em;
+
   /* Fallback text-shadow animation for better browser support */
-  animation: loading-dots-shadow 1.5s infinite steps(4, end); 
+  animation: loading-dots-shadow 1.5s infinite steps(4, end);
 }
 
 /* Alternative, more robust keyframes using text-shadow */
 @keyframes loading-dots-shadow {
-  0% { text-shadow: none; }
-  25% { text-shadow: 0.3em 0 0 transparent; } /* Hidden 1st dot */
-  50% { text-shadow: 0.3em 0 0 #13252E; } /* Show 1st dot */
-  75% { text-shadow: 0.3em 0 0 #13252E, 0.6em 0 0 #13252E; } /* Show 2nd dot */
-  100% { text-shadow: 0.3em 0 0 #13252E, 0.6em 0 0 #13252E, 0.9em 0 0 #13252E; } /* Show 3rd dot */
+  0% {
+    text-shadow: none;
+  }
+  25% {
+    text-shadow: 0.3em 0 0 transparent;
+  } /* Hidden 1st dot */
+  50% {
+    text-shadow: 0.3em 0 0 #13252e;
+  } /* Show 1st dot */
+  75% {
+    text-shadow:
+      0.3em 0 0 #13252e,
+      0.6em 0 0 #13252e;
+  } /* Show 2nd dot */
+  100% {
+    text-shadow:
+      0.3em 0 0 #13252e,
+      0.6em 0 0 #13252e,
+      0.9em 0 0 #13252e;
+  } /* Show 3rd dot */
 }
-
 
 /* --- Responsive Styles (Mobile Optimization) --- */
 

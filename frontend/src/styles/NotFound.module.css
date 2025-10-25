@@ -119,7 +119,6 @@
     height: 80%;
     gap: 20px;
     padding: 20px;
-   
   }
 
   .errorIcon {
@@ -131,7 +130,6 @@
 /*
   Styles for Mobile Phones (up to iPhone 6 size ~375px wide)
 */
-
 
 @media (max-width: 500px) {
   .container {
@@ -160,7 +158,6 @@
     height: 40px; /* Smaller button height */
   }
 }
-
 
 /* @media (max-height: 800px) {
   .container {
