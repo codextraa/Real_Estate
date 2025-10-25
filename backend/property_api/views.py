@@ -60,7 +60,10 @@ class PropertyViewSet(ModelViewSet):
         summary="Create New Property",
         description="Allows an authenticated **Agent** to create a new property listing.",
         tags=["Property Management"],
-        request=PropertyCreateRequestSerializer,
+        request={
+            "application/json": PropertyCreateRequestSerializer,
+            "multipart/form-data": PropertyCreateRequestSerializer,
+        },
         responses={
             status.HTTP_201_CREATED: OpenApiResponse(
                 response={
@@ -119,21 +122,35 @@ class PropertyViewSet(ModelViewSet):
                 status_codes=["400"],
                 value={"error": {"image_url": ["Property image is required."]}},
             ),
+            OpenApiExample(
+                name="Property Title Length Exceeded Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": {"title": ["property title length is more than 150."]}},
+            ),
+            OpenApiExample(
+                name="Property Address Length Exceeded Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"title": ["property address length is more than 255."]}
+                },
+            ),
         ],
     )
     def create(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Create new property."""
         current_user = self.request.user
 
-        if "slug" in request.data or "agent" in request.data:  # pylint: disable=R0916
-            return Response(
-                {"error": "Forbidden fields cannot be updated."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
         if not current_user.is_agent:
             return Response(
                 {"error": "You do not have permission to create a property."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if "slug" in request.data or "agent" in request.data:  # pylint: disable=R0916
+            return Response(
+                {"error": "Forbidden fields cannot be updated."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -172,6 +189,14 @@ class PropertyViewSet(ModelViewSet):
             status.HTTP_200_OK: PropertyListSerializer,
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
         },
+        examples=[
+            OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+        ],
     )
     def list(self, request, *args, **kwargs):
         """List all properties."""
@@ -192,10 +217,16 @@ class PropertyViewSet(ModelViewSet):
         },
         examples=[
             OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
                 name="Not Found Error",
                 response_only=True,
                 status_codes=["404"],
-                value={"detail": "Not found."},
+                value={"error": "Not found."},
             ),
         ],
     )
@@ -210,10 +241,13 @@ class PropertyViewSet(ModelViewSet):
             "Only the agent who created the property can update it. PUT is not allowed."
         ),
         tags=["Property Management"],
-        request=PropertyUpdateRequestSerializer,
+        request={
+            "application/json": PropertyUpdateRequestSerializer,
+            "multipart/form-data": PropertyUpdateRequestSerializer,
+        },
         responses={
             status.HTTP_200_OK: OpenApiResponse(
-                response=PropertySerializer,
+                response=PropertyRetrieveSerializer,
                 description=(
                     "Property updated successfully. "
                     "Returns a success message and the updated property object.",
@@ -239,12 +273,25 @@ class PropertyViewSet(ModelViewSet):
                     "success": "Property updated successfully.",
                     "data": {
                         "id": 1,
+                        "agent": 1,
                         "title": "New Title",
                         "price": 500000.00,
                         "address": "123 Main St",
                         "image_url": "/media/new_image.jpg",
                     },
                 },
+            ),
+            OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Not found."},
             ),
             OpenApiExample(
                 name="Unauthorized Update Error",
@@ -257,6 +304,12 @@ class PropertyViewSet(ModelViewSet):
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "Forbidden fields cannot be updated."},
+            ),
+            OpenApiExample(
+                name="Missing Image Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": {"image_url": ["Property image is required."]}},
             ),
             OpenApiExample(
                 name="Image Size Error",
@@ -336,8 +389,13 @@ class PropertyViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
+        response_serializer = PropertyRetrieveSerializer(property_instance)
+
         return Response(
-            {"success": "Property updated successfully.", "data": serializer.data},
+            {
+                "success": "Property updated successfully.",
+                "data": response_serializer.data,
+            },
             status=status.HTTP_200_OK,
         )
 

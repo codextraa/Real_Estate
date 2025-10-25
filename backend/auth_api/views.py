@@ -793,11 +793,11 @@ class UserViewSet(ModelViewSet):
         response = super().update(request, *args, **kwargs)
 
         if response.status_code == status.HTTP_200_OK:
+            retrieve_serializer = UserRetrieveSerializer(user)
             return Response(
                 {
                     "success": "User profile updated successfully.",
-                    # need to return User retrieve serializer object
-                    "data": response.data,
+                    "data": retrieve_serializer.data,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -811,15 +811,19 @@ class UserViewSet(ModelViewSet):
         request=UserUpdateRequestSerializer,
         responses={
             status.HTTP_200_OK: OpenApiResponse(
-                response=UserSerializer,
+                response=UserRetrieveSerializer,
                 description="User profile updated successfully. Returns the updated user object.",
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
                 description="Bad Request. Occurs on invalid field values or data integrity errors.",
             ),
-            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Unauthorized. User is not authenticated.",
+            ),
             status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
+            status.HTTP_405_METHOD_NOT_ALLOWED: ErrorResponseSerializer,
             status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
         },
         examples=[
@@ -828,11 +832,13 @@ class UserViewSet(ModelViewSet):
                 status_codes=["200"],
                 value={
                     "success": "User profile updated successfully.",
-                    # need to return User retrieve serializer object
                     "data": {
                         "id": 1,
-                        "email": "new@example.com",
-                        "username": "newusername",
+                        "first_name": "Updated",
+                        "last_name": "User",
+                        "email": "1b8Xu@example.com",
+                        "username": "updateduser",
+                        "slug": "updateduser",
                     },
                 },
             ),
@@ -841,6 +847,18 @@ class UserViewSet(ModelViewSet):
                 response_only=True,
                 status_codes=["405"],
                 value={"error": "PUT operation not allowed."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Not found."},
             ),
             OpenApiExample(
                 name="Unauthorized User Update Error",
@@ -936,6 +954,12 @@ class UserViewSet(ModelViewSet):
                 response_only=True,
                 status_codes=["204"],
                 value={"success": "User Profile Deleted Successfully."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
             ),
             OpenApiExample(
                 name="User ID Not Found Error",
@@ -1155,6 +1179,30 @@ class AgentViewSet(ModelViewSet):
                     }
                 },
             ),
+            OpenApiExample(
+                name="Company Name Exceeds Max Length Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "company_name": [
+                            "Company name must be less than 255 characters.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Bio Exceeds Max Length Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "bio": [
+                            "Bio must be less than 150 characters.",
+                        ]
+                    }
+                },
+            ),
         ],
     )
     def create(self, request, *args, **kwargs):
@@ -1225,7 +1273,7 @@ class AgentViewSet(ModelViewSet):
                 name="Not Found Error",
                 response_only=True,
                 status_codes=["404"],
-                value={"detail": "Not found."},
+                value={"error": "Not found."},
             ),
         ],
     )
@@ -1240,10 +1288,13 @@ class AgentViewSet(ModelViewSet):
             "Only the respective user or a Superuser can update this profile."
         ),
         tags=["Agent Management"],
-        request=AgentUpdateRequestSerializer,
+        request={
+            "application/json": AgentUpdateRequestSerializer,
+            "multipart/form-data": AgentUpdateRequestSerializer,
+        },
         responses={
             status.HTTP_200_OK: OpenApiResponse(
-                response=AgentSerializer,
+                response=AgentRetrieveSerializer,
                 description=(
                     "Agent updated successfully."
                     "Returns a success message and the full updated Agent data.",
@@ -1256,6 +1307,7 @@ class AgentViewSet(ModelViewSet):
                 description="Forbidden. User cannot update this profile.",
             ),
             status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
+            status.HTTP_405_METHOD_NOT_ALLOWED: ErrorResponseSerializer,
         },
         examples=[
             OpenApiExample(
@@ -1264,8 +1316,57 @@ class AgentViewSet(ModelViewSet):
                 status_codes=["200"],
                 value={
                     "success": "Agent updated successfully",
-                    "data": {"id": 1, "company_name": "Updated Co."},
+                    "data": {
+                        "id": 1,
+                        "company_name": "Updated Co.",
+                        "bio": "Updated bio",
+                        "profile_image": "profile_images/default_profile.jpg",
+                        "user": {
+                            "id": 1,
+                            "first_name": "Updated",
+                            "last_name": "User",
+                            "email": "1b8Xu@example.com",
+                            "username": "updateduser",
+                            "slug": "updateduser",
+                        },
+                    },
                 },
+            ),
+            OpenApiExample(
+                name="Method Not Allowed",
+                response_only=True,
+                status_codes=["405"],
+                value={"error": "PUT operation not allowed."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Not found."},
+            ),
+            OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to update this user."},
+            ),
+            OpenApiExample(
+                name="Updating Email field",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You cannot update the email field."},
+            ),
+            OpenApiExample(
+                name="Updating Forbidden fields.",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "Forbidden fields cannot be updated."},
             ),
             OpenApiExample(
                 name="Password Confirmation Error",
@@ -1298,30 +1399,6 @@ class AgentViewSet(ModelViewSet):
                 },
             ),
             OpenApiExample(
-                name="Email Already Exists Error",
-                response_only=True,
-                status_codes=["400"],
-                value={
-                    "error": {
-                        "email": [
-                            "User with this email already exists.",
-                        ]
-                    }
-                },
-            ),
-            OpenApiExample(
-                name="Invalid Email Address Error",
-                response_only=True,
-                status_codes=["400"],
-                value={
-                    "error": {
-                        "email": [
-                            "Enter a valid email address.",
-                        ]
-                    }
-                },
-            ),
-            OpenApiExample(
                 name="Password Complexity Error",
                 response_only=True,
                 status_codes=["400"],
@@ -1337,10 +1414,48 @@ class AgentViewSet(ModelViewSet):
                 },
             ),
             OpenApiExample(
-                name="Image Type Error (400)",
+                name="Company Name Exceeds Max Length Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "company_name": [
+                            "Company name must be less than 255 characters.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Bio Exceeds Max Length Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {
+                        "bio": [
+                            "Bio must be less than 150 characters.",
+                        ]
+                    }
+                },
+            ),
+            OpenApiExample(
+                name="Image Type Error",
                 response_only=True,
                 status_codes=["400"],
                 value={"error": {"profile_image": ["Image type should be JPEG, PNG"]}},
+            ),
+            OpenApiExample(
+                name="Image Size Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"profile_image": ["Image size should not exceed 2MB."]}
+                },
+            ),
+            OpenApiExample(
+                name="Image Required Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": {"profile_image": ["Image is Required."]}},
             ),
         ],
     )
@@ -1406,15 +1521,12 @@ class AgentViewSet(ModelViewSet):
         agent_serializer.is_valid(raise_exception=True)
         self.perform_update(agent_serializer)
 
-        updated_agent_serializer = self.get_serializer(agent)
-        response_data = updated_agent_serializer.data
-        user_serializer = UserSerializer(user_instance)
-        response_data["user"] = user_serializer.data
+        response_serializer = AgentRetrieveSerializer(agent)
 
         return Response(
             {
                 "success": "Agent updated successfully",
-                "data": response_data,
+                "data": response_serializer.data,
             },
             status=status.HTTP_200_OK,
         )
@@ -1447,10 +1559,22 @@ class AgentViewSet(ModelViewSet):
                 value={"success": "Agent profile deleted successfully."},
             ),
             OpenApiExample(
+                name="Unauthorized User Update Error",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
                 name="Unauthorized Delete Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You are not authorized to delete this user."},
+            ),
+            OpenApiExample(
+                name="User ID Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "User ID Not Found or Does not exist."},
             ),
         ],
     )
