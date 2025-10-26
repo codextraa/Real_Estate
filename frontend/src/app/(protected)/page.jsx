@@ -2,10 +2,12 @@ import styles from "@/styles/Interface.module.css";
 import { HomePageButton } from "@/components/buttons/Buttons";
 import Footer from "@/components/footer/Footer";
 import Image from "next/image";
+// import Loading from "../loading";
 export default function Page() {
   const imageUrl = "/real-estate/real-estate.jpg";
 
   return (
+    // <Loading />
     <div className={styles.image}>
       <Image
         src={imageUrl}

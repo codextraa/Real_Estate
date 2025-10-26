@@ -1,6 +1,6 @@
 import styles from "./ProfileCard.module.css";
-import EditProfileForm from "@/components/forms/ProfileForm";
-import { GlobalButton } from "@/components/buttons/Buttons";
+// import EditProfileForm from "@/components/forms/ProfileForm";
+// import { GlobalButton } from "@/components/buttons/Buttons";
 export default function ProfileCard({ userData }) {
   return (
     <div className={styles.ProfileInfoContainer}>
@@ -16,14 +16,14 @@ export default function ProfileCard({ userData }) {
         <div className={styles.storedContent}>{userData.username}</div>
       </div>
       <div className={styles.buttonContainer}>
-        <div className={styles.button}>
+        {/* <div className={styles.button}>
           <GlobalButton
             text="Edit Profile"
             onClick={() => {
               <EditProfileForm userData={userData} />;
             }}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

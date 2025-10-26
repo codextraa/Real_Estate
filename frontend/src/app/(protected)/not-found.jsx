@@ -28,7 +28,7 @@ export default function NotFound() {
           />
         </div>
         <div className={styles.errorTextContainer}>
-          <div className={styles.errorTitle}>Error 404</div>
+          <div className={styles.errorTitle}>Error</div>
           <div className={styles.errorMessage}>Page Not Found</div>
           <div className={styles.button}>
             <Link href="/">

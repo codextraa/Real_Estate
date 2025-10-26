@@ -1,3 +1,5 @@
+"use client";
+
 import Form from "next/form";
 import { FormButton } from "@/components/buttons/Buttons";
 import { EyeButton } from "@/components/buttons/Buttons";

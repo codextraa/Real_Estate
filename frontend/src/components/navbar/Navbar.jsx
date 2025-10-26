@@ -19,18 +19,18 @@ export default async function Navbar() {
   let navButtons = [];
 
   if (userId && userRole) {
-    if (userRole === "super_user") {
+    if (userRole === "Superuser") {
       navButtons = [
         { text: "All Listings", href: "/" },
         { text: "Create Admin", href: "/" },
         ...loggedInBaseButtons,
       ];
-    } else if (userRole === "admin") {
+    } else if (userRole === "Admin") {
       navButtons = [
         { text: "All Listings", href: "/" },
         ...loggedInBaseButtons,
       ];
-    } else if (userRole === "agent") {
+    } else if (userRole === "Agent") {
       navButtons = [
         { text: "My Listings", href: "/" },
         { text: "Create", href: "/" },
