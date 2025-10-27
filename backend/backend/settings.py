@@ -36,9 +36,6 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 
 NEXT_API_SECRET_KEY = os.getenv("NEXT_API_SECRET_KEY")
 
-HTTP_MEDIA_URL = os.getenv("HTTP_MEDIA_URL")
-HTTPS_MEDIA_URL = os.getenv("HTTPS_MEDIA_URL")
-
 HTTPS = os.getenv("HTTPS") == "True"
 if HTTPS or DJANGO_ENV == "production":
     BACKEND_URL = os.getenv("HTTPS_BACKEND_URL")
@@ -152,17 +149,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-if HTTPS:
-    STATIC_ROOT = "/app/static"
-else:
-    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = "/app/static"
 
 # Media files
 if DJANGO_ENV == "development":
-    if HTTPS:
-        MEDIA_URL = HTTPS_MEDIA_URL
-    else:
-        MEDIA_URL = HTTP_MEDIA_URL
+    MEDIA_URL = "media/"
     MEDIA_ROOT = "/app/media"
 else:
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
