@@ -72,7 +72,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_agent = models.BooleanField(default=False)
-    slug = models.SlugField(unique=True, blank=True, null=True)
+    slug = models.SlugField(unique=True, blank=True, null=True, max_length=255)
 
     objects = UserManager()
 
@@ -121,10 +121,10 @@ class Property(models.Model):
     description = models.TextField()
     beds = models.IntegerField()
     baths = models.IntegerField()
-    price = models.FloatField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     area_sqft = models.IntegerField()
     address = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True, blank=True, null=True)
+    slug = models.SlugField(unique=True, blank=True, null=True, max_length=150)
     image_url = models.ImageField(
         upload_to="property_images/", blank=True, null=True, max_length=500
     )
