@@ -12,8 +12,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . .
-
-RUN chmod +x run.sh
+COPY run.sh .
 
 EXPOSE 8000
