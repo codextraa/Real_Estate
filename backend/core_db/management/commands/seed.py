@@ -1,7 +1,6 @@
 import random
 from django.core.management.base import BaseCommand
-
-# Import all factories
+from django.contrib.auth.models import Group
 from core_db.factories import (
     UserFactory,
     AgentFactory,
@@ -10,8 +9,6 @@ from core_db.factories import (
     StaffuserFactory,
     FIXED_PASSWORD,
 )
-
-# Import all models for cleanup
 from core_db.models import User, Agent, Property
 
 
@@ -25,19 +22,37 @@ class Command(BaseCommand):
         Property.objects.all().delete()
         Agent.objects.all().delete()
         User.objects.all().delete()
+        Group.objects.all().delete()
         self.stdout.write(self.style.NOTICE("Clean up complete."))
+
+        # --- GROUP CREATION ---
+
+        self.stdout.write("\nCreating user groups...")
+        superuser_group, _ = Group.objects.get_or_create(name="Superuser")
+        admin_group, _ = Group.objects.get_or_create(name="Admin")
+        agent_group, _ = Group.objects.get_or_create(name="Agent")
+        default_group, _ = Group.objects.get_or_create(name="Default")
+        self.stdout.write(
+            self.style.SUCCESS("✅ Groups created: Superuser, Admin, Agent, Default.")
+        )
+
+        # --- USER CREATION & ASSIGNMENT ---
 
         self.stdout.write(
             f"\nCreating fixed-credential users (Password: {FIXED_PASSWORD}):"
         )
-        SuperuserFactory.create()
-        StaffuserFactory.create()
+        superuser = SuperuserFactory.create()
+        superuser.groups.add(superuser_group)
+        staffuser = StaffuserFactory.create()
+        staffuser.groups.add(admin_group)
         self.stdout.write(self.style.SUCCESS(f"✅ Superuser: superuser@example.com"))
         self.stdout.write(self.style.SUCCESS(f"✅ Staffuser: staffuser@example.com"))
 
-        # 3. Create Basic Users (Constraint 3)
+        # Create Basic Users (10)
         self.stdout.write("\nCreating 10 basic users...")
-        UserFactory.create_batch(10)
+        basic_users = UserFactory.create_batch(10)
+        for user in basic_users:
+            user.groups.add(default_group)
         self.stdout.write(self.style.SUCCESS("✅ 10 basic users created."))
 
         # --- AGENT AND PROPERTY CREATION ---
@@ -46,6 +61,7 @@ class Command(BaseCommand):
 
         # Agent 1 (12 Properties)
         agent1 = AgentFactory.create()
+        agent1.user.groups.add(agent_group)
         PropertyFactory.create_batch(12, agent=agent1)
         self.stdout.write(
             self.style.SUCCESS(
@@ -55,6 +71,7 @@ class Command(BaseCommand):
 
         # Agent 2 (6 Properties)
         agent2 = AgentFactory.create()
+        agent1.user.groups.add(agent_group)
         PropertyFactory.create_batch(6, agent=agent2)
         self.stdout.write(
             self.style.SUCCESS(
@@ -65,7 +82,8 @@ class Command(BaseCommand):
         # Create 8 extra Agents
         self.stdout.write("\nCreating 8 extra agents...")
         extra_agents = AgentFactory.create_batch(8)
-        all_agents = [agent1, agent2] + extra_agents
+        for agent in extra_agents:
+            agent.user.groups.add(agent_group)
         self.stdout.write(self.style.SUCCESS(f"✅ 8 extra agents created."))
 
         # Assign 12 properties randomly to the 8 extra agents

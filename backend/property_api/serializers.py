@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from core_db.models import Property
+from django.contrib.auth import get_user_model
+from core_db.models import Agent, Property
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -86,8 +87,31 @@ class PropertyListSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class PropertyAgentRetrieveSerializer(serializers.ModelSerializer):
+    """
+    Serializer to retrieve the specific agent details needed for property view.
+    Includes profile image, first_name, and last_name.
+    """
+
+    first_name = serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    image_url = serializers.ImageField(read_only=True)
+
+    class Meta:
+        model = Agent
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "image_url",
+        ]
+        read_only_fields = fields
+
+
 class PropertyRetrieveSerializer(serializers.ModelSerializer):
     """Get property by id serializer."""
+
+    agent = PropertyAgentRetrieveSerializer(read_only=True)
 
     class Meta:
         model = Property

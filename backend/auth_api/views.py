@@ -215,6 +215,20 @@ def check_user_id(user_id):
     },
     examples=[
         OpenApiExample(
+            name="Superuser Login Request Example",
+            value={
+                "email": "superuser@example.com",
+                "password": "Django@123",
+            },
+        ),
+        OpenApiExample(
+            name="Staff Login Request Example",
+            value={
+                "email": "staffuser@example.com",
+                "password": "Django@123",
+            },
+        ),
+        OpenApiExample(
             name="Successful Agent Login",
             response_only=True,
             status_codes=["200"],
@@ -791,7 +805,11 @@ class UserViewSet(ModelViewSet):
         response = super().update(request, *args, **kwargs)
 
         if response.status_code == status.HTTP_200_OK:
-            retrieve_serializer = UserRetrieveSerializer(user)
+            user.refresh_from_db()
+            retrieve_serializer = UserRetrieveSerializer(
+                user,
+                context=self.get_serializer_context(),
+            )
             return Response(
                 {
                     "success": "User profile updated successfully.",
@@ -827,6 +845,7 @@ class UserViewSet(ModelViewSet):
         examples=[
             OpenApiExample(
                 name="Success",
+                response_only=True,
                 status_codes=["200"],
                 value={
                     "success": "User profile updated successfully.",
@@ -925,6 +944,7 @@ class UserViewSet(ModelViewSet):
     )
     def partial_update(self, request, *args, **kwargs):
         """Partially updates an existing user profile (PATCH method)."""
+        kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
@@ -1098,7 +1118,7 @@ class AgentViewSet(ModelViewSet):
         tags=["Agent Management"],
         request=None,
         responses={
-            status.HTTP_200_OK: UserRetrieveSerializer,
+            status.HTTP_200_OK: AgentRetrieveSerializer,
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
             status.HTTP_404_NOT_FOUND: OpenApiResponse(
                 response=ErrorResponseSerializer,
@@ -1254,13 +1274,14 @@ class AgentViewSet(ModelViewSet):
 
         request_data = request.data.copy()
         agent_keys = ["company_name", "bio", "profile_image"]
-        user_request_data = request_data
+        user_request_data = {}
         agent_request_data = {}
 
-        for key in user_request_data.keys():
+        for key in request_data.keys():
             if key in agent_keys:
                 agent_request_data[key] = request_data[key]
-                user_request_data.pop(key)
+            else:
+                user_request_data[key] = request_data[key]
 
         user_serializer = UserSerializer(data=user_request_data)
         user_serializer.is_valid(raise_exception=True)
@@ -1297,16 +1318,18 @@ class AgentViewSet(ModelViewSet):
 
         request_data = request.data.copy()
         agent_keys = ["company_name", "bio", "profile_image"]
-        user_request_data = request_data
+        user_request_data = {}
         agent_request_data = {}
 
-        for key in user_request_data.keys():
+        for key in request_data.keys():
             if key in agent_keys:
                 agent_request_data[key] = request_data[key]
-                user_request_data.pop(key)
+            else:
+                user_request_data[key] = request_data[key]
 
+        partial = kwargs.pop("partial", False)
         user_serializer = UserSerializer(
-            user_instance, data=user_request_data, partial=True
+            user_instance, data=user_request_data, partial=partial
         )
         user_serializer.is_valid(raise_exception=True)
         user_serializer.save()
@@ -1330,14 +1353,17 @@ class AgentViewSet(ModelViewSet):
             if os.path.exists(old_image_path):
                 os.remove(old_image_path)
 
-        partial = kwargs.pop("partial", False)
         agent_serializer = self.get_serializer(
             agent, data=agent_request_data, partial=partial
         )
         agent_serializer.is_valid(raise_exception=True)
-        self.perform_update(agent_serializer)
+        agent_serializer.save()
 
-        response_serializer = AgentRetrieveSerializer(agent)
+        agent.refresh_from_db()
+        response_serializer = AgentRetrieveSerializer(
+            agent,
+            context=self.get_serializer_context(),
+        )
 
         return Response(
             {
@@ -1526,7 +1552,8 @@ class AgentViewSet(ModelViewSet):
         ],
     )
     def partial_update(self, request, *args, **kwargs):
-        """Partially updates the Agent's profile (User data and Agent data)."""
+        """Partially updates the Agent's profile (Use data and Agent data)."""
+        kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
