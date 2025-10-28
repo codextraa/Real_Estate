@@ -1556,7 +1556,8 @@ class AgentViewSet(ModelViewSet):
         """Partially updates the Agent's profile (Use data and Agent data)."""
         kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
-    #pylint: enable=R0801
+
+    # pylint: enable=R0801
 
     @extend_schema(
         summary="Delete Agent Profile",

@@ -418,6 +418,7 @@ class PropertyViewSet(ModelViewSet):
         """Partial update property (PATCH method)."""
         kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
+
     # pylint: enable=R0801
 
     @extend_schema(
