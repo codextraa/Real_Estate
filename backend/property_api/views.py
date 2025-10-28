@@ -302,6 +302,7 @@ class PropertyViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    # pylint: disable=R0801
     @extend_schema(
         summary="Update Property Listing (Partial)",
         description=(
@@ -417,6 +418,7 @@ class PropertyViewSet(ModelViewSet):
         """Partial update property (PATCH method)."""
         kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
+    # pylint: enable=R0801
 
     @extend_schema(
         summary="Delete Property Listing",
