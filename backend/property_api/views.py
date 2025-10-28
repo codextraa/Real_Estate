@@ -47,10 +47,14 @@ class PropertyViewSet(ModelViewSet):
     def get_queryset(self):
         """Queryset for User View."""
         user = self.request.user
+        base_queryset = Property.objects.select_related("agent", "agent__user")
+
         if self.action in ("list", "retrieve") or user.is_staff:
-            return Property.objects.all()
+            return base_queryset.all()
+
         if user.is_agent:
-            return Property.objects.filter(agent=user)
+            return base_queryset.filter(agent__user=user)
+
         return Property.objects.none()
 
     def http_method_not_allowed(self, request, *args, **kwargs):
@@ -284,7 +288,11 @@ class PropertyViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        response_serializer = PropertyRetrieveSerializer(property_instance)
+        property_instance.refresh_from_db()
+        response_serializer = PropertyRetrieveSerializer(
+            property_instance,
+            context=self.get_serializer_context(),
+        )
 
         return Response(
             {
@@ -407,6 +415,7 @@ class PropertyViewSet(ModelViewSet):
     )
     def partial_update(self, request, *args, **kwargs):
         """Partial update property (PATCH method)."""
+        kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
