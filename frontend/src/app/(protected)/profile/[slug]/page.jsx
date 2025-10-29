@@ -1,20 +1,29 @@
 import { notFound } from "next/navigation";
 import { getUser, getAgent } from "@/libs/api";
-import ProfileCard from "@/components/cards/ProfileCard";
+import Image from "next/image";
+import { getUserIdAction, getUserRoleAction } from "@/actions/authActions";
+import ProfileWrapper from "@/components/wrappers/ProfileWrapper";
 
-export default async function ProfilePage({ searchParams }) {
-  const { id, role } = await searchParams;
+export default async function ProfilePage() {
+  const user_id = await getUserIdAction();
+  const user_role = await getUserRoleAction();
+  const imgUrl = "/real-estate/real-estate.jpg";
 
   let response;
-  if (role === "Agent") {
-    response = await getAgent(id);
+  if (user_role === "Agent") {
+    response = await getAgent(user_id);
   } else {
-    response = await getUser(id);
+    response = await getUser(user_id);
   }
 
   if (response.error) {
     return notFound();
   }
 
-  return <ProfileCard userData={response} />;
+  return (
+    <>
+      <Image src={imgUrl} alt="background" fill priority />
+      <ProfileWrapper userData={response} />
+    </>
+  )
 }

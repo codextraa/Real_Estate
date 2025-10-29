@@ -24,5 +24,6 @@ export default async function ProfileRedirectPage() {
     throw new Error("User slug not found");
   }
 
-  redirect(`/profile/${userSlug}?id=${userDataId}&role=${userRole}`);
+  // redirect(`/profile/${userSlug}?id=${userDataId}&role=${userRole}`);
+  redirect(`/profile/${userSlug}`);
 }

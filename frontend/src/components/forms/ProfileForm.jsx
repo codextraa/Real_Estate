@@ -12,10 +12,10 @@ export default function EditProfileForm({ userData }) {
   const initialState = {
     errors: {},
     success: "",
-    formEmailAddress: "",
-    formFirstName: "",
-    formLastName: "",
-    formUsername: "",
+    formEmail: userData.email,
+    formFirstName: userData.first_name,
+    formLastName: userData.last_name,
+    formUsername: userData.username,
   };
 
   const [state, formActions, isPending] = useActionState(
@@ -42,121 +42,118 @@ export default function EditProfileForm({ userData }) {
 
   return (
     <Form action={formActions} className={styles.Form}>
-      <div className={styles.inputFormContainer}>
-        <h1 className={styles.title}>Edit Profile Information</h1>
-        <div className={styles.inputContainer}>
-          <label htmlFor="email">Email Address</label>
+      <div className={styles.inputContainer}>
+        <label htmlFor="email">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          disabled={isPending}
+          defaultValue={state.formEmail}
+          className={styles.input}
+        />
+        {Object.keys(state.errors).length > 0 && state.errors.email && (
+          <span className={styles.errorText}>{state.errors.email}</span>
+        )}
+      </div>
+      <div className={styles.inputContainer}>
+        <label htmlFor="first_name">First Name</label>
+        <input
+          type="text"
+          id="first_name"
+          name="first_name"
+          disabled={isPending}
+          defaultValue={state.formFirstName}
+          className={styles.input}
+        />
+      </div>
+      <div className={styles.inputContainer}>
+        <label htmlFor="last_name">Last Name</label>
+        <input
+          type="text"
+          id="last_name"
+          name="last_name"
+          disabled={isPending}
+          defaultValue={state.formLastName}
+          className={styles.input}
+        />
+      </div>
+      <div className={styles.inputContainer}>
+        <label htmlFor="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          disabled={isPending}
+          defaultValue={state.formUsername}
+          className={styles.input}
+        />
+        {Object.keys(state.errors).length > 0 && state.errors.username && (
+          <span className={styles.errorText}>{state.errors.email}</span>
+        )}
+      </div>
+      <h2 className={styles.changePasswordTitle}>Change Password</h2>
+      <div className={styles.inputContainer}>
+        <div className={styles.passwordContainer}>
           <input
-            type="email"
-            id="email"
-            name="email"
+            type={showPassword ? "text" : "password"}
+            id="password"
+            name="password"
             disabled={isPending}
-            defaultValue={state.formEmail}
             className={styles.input}
           />
-          {Object.keys(state.errors).length > 0 && state.errors.email && (
-            <span className={styles.errorText}>{state.errors.email}</span>
+          <EyeButton
+            action={toggleShowPassword}
+            showPassword={showPassword}
+            isPending={isPending}
+          />
+          {Object.keys(state.errors).length > 0 && state.errors.password && (
+            <span className={styles.errorText}>{state.errors.password}</span>
           )}
         </div>
-        <div className={styles.inputContainer}>
-          <label htmlFor="first_name">First Name</label>
+      </div>
+      <div className={styles.inputContainer}>
+        <div className={styles.passwordContainer}>
           <input
-            type="text"
-            id="first_name"
-            name="first_name"
+            type={showConfirmPassword ? "text" : "password"}
+            id="c_password"
+            name="c_password"
             disabled={isPending}
-            defaultValue={state.formFirstName}
             className={styles.input}
           />
-        </div>
-        <div className={styles.inputContainer}>
-          <label htmlFor="last_name">Last Name</label>
-          <input
-            type="text"
-            id="last_name"
-            name="last_name"
-            disabled={isPending}
-            defaultValue={state.formLastName}
-            className={styles.input}
+          <EyeButton
+            action={toggleShowConfirmPassword}
+            showPassword={showConfirmPassword}
+            isPending={isPending}
           />
-        </div>
-        <div className={styles.inputContainer}>
-          <label htmlFor="username">Username</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            disabled={isPending}
-            defaultValue={state.formUsername}
-            className={styles.input}
-          />
-          {Object.keys(state.errors).length > 0 && state.errors.username && (
-            <span className={styles.errorText}>{state.errors.email}</span>
-          )}
-        </div>
-        <h2 className={styles.changePasswordTitle}>Change Password</h2>
-        <div className={styles.inputContainer}>
-          <div className={styles.passwordContainer}>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="password"
-              name="password"
-              disabled={isPending}
-              className={styles.input}
-            />
-            <EyeButton
-              action={toggleShowPassword}
-              showPassword={showPassword}
-              isPending={isPending}
-            />
-            {Object.keys(state.errors).length > 0 && state.errors.password && (
-              <span className={styles.errorText}>{state.errors.password}</span>
+          {Object.keys(state.errors).length > 0 &&
+            state.errors.c_password && (
+              <span className={styles.errorText}>
+                {state.errors.c_password}
+              </span>
             )}
-          </div>
         </div>
-        <div className={styles.inputContainer}>
-          <div className={styles.passwordContainer}>
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              id="c_password"
-              name="c_password"
-              disabled={isPending}
-              className={styles.input}
-            />
-            <EyeButton
-              action={toggleShowConfirmPassword}
-              showPassword={showConfirmPassword}
-              isPending={isPending}
-            />
-            {Object.keys(state.errors).length > 0 &&
-              state.errors.c_password && (
-                <span className={styles.errorText}>
-                  {state.errors.c_password}
-                </span>
-              )}
-          </div>
+      </div>
+      {Object.keys(state.errors).length > 0 && state.errors.general && (
+        <div className={styles.errorContainer}>{state.errors.general}</div>
+      )}
+      {state.success && (
+        <div className={styles.successContainer}>{state.success}</div>
+      )}
+      <div className={styles.buttonContainer}>
+        <div className={styles.updateProfileButton}>
+          <FormButton
+            text="Update Profile"
+            pendingText="Updating..."
+            type="submit"
+          />
         </div>
-        {Object.keys(state.errors).length > 0 && state.errors.general && (
-          <div className={styles.errorContainer}>{state.errors.general}</div>
-        )}
-        {state.success && (
-          <div className={styles.successContainer}>{state.success}</div>
-        )}
-        <div className={styles.buttonContainer}>
-          <div className={styles.updateProfileButton}>
-            <FormButton
-              text="Update Profile"
-              pendingText="Updating..."
-              type="submit"
-            />
-          </div>
-          <div className={styles.deleteProfileButton}>
-            <FormButton
-              text="Delete Profile"
-              pendingText="Deleting..."
-              type="submit"
-            />
-          </div>
+        <div className={styles.deleteProfileButton}>
+          <FormButton
+            text="Delete Profile"
+            pendingText="Deleting..."
+            type="submit"
+          />
         </div>
       </div>
     </Form>

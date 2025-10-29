@@ -22,15 +22,14 @@ export const logout = async () => {
 };
 
 export const getUser = async (id) => {
-  console.log(`[NETWORK CALL] Fetching user ${id} from the external API.`);
   return apiClient.get(`/auth-api/users/${id}/`, {
-    next: { revalidate: 60 },
+    next: { revalidate: 20 },
   });
 };
 
 export const getAgent = async (id) => {
   return apiClient.get(`/auth-api/agents/${id}/`, {
-    next: { revalidate: 60 },
+    next: { revalidate: 20 },
   });
 };
 
