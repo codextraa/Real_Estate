@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import ProfileDetail from "@/components/cards/ProfileDetail";
@@ -22,20 +22,14 @@ export default function ProfileWrapper({ userData }) {
         <>
           <ProfileForm userData={userData} />
           <div className={styles.ProfileFormButtonContainer}>
-            <GlobalButton
-              text="Cancel"
-              onClick={handleEditToggle}
-            />
+            <GlobalButton text="Cancel" onClick={handleEditToggle} />
           </div>
         </>
       ) : (
         <>
           <ProfileDetail userData={userData} />
           <div className={styles.ProfileDetailButtonContainer}>
-            <GlobalButton
-              text="Edit Profile"
-              onClick={handleEditToggle}
-            />
+            <GlobalButton text="Edit Profile" onClick={handleEditToggle} />
           </div>
         </>
       )}

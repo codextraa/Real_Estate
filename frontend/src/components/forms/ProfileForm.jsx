@@ -126,12 +126,9 @@ export default function EditProfileForm({ userData }) {
             showPassword={showConfirmPassword}
             isPending={isPending}
           />
-          {Object.keys(state.errors).length > 0 &&
-            state.errors.c_password && (
-              <span className={styles.errorText}>
-                {state.errors.c_password}
-              </span>
-            )}
+          {Object.keys(state.errors).length > 0 && state.errors.c_password && (
+            <span className={styles.errorText}>{state.errors.c_password}</span>
+          )}
         </div>
       </div>
       {Object.keys(state.errors).length > 0 && state.errors.general && (

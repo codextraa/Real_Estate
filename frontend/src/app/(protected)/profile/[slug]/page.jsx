@@ -25,5 +25,5 @@ export default async function ProfilePage() {
       <Image src={imgUrl} alt="background" fill priority />
       <ProfileWrapper userData={response} />
     </>
-  )
+  );
 }
