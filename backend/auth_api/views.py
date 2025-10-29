@@ -10,7 +10,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -472,7 +472,7 @@ class RefreshTokenView(TokenRefreshView):
 
     renderer_classes = [ViewRenderer]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs): # pylint: disable=R0911
         """Post a request to RefreshTokenView. Verifies OTP and generates JWT tokens."""
         try:
             refresh_token = request.data.get("refresh")
@@ -500,7 +500,10 @@ class RefreshTokenView(TokenRefreshView):
             decoded_token = RefreshToken(refresh_token)
             user_id = decoded_token.get("user_id", None)
             if not user_id:
-                raise InvalidToken("Invalid refresh token")
+                return Response(
+                    {"error": "Invalid tokens"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             # Check user validity
             user = check_user_id(user_id)
