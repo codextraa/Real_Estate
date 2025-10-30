@@ -17,7 +17,11 @@ from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiExample,
+    OpenApiResponse,
+)
 from backend.renderers import ViewRenderer
 from backend.mixins import http_method_mixin
 from backend.schema_serializers import (
@@ -472,7 +476,7 @@ class RefreshTokenView(TokenRefreshView):
 
     renderer_classes = [ViewRenderer]
 
-    def post(self, request, *args, **kwargs): # pylint: disable=R0911
+    def post(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Post a request to RefreshTokenView. Verifies OTP and generates JWT tokens."""
         try:
             refresh_token = request.data.get("refresh")
@@ -1386,7 +1390,19 @@ class AgentViewSet(ModelViewSet):
         tags=["Agent Management"],
         request={
             "application/json": AgentUpdateRequestSerializer,
-            "multipart/form-data": AgentUpdateRequestSerializer,
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "password": {"type": "string", "format": "password"},
+                    "c_password": {"type": "string", "format": "password"},
+                    "username": {"type": "string"},
+                    "first_name": {"type": "string"},
+                    "last_name": {"type": "string"},
+                    "company_name": {"type": "string"},
+                    "bio": {"type": "string"},
+                    "profile_image": {"type": "string", "format": "binary"},
+                },
+            },
         },
         responses={
             status.HTTP_200_OK: OpenApiResponse(
