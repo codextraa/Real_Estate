@@ -2,6 +2,7 @@
 
 import { createUser } from "@/libs/api";
 import { updateUser } from "@/libs/api";
+import { revalidatePath } from "next/cache";
 
 const userError = (response) => {
   if (typeof response.error === "object") {
@@ -148,17 +149,32 @@ export const createUserAction = async (user, prevState, formData) => {
   }
 };
 
-export const updateUserAction = async (id, user, prevState, formData) => {
-  const email = formData.get("email");
+export const updateUserAction = async (id, userRole, prevState, formData) => {
   const first_name = formData.get("first_name");
   const last_name = formData.get("last_name");
   const username = formData.get("username");
   const password = formData.get("password");
   const c_password = formData.get("c_password");
-  const company_name = formData.get("company_name");
   const bio = formData.get("bio");
-  // image_url datatype needs proper handling
-  const image_url = formData.get("image_url");
+  const company_name = formData.get("company_name");
+  const profile_image = formData.get("profile_image");
+
+  const newUserFormData = userRole === "Agent" ? {
+    email: prevState.formUserData.user.email,
+    first_name: first_name || prevState.formUserData.user.first_name,
+    last_name: last_name || prevState.formUserData.user.last_name,
+    username: username || prevState.formUserData.user.username,
+    slug: prevState.formUserData.user.slug,
+    bio: bio || prevState.formUserData.bio,
+    company_name: company_name || prevState.formUserData.company_name,
+    image_url: prevState.formUserData.image_url,
+  } : {
+    email: prevState.formUserData.email,
+    first_name: first_name || prevState.formUserData.first_name,
+    last_name: last_name || prevState.formUserData.last_name,
+    username: username || prevState.formUserData.username,
+    slug: prevState.formUserData.slug,
+  };
 
   const errors = {};
 
@@ -170,23 +186,16 @@ export const updateUserAction = async (id, user, prevState, formData) => {
     return {
       errors,
       success: "",
-      formEmail: email || "",
-      formFirstName: first_name || "",
-      formLastName: last_name || "",
-      formUsername: username || "",
-      formCompanyName: company_name || "",
-      formBio: bio || "",
-      formImageUrl: image_url || "",
+      formUserData: newUserFormData,
     };
   }
 
   try {
     let response;
-    const isNewImageUploaded = image_url instanceof File && image_url.size > 0;
+    const isNewImageUploaded = profile_image && profile_image instanceof File && profile_image.size > 0;
 
     if (isNewImageUploaded) {
-      // formdata should not contain email
-      response = await updateUser(id, formData, user, true);
+      response = await updateUser(id, formData, userRole, true);
     } else {
       const data = {
         ...(first_name && { first_name }),
@@ -194,39 +203,28 @@ export const updateUserAction = async (id, user, prevState, formData) => {
         ...(username && { username }),
         ...(password && { password }),
         ...(c_password && { c_password }),
-        ...(company_name && { company_name }),
         ...(bio && { bio }),
+        ...(company_name && { company_name }),
       };
-
-      response = await updateUser(id, data, user);
+      response = await updateUser(id, data, userRole);
     }
 
-    // console.log(response);
     if (response.error) {
       const backend_errors = userError(response);
       return {
         errors: backend_errors,
         success: "",
-        formEmail: email || "",
-        formFirstName: first_name || "",
-        formLastName: last_name || "",
-        formUsername: username || "",
-        formCompanyName: company_name || "",
-        formBio: bio || "",
-        formImageUrl: image_url || "",
+        formUserData: newUserFormData,
       };
     }
+
+    const updatedSlug = response.data.slug;
+    revalidatePath(`/profile/${updatedSlug}`);
 
     return {
       errors,
       success: response.success,
-      formEmail: response.data.email || "",
-      formFirstName: response.data.first_name || "",
-      formLastName: response.data.last_name || "",
-      formUsername: response.data.username || "",
-      formCompanyName: response.data.company_name || "",
-      formBio: response.data.bio || "",
-      formImageUrl: response.data.image_url || "",
+      formUserData: response.data,
     };
   } catch (error) {
     console.error(error);
@@ -234,13 +232,104 @@ export const updateUserAction = async (id, user, prevState, formData) => {
     return {
       errors,
       success: "",
-      formEmail: email || "",
-      formFirstName: first_name || "",
-      formLastName: last_name || "",
-      formUsername: username || "",
-      formCompanyName: company_name || "",
-      formBio: bio || "",
-      formImageUrl: image_url || "",
+      formUserData: newUserFormData,
     };
   }
 };
+
+// export const updateUserAction = async (id, user, prevState, formData) => {
+//   const email = formData.get("email");
+//   const first_name = formData.get("first_name");
+//   const last_name = formData.get("last_name");
+//   const username = formData.get("username");
+//   const password = formData.get("password");
+//   const c_password = formData.get("c_password");
+//   const company_name = formData.get("company_name");
+//   const bio = formData.get("bio");
+//   // image_url datatype needs proper handling
+//   const image_url = formData.get("image_url");
+
+//   const errors = {};
+
+//   if (password !== c_password) {
+//     errors.c_password = "Passwords do not match";
+//   }
+
+//   if (Object.keys(errors).length > 0) {
+//     return {
+//       errors,
+//       success: "",
+//       formEmail: email || "",
+//       formFirstName: first_name || "",
+//       formLastName: last_name || "",
+//       formUsername: username || "",
+//       formCompanyName: company_name || "",
+//       formBio: bio || "",
+//       formImageUrl: image_url || "",
+//     };
+//   }
+
+//   try {
+//     let response;
+//     const isNewImageUploaded = image_url instanceof File && image_url.size > 0;
+
+//     if (isNewImageUploaded) {
+//       // formdata should not contain email
+//       response = await updateUser(id, formData, user, true);
+//     } else {
+//       const data = {
+//         ...(first_name && { first_name }),
+//         ...(last_name && { last_name }),
+//         ...(username && { username }),
+//         ...(password && { password }),
+//         ...(c_password && { c_password }),
+//         ...(company_name && { company_name }),
+//         ...(bio && { bio }),
+//       };
+
+//       response = await updateUser(id, data, user);
+//     }
+
+//     // console.log(response);
+//     if (response.error) {
+//       const backend_errors = userError(response);
+//       return {
+//         errors: backend_errors,
+//         success: "",
+//         formEmail: email || "",
+//         formFirstName: first_name || "",
+//         formLastName: last_name || "",
+//         formUsername: username || "",
+//         formCompanyName: company_name || "",
+//         formBio: bio || "",
+//         formImageUrl: image_url || "",
+//       };
+//     }
+
+//     return {
+//       errors,
+//       success: response.success,
+//       formEmail: response.data.email || "",
+//       formFirstName: response.data.first_name || "",
+//       formLastName: response.data.last_name || "",
+//       formUsername: response.data.username || "",
+//       formCompanyName: response.data.company_name || "",
+//       formBio: response.data.bio || "",
+//       formImageUrl: response.data.image_url || "",
+//     };
+//   } catch (error) {
+//     console.error(error);
+//     errors.general = error.message || "An unexpected error occurred";
+//     return {
+//       errors,
+//       success: "",
+//       formEmail: email || "",
+//       formFirstName: first_name || "",
+//       formLastName: last_name || "",
+//       formUsername: username || "",
+//       formCompanyName: company_name || "",
+//       formBio: bio || "",
+//       formImageUrl: image_url || "",
+//     };
+//   }
+// };

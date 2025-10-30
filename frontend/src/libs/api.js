@@ -23,25 +23,25 @@ export const logout = async () => {
 
 export const getUser = async (id) => {
   return apiClient.get(`/auth-api/users/${id}/`, {
-    next: { revalidate: 20 },
+    next: { revalidate: 60 },
   });
 };
 
 export const getAgent = async (id) => {
   return apiClient.get(`/auth-api/agents/${id}/`, {
-    next: { revalidate: 20 },
+    next: { revalidate: 60 },
   });
 };
 
-export const createUser = async (data, userType) => {
-  if (userType === "agent") {
+export const createUser = async (data, userRole) => {
+  if (userRole === "agent") {
     return apiClient.post("/auth-api/agents/", data);
   }
   return apiClient.post("/auth-api/users/", data);
 };
 
-export const updateUser = async (id, data, userType, isImage = false) => {
-  const base_url = userType === "agent" ? "agents" : "users";
+export const updateUser = async (id, data, userRole, isImage = false) => {
+  const base_url = userRole === "Agent" ? "agents" : "users";
 
   if (isImage) {
     return apiClient.patch(`/auth-api/${base_url}/${id}/`, data, {}, true);
