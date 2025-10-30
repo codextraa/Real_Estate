@@ -159,22 +159,25 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
   const company_name = formData.get("company_name");
   const profile_image = formData.get("profile_image");
 
-  const newUserFormData = userRole === "Agent" ? {
-    email: prevState.formUserData.user.email,
-    first_name: first_name || prevState.formUserData.user.first_name,
-    last_name: last_name || prevState.formUserData.user.last_name,
-    username: username || prevState.formUserData.user.username,
-    slug: prevState.formUserData.user.slug,
-    bio: bio || prevState.formUserData.bio,
-    company_name: company_name || prevState.formUserData.company_name,
-    image_url: prevState.formUserData.image_url,
-  } : {
-    email: prevState.formUserData.email,
-    first_name: first_name || prevState.formUserData.first_name,
-    last_name: last_name || prevState.formUserData.last_name,
-    username: username || prevState.formUserData.username,
-    slug: prevState.formUserData.slug,
-  };
+  const newUserFormData =
+    userRole === "Agent"
+      ? {
+          email: prevState.formUserData.user.email,
+          first_name: first_name || prevState.formUserData.user.first_name,
+          last_name: last_name || prevState.formUserData.user.last_name,
+          username: username || prevState.formUserData.user.username,
+          slug: prevState.formUserData.user.slug,
+          bio: bio || prevState.formUserData.bio,
+          company_name: company_name || prevState.formUserData.company_name,
+          image_url: prevState.formUserData.image_url,
+        }
+      : {
+          email: prevState.formUserData.email,
+          first_name: first_name || prevState.formUserData.first_name,
+          last_name: last_name || prevState.formUserData.last_name,
+          username: username || prevState.formUserData.username,
+          slug: prevState.formUserData.slug,
+        };
 
   const errors = {};
 
@@ -192,7 +195,8 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
 
   try {
     let response;
-    const isNewImageUploaded = profile_image && profile_image instanceof File && profile_image.size > 0;
+    const isNewImageUploaded =
+      profile_image && profile_image instanceof File && profile_image.size > 0;
 
     if (isNewImageUploaded) {
       response = await updateUser(id, formData, userRole, true);

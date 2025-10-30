@@ -27,7 +27,7 @@ export default async function ProfilePage({ params }) {
 
   return (
     <>
-      {/* <Image src={imgUrl} alt="background" fill priority /> */}
+      <Image src={imgUrl} alt="background" fill priority />
       <ProfileCard userData={response} userRole={user_role} />
     </>
   );

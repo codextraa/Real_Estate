@@ -116,7 +116,7 @@ export default function ProfileForm({ userData, userRole }) {
                 action={toggleShowPassword}
                 showPassword={showPassword}
                 isPending={isPending}
-                />
+              />
             </div>
             {Object.keys(state.errors).length > 0 && state.errors.password && (
               <span className={styles.errorText}>{state.errors.password}</span>
@@ -137,9 +137,12 @@ export default function ProfileForm({ userData, userRole }) {
                 isPending={isPending}
               />
             </div>
-            {Object.keys(state.errors).length > 0 && state.errors.c_password && (
-              <span className={styles.errorText}>{state.errors.c_password}</span>
-            )}
+            {Object.keys(state.errors).length > 0 &&
+              state.errors.c_password && (
+                <span className={styles.errorText}>
+                  {state.errors.c_password}
+                </span>
+              )}
           </div>
         </div>
         {Object.keys(state.errors).length > 0 && state.errors.general && (
