@@ -255,5 +255,5 @@ class AgentUpdateRequestSerializer(serializers.Serializer):  # pylint: disable=W
         required=False,
         write_only=True,
         help_text="A new profile image file for the agent (e.g., JPEG, PNG, max 2MB).",
-        style={"type": "file"},
+        style={"input_type": "string"},
     )
