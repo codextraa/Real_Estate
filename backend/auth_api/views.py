@@ -472,7 +472,7 @@ class RefreshTokenView(TokenRefreshView):
 
     renderer_classes = [ViewRenderer]
 
-    def post(self, request, *args, **kwargs): # pylint: disable=R0911
+    def post(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Post a request to RefreshTokenView. Verifies OTP and generates JWT tokens."""
         try:
             refresh_token = request.data.get("refresh")
