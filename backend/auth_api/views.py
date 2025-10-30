@@ -17,7 +17,11 @@ from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiRequest
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiExample,
+    OpenApiResponse,
+)
 from backend.renderers import ViewRenderer
 from backend.mixins import http_method_mixin
 from backend.schema_serializers import (
@@ -1397,7 +1401,7 @@ class AgentViewSet(ModelViewSet):
                     "company_name": {"type": "string"},
                     "bio": {"type": "string"},
                     "profile_image": {"type": "string", "format": "binary"},
-                }
+                },
             },
         },
         responses={

@@ -119,7 +119,7 @@ class PropertyViewSet(ModelViewSet):
         description="Allows an authenticated **Agent** to create a new property listing.",
         tags=["Property Management"],
         request={
-            "application/json": PropertyUpdateRequestSerializer,
+            "application/json": PropertyCreateRequestSerializer,
             "multipart/form-data": {
                 "type": "object",
                 "properties": {
@@ -132,7 +132,7 @@ class PropertyViewSet(ModelViewSet):
                     "baths": {"type": "integer"},
                     "area_sqft": {"type": "integer"},
                     "property_image": {"type": "string", "format": "binary"},
-                }
+                },
             },
         },
         responses={
@@ -338,7 +338,7 @@ class PropertyViewSet(ModelViewSet):
                     "area_sqft": {"type": "integer"},
                     "is_available": {"type": "boolean"},
                     "property_image": {"type": "string", "format": "binary"},
-                }
+                },
             },
         },
         responses={
