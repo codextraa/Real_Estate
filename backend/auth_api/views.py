@@ -233,6 +233,20 @@ def check_user_id(user_id):
             },
         ),
         OpenApiExample(
+            name="Agent Login Request Example",
+            value={
+                "email": "agentuser@example.com",
+                "password": "Django@123",
+            },
+        ),
+        OpenApiExample(
+            name="Default User Login Request Example",
+            value={
+                "email": "defaultuser@example.com",
+                "password": "Django@123",
+            },
+        ),
+        OpenApiExample(
             name="Successful Agent Login",
             response_only=True,
             status_codes=["200"],
