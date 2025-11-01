@@ -23,7 +23,8 @@ export default function ProfileCard({ userData, userRole }) {
               <h1 className={styles.subTitle}>
                 {userData.user.first_name + " " + userData.user.last_name}
               </h1>
-              <div className={styles.storedContent}>{userData.bio}</div>
+              <label className={styles.aboutMeLabel}>About Me</label>
+              <div className={styles.storedText}>{userData.bio}</div>
             </div>
             <div className={styles.profileInfos}>
               <h1 className={styles.subTitle2}>Details</h1>
@@ -65,14 +66,22 @@ export default function ProfileCard({ userData, userRole }) {
       ) : (
         <>
           <div className={styles.profileInfos}>
-            <label className={styles.profileLabel}>Email Address</label>
-            <div className={styles.storedContent}>{userData.email}</div>
-            <label className={styles.profileLabel}>First Name</label>
-            <div className={styles.storedContent}>{userData.first_name}</div>
-            <label className={styles.profileLabel}>Last Name</label>
-            <div className={styles.storedContent}>{userData.last_name}</div>
-            <label className={styles.profileLabel}>Username</label>
-            <div className={styles.storedContent}>{userData.username}</div>
+            <div className={styles.profileBoxLabel}>
+              <label className={styles.profileLabel}>Email Address</label>
+              <div className={styles.storedContent}>{userData.email}</div>
+            </div>
+            <div className={styles.profileBoxLabel}>
+              <label className={styles.profileLabel}>First Name</label>
+              <div className={styles.storedContent}>{userData.first_name}</div>
+            </div>
+            <div className={styles.profileBoxLabel}>
+              <label className={styles.profileLabel}>Last Name</label>
+              <div className={styles.storedContent}>{userData.last_name}</div>
+            </div>
+            <div className={styles.profileBoxLabel}>
+              <label className={styles.profileLabel}>Username</label>
+              <div className={styles.storedContent}>{userData.username}</div>
+            </div>
           </div>
           <div className={styles.profileDetailButtonContainer}>
             <Link

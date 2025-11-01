@@ -240,4 +240,3 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
     };
   }
 };
-
