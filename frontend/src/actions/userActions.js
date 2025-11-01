@@ -38,6 +38,18 @@ const userError = (response) => {
         response.error.company_name[0].slice(1).toLowerCase();
     }
 
+    if (response.error.bio) {
+      errorMessages["bio"] =
+        response.error.bio[0][0].toUpperCase() +
+        response.error.bio[0].slice(1).toLowerCase();
+    }
+
+    if (response.error.profile_image) {
+      errorMessages["profile_image"] =
+        response.error.profile_image[0][0].toUpperCase() +
+        response.error.profile_image[0].slice(1).toLowerCase();
+    }
+
     // Check for each possible attribute and append its messages
     if (response.error.password) {
       if (Array.isArray(response.error.password)) {
