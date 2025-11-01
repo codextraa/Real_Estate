@@ -86,9 +86,7 @@ export default function ProfileForm({ userData, userRole }) {
               maxLength={250}
               className={styles.input}
             />
-            <div className={styles.charCount}>
-              {bioContent.length} / 250
-            </div>
+            <div className={styles.charCount}>{bioContent.length} / 250</div>
             {Object.keys(state.errors).length > 0 && state.errors.bio && (
               <span className={styles.errorText}>{state.errors.bio}</span>
             )}
@@ -141,9 +139,12 @@ export default function ProfileForm({ userData, userRole }) {
                 defaultValue={state.user.username || ""}
                 className={styles.input}
               />
-              {Object.keys(state.errors).length > 0 && state.errors.username && (
-                <span className={styles.errorText}>{state.errors.username}</span>
-              )}
+              {Object.keys(state.errors).length > 0 &&
+                state.errors.username && (
+                  <span className={styles.errorText}>
+                    {state.errors.username}
+                  </span>
+                )}
             </div>
           </div>
           <div className={styles.Container}>
@@ -182,9 +183,12 @@ export default function ProfileForm({ userData, userRole }) {
                   showPassword={showPassword}
                   isPending={isPending}
                 />
-                {Object.keys(state.errors).length > 0 && state.errors.password && (
-                  <span className={styles.errorText}>{state.errors.password}</span>
-                )}
+                {Object.keys(state.errors).length > 0 &&
+                  state.errors.password && (
+                    <span className={styles.errorText}>
+                      {state.errors.password}
+                    </span>
+                  )}
               </div>
             </div>
             <div className={styles.inputContainer}>
@@ -210,7 +214,7 @@ export default function ProfileForm({ userData, userRole }) {
               </div>
             </div>
           </div>
-                    
+
           <div className={styles.buttonContainer}>
             <div className={styles.cancelProfileButton}>
               <Link href={`/profile/${state.user.slug}`}>
@@ -231,9 +235,9 @@ export default function ProfileForm({ userData, userRole }) {
                 type="submit"
               />
             </div>
-          </div>     
+          </div>
         </Form>
-      ): (
+      ) : (
         <Form action={formActions} className={styles.Form}>
           <div className={styles.inputContainer}>
             <label htmlFor="email">Email Address</label>
@@ -256,9 +260,12 @@ export default function ProfileForm({ userData, userRole }) {
               defaultValue={state.user.first_name || ""}
               className={styles.input}
             />
-            {Object.keys(state.errors).length > 0 && state.errors.first_name && (
-              <span className={styles.errorText}>{state.errors.first_name}</span>
-            )}
+            {Object.keys(state.errors).length > 0 &&
+              state.errors.first_name && (
+                <span className={styles.errorText}>
+                  {state.errors.first_name}
+                </span>
+              )}
           </div>
           <div className={styles.inputContainer}>
             <label htmlFor="last_name">Last Name</label>
@@ -305,9 +312,12 @@ export default function ProfileForm({ userData, userRole }) {
                   isPending={isPending}
                 />
               </div>
-              {Object.keys(state.errors).length > 0 && state.errors.password && (
-                <span className={styles.errorText}>{state.errors.password}</span>
-              )}
+              {Object.keys(state.errors).length > 0 &&
+                state.errors.password && (
+                  <span className={styles.errorText}>
+                    {state.errors.password}
+                  </span>
+                )}
             </div>
             <div className={styles.inputContainer}>
               <div className={styles.passwordInputContainer}>
