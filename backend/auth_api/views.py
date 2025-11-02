@@ -1355,7 +1355,7 @@ class AgentViewSet(ModelViewSet):
         user_serializer.is_valid(raise_exception=True)
         user_serializer.save()
 
-        profile_image = request.data.pop("profile_image", None)
+        profile_image = agent_request_data.pop("profile_image", None)
         old_image_path = None
 
         if profile_image:
@@ -1371,7 +1371,7 @@ class AgentViewSet(ModelViewSet):
             agent_image_serializer.is_valid(raise_exception=True)
             agent_image_serializer.save()
 
-            if os.path.exists(old_image_path):
+            if old_image_path and os.path.exists(old_image_path):
                 os.remove(old_image_path)
 
         agent_serializer = self.get_serializer(
