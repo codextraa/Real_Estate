@@ -44,10 +44,10 @@ const userError = (response) => {
         response.error.bio[0].slice(1).toLowerCase();
     }
 
-    if (response.error.profile_image) {
-      errorMessages["profile_image"] =
-        response.error.profile_image[0][0].toUpperCase() +
-        response.error.profile_image[0].slice(1).toLowerCase();
+    if (response.error.image_url) {
+      errorMessages["image_url"] =
+        response.error.image_url[0][0].toUpperCase() +
+        response.error.image_url[0].slice(1).toLowerCase();
     }
 
     // Check for each possible attribute and append its messages
@@ -174,11 +174,13 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
   const newUserFormData =
     userRole === "Agent"
       ? {
-          email: prevState.formUserData.user.email,
-          first_name: first_name || prevState.formUserData.user.first_name,
-          last_name: last_name || prevState.formUserData.user.last_name,
-          username: username || prevState.formUserData.user.username,
-          slug: prevState.formUserData.user.slug,
+          user: {
+            email: prevState.formUserData.user.email,
+            first_name: first_name || prevState.formUserData.user.first_name,
+            last_name: last_name || prevState.formUserData.user.last_name,
+            username: username || prevState.formUserData.user.username,
+            slug: prevState.formUserData.user.slug,
+          },
           bio: bio || prevState.formUserData.bio,
           company_name: company_name || prevState.formUserData.company_name,
           image_url: prevState.formUserData.image_url,
@@ -192,6 +194,14 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
         };
 
   const errors = {};
+
+  if (username === "") {
+    errors.username = "Username cannot be empty";
+  }
+
+  if (userRole === "Agent" && company_name === "") {
+    errors.company_name = "Company Name cannot be empty";
+  }
 
   if (password !== c_password) {
     errors.c_password = "Passwords do not match";
@@ -211,19 +221,38 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       profile_image && profile_image instanceof File && profile_image.size > 0;
 
     if (isNewImageUploaded) {
+      const keys_to_delete = [];
+      for (const [key, value] of formData.entries()) {
+        if (
+          key.startsWith("$") ||
+          key === "" ||
+          (key === "password" && value === "") ||
+          (key === "c_password" && value === "")
+        ) {
+          keys_to_delete.push(key);
+        }
+      }
+
+      for (const key of keys_to_delete) {
+        formData.delete(key);
+      }
+
+      console.log("form data with image upload", formData);
       response = await updateUser(id, formData, userRole, true);
     } else {
       const data = {
-        ...(first_name && { first_name }),
-        ...(last_name && { last_name }),
+        ...((first_name || first_name === "") && { first_name }),
+        ...((last_name || last_name === "") && { last_name }),
         ...(username && { username }),
         ...(password && { password }),
         ...(c_password && { c_password }),
-        ...(bio && { bio }),
+        ...((bio || bio === "") && { bio }),
         ...(company_name && { company_name }),
       };
       response = await updateUser(id, data, userRole);
     }
+
+    console.log("response", response);
 
     if (response.error) {
       const backend_errors = userError(response);
@@ -234,8 +263,10 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       };
     }
 
-    const updatedSlug = response.data.slug;
-    revalidatePath(`/profile/${updatedSlug}`);
+    const updatedSlug =
+      userRole === "Agent" ? response.data.user.slug : response.data.slug;
+
+    revalidatePath(`/profile/${updatedSlug}/edit`);
 
     return {
       errors,

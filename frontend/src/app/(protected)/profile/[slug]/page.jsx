@@ -8,17 +8,17 @@ import styles from "@/styles/ProfilePage.module.css";
 export default async function ProfilePage({ params }) {
   const urlParams = await params;
   const slug = urlParams.slug;
-  const user_id = await getUserIdAction();
-  const user_role = await getUserRoleAction();
+  const userId = await getUserIdAction();
+  const userRole = await getUserRoleAction();
   const imgUrl = "/real-estate/real-estate.jpg";
 
   let response;
   let response_slug;
-  if (user_role === "Agent") {
-    response = await getAgent(user_id);
+  if (userRole === "Agent") {
+    response = await getAgent(userId);
     response_slug = response.user.slug;
   } else {
-    response = await getUser(user_id);
+    response = await getUser(userId);
     response_slug = response.slug;
   }
 
@@ -26,14 +26,11 @@ export default async function ProfilePage({ params }) {
     return notFound();
   }
 
-  console.log("ProfilePage response:", response);
-  console.log("slug:", slug);
-
   return (
     <div className={styles.profilePageBackground}>
       <Image src={imgUrl} alt="background" fill priority />
       <div className={styles.profileCardContainer}>
-        <ProfileCard userData={response} userRole={user_role} />
+        <ProfileCard userData={response} userRole={userRole} />
       </div>
     </div>
   );

@@ -3,15 +3,18 @@
 import Form from "next/form";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { FormButton } from "@/components/buttons/Buttons";
 import { EyeButton } from "@/components/buttons/Buttons";
-import { updateUserAction } from "@/actions/userActions";
 import { useActionState, useState } from "react";
 import { GlobalButton } from "@/components/buttons/Buttons";
 import styles from "./ProfileForm.module.css";
 
-export default function ProfileForm({ userData, userRole }) {
+export default function ProfileForm({
+  userData,
+  userRole,
+  updateProfileAction,
+}) {
   const initialState = {
     errors: {},
     success: "",
@@ -19,7 +22,7 @@ export default function ProfileForm({ userData, userRole }) {
   };
 
   const [state, formActions, isPending] = useActionState(
-    updateUserAction.bind(null, userData.id, userRole),
+    updateProfileAction,
     initialState,
   );
 
@@ -35,14 +38,29 @@ export default function ProfileForm({ userData, userRole }) {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const [bioContent, setBioContent] = useState(state.formUserData.bio || "");
-
   const name =
     userRole === "Agent"
       ? state.formUserData.user.first_name +
         " " +
         state.formUserData.user.last_name
       : null;
+
+  const [bioContent, setBioContent] = useState(state.formUserData.bio || "");
+  const [previewUrl, setPreviewUrl] = useState(state.formUserData.image_url);
+
+  const fileInputRef = useRef(null);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPreviewUrl(URL.createObjectURL(file)); // Create preview URL
+    }
+  };
+
+  const handleIconClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click(); // Programmatically click the hidden file input
+    }
+  };
 
   useEffect(() => {
     if (state.success) {
@@ -61,20 +79,38 @@ export default function ProfileForm({ userData, userRole }) {
         <Form action={formActions} className={styles.Form}>
           <div className={styles.mainContainer}>
             <div className={styles.inputImageContainer}>
-              <Image
-                className={styles.profileImage}
-                src={state.formUserData.image_url}
-                alt="Profile Image"
-                width={203}
-                height={142}
-              />
-              <Image
-                className={styles.updateIcon}
-                src="/assets/update-icon.svg"
-                alt="Update Icon"
-                width={38}
-                height={37}
-              />
+              <div className={styles.imageContainer}>
+                <Image
+                  className={styles.profileImage}
+                  src={previewUrl}
+                  alt="Profile Image"
+                  width={203}
+                  height={142}
+                />
+                <Image
+                  className={styles.updateIcon} // cursor: pointer;
+                  onClick={handleIconClick}
+                  src="/assets/update-icon.svg"
+                  alt="Update Icon"
+                  width={38}
+                  height={37}
+                />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  name="profile_image"
+                  accept="image/*"
+                  className={styles.fileInput} // display: none;
+                  disabled={isPending}
+                />
+              </div>
+              {Object.keys(state.errors).length > 0 &&
+                state.errors.image_url && (
+                  <span className={styles.errorText}>
+                    {state.errors.image_url}
+                  </span>
+                )}
             </div>
             <div className={styles.agentFormContainer}>
               <div className={styles.nameBioContainer}>
@@ -107,7 +143,6 @@ export default function ProfileForm({ userData, userRole }) {
                   <input
                     type="email"
                     id="email"
-                    name="email"
                     disabled={isPending}
                     defaultValue={state.formUserData.user.email || ""}
                     className={styles.input}
@@ -232,6 +267,14 @@ export default function ProfileForm({ userData, userRole }) {
                     )}
                 </div>
               </div>
+              {Object.keys(state.errors).length > 0 && state.errors.general && (
+                <div className={styles.errorContainer}>
+                  {state.errors.general}
+                </div>
+              )}
+              {displaySuccess && (
+                <div className={styles.successContainer}>{displaySuccess}</div>
+              )}
               <div className={styles.buttonContainer}>
                 <div className={styles.cancelProfileButton}>
                   <Link href={`/profile/${state.formUserData.user.slug}`}>
