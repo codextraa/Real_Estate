@@ -23,7 +23,6 @@
 
 .profileInfos {
   display: flex;
-
   flex-direction: column;
   align-items: center;
   gap: 30px;
@@ -92,4 +91,148 @@
 .myListingsButton .globalButton:hover {
   opacity: 0.9;
   box-shadow: 0 0 5px rgba(19, 37, 46, 0.5);
+}
+
+@media (max-width: 900px) {
+  /* Customer Container dimensions from spec: 864x525 */
+  .profileInfoContainer:not(.agent) {
+    /* Since the content is dynamic, setting a fixed height is tricky, let content define it */
+    background-color: lightcoral;
+    width: 750px;
+    margin: 0 auto;
+  }
+
+  /* Customer stored content should be centered within the 864px container's available space */
+  .profileInfos {
+    /* Single column flow for customer fields */
+    max-width: 50px; /* Width of the stored content box in spec */
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* --- Responsive Styles (Mobile First: Up to iPhone 6/SE) --- */
+
+@media (max-width: 768px) {
+  .profileInfoContainer:not(.agent) {
+    background-color: lightblue;
+    width: 600px;
+    margin: 0 auto;
+    /* Full width on mobile */
+  }
+
+  .profileInfos {
+    grid-template-columns: 1fr;
+    max-width: 544px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* .profileDetailTitle {
+    font-size: 40px;
+    position: relative;
+    left:-20px;
+  } */
+
+  /* Adjustments for stored content on mobile */
+  /* .storedContent {
+    font-size: 16px;
+    margin-bottom: 15px;
+  } */
+
+  /* Agent specific adjustments */
+
+  /* .agentProfileContainer {
+    flex-direction: column; 
+    gap: 20px;
+  }
+
+  .ImageContainer {
+    width: 100%; 
+    height: 200px; 
+    margin-top: 0;
+  }
+
+
+  .subTitle {
+    font-size: 22px;
+  }
+
+  .subTitle2 {
+    font-size: 18px;
+  } */
+
+  .agentProfileDetailButtonContainer,
+  .profileDetailButtonContainer {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 30px;
+  }
+
+  .editProfileButton .globalButton,
+  .myListingsButton .globalButton {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  @media (max-width: 620px) {
+    .profileInfoContainer:not(.agent) {
+      background-color: rgb(26, 196, 11);
+      max-width: 480px;
+      margin: 0 auto;
+      /* Full width on mobile */
+    }
+
+    .profileInfos {
+      grid-template-columns: 1fr;
+      max-width: 240px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .profileBoxLabel {
+      width: 420px;
+    }
+  }
+
+  @media (max-width: 490px) {
+    .profileInfoContainer:not(.agent) {
+      background-color: rgb(196, 11, 113);
+      max-width: 350px;
+      margin: 0 auto;
+      /* Full width on mobile */
+    }
+
+    .profileInfos {
+      grid-template-columns: 1fr;
+      max-width: 240px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .profileBoxLabel {
+      width: 320px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .profileInfoContainer:not(.agent) {
+      background-color: rgb(196, 153, 11);
+      max-width: 230px;
+      margin: 0 auto;
+      /* Full width on mobile */
+    }
+
+    .profileInfos {
+      grid-template-columns: 1fr;
+      max-width: 240px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .profileBoxLabel {
+      width: 220px;
+    }
+  }
 }
