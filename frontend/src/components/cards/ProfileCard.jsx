@@ -52,7 +52,7 @@ export default function ProfileCard({ userData, userRole }) {
             </div>
             <div className={styles.agentProfileDetailButtonContainer}>
               <Link
-                href={`/profile/${userData.slug}/edit`}
+                href={`/profile/${userData.user.slug}/edit`}
                 className={styles.editProfileButton}
               >
                 <GlobalButton text="Edit Profile" />

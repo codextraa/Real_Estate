@@ -35,11 +35,11 @@ export default function ProfileForm({ userData, userRole }) {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const [bioContent, setBioContent] = useState(userData.bio || "");
+  const [bioContent, setBioContent] = useState(state.formUserData.bio || "");
 
   const name =
     userRole === "Agent"
-      ? userData.user.first_name + " " + userData.user.last_name
+      ? state.formUserData.user.first_name + " " + state.formUserData.user.last_name
       : null;
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function ProfileForm({ userData, userRole }) {
           <div className={styles.inputImageContainer}>
             <Image
               className={styles.profileImage}
-              src={state.image_url}
+              src={state.formUserData.image_url}
               alt="Profile Image"
               width={203}
               height={142}
@@ -100,7 +100,7 @@ export default function ProfileForm({ userData, userRole }) {
                 id="email"
                 name="email"
                 disabled={isPending}
-                defaultValue={state.user.email || ""}
+                defaultValue={state.formUserData.user.email || ""}
                 className={styles.input}
               />
               {Object.keys(state.errors).length > 0 && state.errors.email && (
@@ -114,7 +114,7 @@ export default function ProfileForm({ userData, userRole }) {
                 id="first_name"
                 name="first_name"
                 disabled={isPending}
-                defaultValue={state.user.first_name || ""}
+                defaultValue={state.formUserData.user.first_name || ""}
                 className={styles.input}
               />
             </div>
@@ -125,7 +125,7 @@ export default function ProfileForm({ userData, userRole }) {
                 id="last_name"
                 name="last_name"
                 disabled={isPending}
-                defaultValue={state.user.last_name || ""}
+                defaultValue={state.formUserData.user.last_name || ""}
                 className={styles.input}
               />
             </div>
@@ -136,7 +136,7 @@ export default function ProfileForm({ userData, userRole }) {
                 id="username"
                 name="username"
                 disabled={isPending}
-                defaultValue={state.user.username || ""}
+                defaultValue={state.formUserData.user.username || ""}
                 className={styles.input}
               />
               {Object.keys(state.errors).length > 0 &&
@@ -156,7 +156,7 @@ export default function ProfileForm({ userData, userRole }) {
                 id="company_name"
                 name="company_name"
                 disabled={isPending}
-                defaultValue={state.company_name || ""}
+                defaultValue={state.formUserData.company_name || ""}
                 className={styles.input}
               />
               {Object.keys(state.errors).length > 0 &&
@@ -217,7 +217,7 @@ export default function ProfileForm({ userData, userRole }) {
 
           <div className={styles.buttonContainer}>
             <div className={styles.cancelProfileButton}>
-              <Link href={`/profile/${state.user.slug}`}>
+              <Link href={`/profile/${state.formUserData.user.slug}`}>
                 <GlobalButton text="Cancel" />
               </Link>
             </div>
@@ -245,7 +245,7 @@ export default function ProfileForm({ userData, userRole }) {
               type="email"
               id="email"
               disabled={isPending}
-              defaultValue={state.user.email || ""}
+              defaultValue={state.formUserData.email || ""}
               className={styles.input}
               readOnly
             />
@@ -257,7 +257,7 @@ export default function ProfileForm({ userData, userRole }) {
               id="first_name"
               name="first_name"
               disabled={isPending}
-              defaultValue={state.user.first_name || ""}
+              defaultValue={state.formUserData.first_name || ""}
               className={styles.input}
             />
             {Object.keys(state.errors).length > 0 &&
@@ -274,7 +274,7 @@ export default function ProfileForm({ userData, userRole }) {
               id="last_name"
               name="last_name"
               disabled={isPending}
-              defaultValue={state.user.last_name || ""}
+              defaultValue={state.formUserData.last_name || ""}
               className={styles.input}
             />
             {Object.keys(state.errors).length > 0 && state.errors.last_name && (
@@ -288,7 +288,7 @@ export default function ProfileForm({ userData, userRole }) {
               id="username"
               name="username"
               disabled={isPending}
-              defaultValue={state.user.username || ""}
+              defaultValue={state.formUserData.username || ""}
               className={styles.input}
             />
             {Object.keys(state.errors).length > 0 && state.errors.username && (
@@ -350,7 +350,7 @@ export default function ProfileForm({ userData, userRole }) {
           )}
           <div className={styles.buttonContainer}>
             <div className={styles.cancelProfileButton}>
-              <Link href={`/profile/${state.slug}`}>
+              <Link href={`/profile/${state.formUserData.slug}`}>
                 <GlobalButton text="Cancel" />
               </Link>
             </div>

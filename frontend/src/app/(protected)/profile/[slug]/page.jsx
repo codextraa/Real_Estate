@@ -26,6 +26,9 @@ export default async function ProfilePage({ params }) {
     return notFound();
   }
 
+  console.log("ProfilePage response:", response);
+  console.log("slug:", slug);
+
   return (
     <div className={styles.profilePageBackground}>
       <Image src={imgUrl} alt="background" fill priority />
