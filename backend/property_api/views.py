@@ -120,7 +120,20 @@ class PropertyViewSet(ModelViewSet):
         tags=["Property Management"],
         request={
             "application/json": PropertyCreateRequestSerializer,
-            "multipart/form-data": PropertyCreateRequestSerializer,
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "description": {"type": "string"},
+                    "price": {"type": "number", "format": "double"},
+                    "property_type": {"type": "string"},
+                    "address": {"type": "string"},
+                    "beds": {"type": "integer"},
+                    "baths": {"type": "integer"},
+                    "area_sqft": {"type": "integer"},
+                    "property_image": {"type": "string", "format": "binary"},
+                },
+            },
         },
         responses={
             status.HTTP_201_CREATED: OpenApiResponse(
@@ -312,7 +325,21 @@ class PropertyViewSet(ModelViewSet):
         tags=["Property Management"],
         request={
             "application/json": PropertyUpdateRequestSerializer,
-            "multipart/form-data": PropertyUpdateRequestSerializer,
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "description": {"type": "string"},
+                    "price": {"type": "number", "format": "double"},
+                    "property_type": {"type": "string"},
+                    "address": {"type": "string"},
+                    "beds": {"type": "integer"},
+                    "baths": {"type": "integer"},
+                    "area_sqft": {"type": "integer"},
+                    "is_available": {"type": "boolean"},
+                    "property_image": {"type": "string", "format": "binary"},
+                },
+            },
         },
         responses={
             status.HTTP_200_OK: OpenApiResponse(

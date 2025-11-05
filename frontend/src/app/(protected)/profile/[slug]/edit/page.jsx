@@ -1,11 +1,12 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getUser, getAgent } from "@/libs/api";
-import Image from "next/image";
+import { updateUserAction } from "@/actions/userActions";
 import { getUserIdAction, getUserRoleAction } from "@/actions/authActions";
-import ProfileCard from "@/components/cards/ProfileCard";
+import ProfileForm from "@/components/forms/ProfileForm";
 import styles from "@/styles/ProfilePage.module.css";
 
-export default async function ProfilePage({ params }) {
+export default async function EditPage({ params }) {
   const urlParams = await params;
   const slug = urlParams.slug;
   const userId = await getUserIdAction();
@@ -26,11 +27,20 @@ export default async function ProfilePage({ params }) {
     return notFound();
   }
 
+  const updateProfileAction =
+    userRole === "Agent"
+      ? updateUserAction.bind(null, response.user.id, userRole)
+      : updateUserAction.bind(null, response.id, userRole);
+
   return (
     <div className={styles.profilePageBackground}>
       <Image src={imgUrl} alt="background" fill priority />
       <div className={styles.profileCardContainer}>
-        <ProfileCard userData={response} userRole={userRole} />
+        <ProfileForm
+          userData={response}
+          userRole={userRole}
+          updateProfileAction={updateProfileAction}
+        />
       </div>
     </div>
   );

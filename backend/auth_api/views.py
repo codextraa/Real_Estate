@@ -10,14 +10,18 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiExample,
+    OpenApiResponse,
+)
 from backend.renderers import ViewRenderer
 from backend.mixins import http_method_mixin
 from backend.schema_serializers import (
@@ -225,6 +229,20 @@ def check_user_id(user_id):
             name="Staff Login Request Example",
             value={
                 "email": "staffuser@example.com",
+                "password": "Django@123",
+            },
+        ),
+        OpenApiExample(
+            name="Agent Login Request Example",
+            value={
+                "email": "agentuser@example.com",
+                "password": "Django@123",
+            },
+        ),
+        OpenApiExample(
+            name="Default User Login Request Example",
+            value={
+                "email": "defaultuser@example.com",
                 "password": "Django@123",
             },
         ),
@@ -472,7 +490,7 @@ class RefreshTokenView(TokenRefreshView):
 
     renderer_classes = [ViewRenderer]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Post a request to RefreshTokenView. Verifies OTP and generates JWT tokens."""
         try:
             refresh_token = request.data.get("refresh")
@@ -500,7 +518,10 @@ class RefreshTokenView(TokenRefreshView):
             decoded_token = RefreshToken(refresh_token)
             user_id = decoded_token.get("user_id", None)
             if not user_id:
-                raise InvalidToken("Invalid refresh token")
+                return Response(
+                    {"error": "Invalid tokens"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             # Check user validity
             user = check_user_id(user_id)
@@ -1334,7 +1355,7 @@ class AgentViewSet(ModelViewSet):
         user_serializer.is_valid(raise_exception=True)
         user_serializer.save()
 
-        profile_image = request.data.pop("profile_image", None)
+        profile_image = agent_request_data.pop("profile_image", None)
         old_image_path = None
 
         if profile_image:
@@ -1350,7 +1371,7 @@ class AgentViewSet(ModelViewSet):
             agent_image_serializer.is_valid(raise_exception=True)
             agent_image_serializer.save()
 
-            if os.path.exists(old_image_path):
+            if old_image_path and os.path.exists(old_image_path):
                 os.remove(old_image_path)
 
         agent_serializer = self.get_serializer(
@@ -1383,7 +1404,19 @@ class AgentViewSet(ModelViewSet):
         tags=["Agent Management"],
         request={
             "application/json": AgentUpdateRequestSerializer,
-            "multipart/form-data": AgentUpdateRequestSerializer,
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "password": {"type": "string", "format": "password"},
+                    "c_password": {"type": "string", "format": "password"},
+                    "username": {"type": "string"},
+                    "first_name": {"type": "string"},
+                    "last_name": {"type": "string"},
+                    "company_name": {"type": "string"},
+                    "bio": {"type": "string"},
+                    "profile_image": {"type": "string", "format": "binary"},
+                },
+            },
         },
         responses={
             status.HTTP_200_OK: OpenApiResponse(

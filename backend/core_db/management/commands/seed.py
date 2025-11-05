@@ -48,6 +48,21 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"✅ Superuser: superuser@example.com"))
         self.stdout.write(self.style.SUCCESS(f"✅ Staffuser: staffuser@example.com"))
 
+        # Create specific default user
+        self.stdout.write("\nCreating specific default user...")
+        defaultuser = UserFactory.create(email="defaultuser@example.com")
+        defaultuser.groups.add(default_group)
+        self.stdout.write(
+            self.style.SUCCESS(f"✅ Default user: defaultuser@example.com")
+        )
+
+        # Create specific agent user and agent
+        self.stdout.write("\nCreating specific agent user and agent...")
+        agent_user = UserFactory.create(email="agentuser@example.com", is_agent=True)
+        agent1 = AgentFactory.create(user=agent_user)
+        agent1.user.groups.add(agent_group)
+        self.stdout.write(self.style.SUCCESS(f"✅ Agent user: agentuser@example.com"))
+
         # Create Basic Users (10)
         self.stdout.write("\nCreating 10 basic users...")
         basic_users = UserFactory.create_batch(10)
@@ -60,12 +75,10 @@ class Command(BaseCommand):
         self.stdout.write("\nCreating 2 specific agents and their properties...")
 
         # Agent 1 (12 Properties)
-        agent1 = AgentFactory.create()
-        agent1.user.groups.add(agent_group)
         PropertyFactory.create_batch(12, agent=agent1)
         self.stdout.write(
             self.style.SUCCESS(
-                f"✅ Agent 1 ({agent1.company_name}) created with 12 properties."
+                f"✅ Agent 1 ({agent1.user.email}) created with 12 properties."
             )
         )
 
@@ -75,7 +88,7 @@ class Command(BaseCommand):
         PropertyFactory.create_batch(6, agent=agent2)
         self.stdout.write(
             self.style.SUCCESS(
-                f"✅ Agent 2 ({agent2.company_name}) created with 6 properties."
+                f"✅ Agent 2 ({agent2.user.email}) created with 6 properties."
             )
         )
 

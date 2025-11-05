@@ -17,12 +17,13 @@ export default async function ProfileRedirectPage() {
     throw new Error(response.error);
   }
 
-  const userSlug = response.slug;
-  const userDataId = response.id;
+  const userSlug = userRole === "Agent" ? response.user.slug : response.slug;
+  const userDataId = userRole === "Agent" ? response.user.id : response.id;
 
   if (!userSlug || !userDataId) {
     throw new Error("User slug not found");
   }
 
-  redirect(`/profile/${userSlug}?id=${userDataId}&role=${userRole}`);
+  // redirect(`/profile/${userSlug}?id=${userDataId}&role=${userRole}`);
+  redirect(`/profile/${userSlug}`);
 }

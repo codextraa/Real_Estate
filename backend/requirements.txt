@@ -29,6 +29,7 @@ djangorestframework_simplejwt==5.4.0
 drf-spectacular==0.28.0
 factory_boy==3.3.3
 Faker==37.12.0
+freezegun==1.5.5
 frozenlist==1.5.0
 gunicorn==23.0.0
 idna==3.10
