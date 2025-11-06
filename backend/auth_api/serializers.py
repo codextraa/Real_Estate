@@ -120,15 +120,6 @@ class AgentSerializer(serializers.ModelSerializer):
             "image_url",
         ]
 
-    def create(self, validated_data):
-        image_url = validated_data.pop("image_url", None)
-
-        if not image_url:
-            default_image_path = "profile_images/default_profile.jpg"
-            validated_data["profile_img"] = default_image_path
-
-        return Agent.objects.create(**validated_data)
-
     def validate(self, attrs):
         """Validate all data"""
 
@@ -138,8 +129,6 @@ class AgentSerializer(serializers.ModelSerializer):
 
         if company_name:
             attrs["company_name"] = attrs["company_name"].title()
-        else:
-            attrs["company_name"] = None
 
         return attrs
 

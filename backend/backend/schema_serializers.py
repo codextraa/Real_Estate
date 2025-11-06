@@ -118,20 +118,19 @@ class PropertyCreateRequestSerializer(serializers.Serializer):  # pylint: disabl
     property_type = serializers.CharField(
         required=True, help_text="e.g., House, Apartment, Land."
     )
-    location = serializers.CharField(
-        required=True, help_text="The location or city of the property."
+    address = serializers.CharField(
+        required=True, help_text="The address of the property."
     )
-    bedrooms = serializers.IntegerField(
+    beds = serializers.IntegerField(
         required=False, min_value=0, help_text="Number of bedrooms."
     )
-    bathrooms = serializers.IntegerField(
+    baths = serializers.IntegerField(
         required=False, min_value=0, help_text="Number of bathrooms."
     )
     area_sqft = serializers.IntegerField(
         required=False, min_value=0, help_text="Area in square feet."
     )
 
-    # Representing the file upload for schema documentation
     property_image = serializers.FileField(
         required=False,
         write_only=True,
@@ -161,13 +160,13 @@ class PropertyUpdateRequestSerializer(serializers.Serializer):  # pylint: disabl
     property_type = serializers.CharField(
         required=False, help_text="e.g., House, Apartment, Land."
     )
-    location = serializers.CharField(
-        required=False, help_text="The location or city of the property."
+    address = serializers.CharField(
+        required=True, help_text="The address of the property."
     )
-    bedrooms = serializers.IntegerField(
+    beds = serializers.IntegerField(
         required=False, min_value=0, help_text="Number of bedrooms."
     )
-    bathrooms = serializers.IntegerField(
+    baths = serializers.IntegerField(
         required=False, min_value=0, help_text="Number of bathrooms."
     )
     area_sqft = serializers.IntegerField(
@@ -256,5 +255,5 @@ class AgentUpdateRequestSerializer(serializers.Serializer):  # pylint: disable=W
         required=False,
         write_only=True,
         help_text="A new profile image file for the agent (e.g., JPEG, PNG, max 2MB).",
-        style={"type": "file"},
+        style={"input_type": "string"},
     )

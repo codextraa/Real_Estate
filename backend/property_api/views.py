@@ -47,14 +47,72 @@ class PropertyViewSet(ModelViewSet):
     def get_queryset(self):
         """Queryset for User View."""
         user = self.request.user
+        base_queryset = Property.objects.select_related("agent", "agent__user")
+
         if self.action in ("list", "retrieve") or user.is_staff:
-            return Property.objects.all()
+            return base_queryset.all()
+
         if user.is_agent:
-            return Property.objects.filter(agent=user)
+            return base_queryset.filter(agent__user=user)
+
         return Property.objects.none()
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="List All Properties",
+        description=("Returns a paginated list of all Properties. "),
+        tags=["Property Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: PropertyListSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        """List all properties."""
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve Single Property Details",
+        description="Returns the details of a specific property by ID.",
+        tags=["Property Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: PropertyRetrieveSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("Not Found. " "The Property ID does not exist "),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Not found."},
+            ),
+        ],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific property."""
+        return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
         summary="Create New Property",
@@ -62,14 +120,24 @@ class PropertyViewSet(ModelViewSet):
         tags=["Property Management"],
         request={
             "application/json": PropertyCreateRequestSerializer,
-            "multipart/form-data": PropertyCreateRequestSerializer,
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "description": {"type": "string"},
+                    "price": {"type": "number", "format": "double"},
+                    "property_type": {"type": "string"},
+                    "address": {"type": "string"},
+                    "beds": {"type": "integer"},
+                    "baths": {"type": "integer"},
+                    "area_sqft": {"type": "integer"},
+                    "property_image": {"type": "string", "format": "binary"},
+                },
+            },
         },
         responses={
             status.HTTP_201_CREATED: OpenApiResponse(
-                response={
-                    "type": "object",
-                    "properties": {"success": {"type": "string"}},
-                },
+                response=PropertySerializer,
                 description="Property created successfully. Returns a simple success object.",
             ),
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
@@ -179,61 +247,75 @@ class PropertyViewSet(ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    def update(self, request, *args, **kwargs):
+        """Allow only agents to update their own property.
+        Patch method allowed, Put method not allowed"""
+
+        not_allowed_method = self.http_method_not_allowed(request)
+
+        if not_allowed_method:
+            return not_allowed_method
+
+        current_user = self.request.user
+        property_instance = self.get_object()
+
+        if "slug" in request.data or "agent" in request.data:  # pylint: disable=R0916
+            return Response(
+                {"error": "Forbidden fields cannot be updated."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if current_user != property_instance.agent.user:
+            return Response(
+                {"error": "You do not have permission to update this property."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        request_data = request.data.copy()
+        property_image = request_data.pop("property_image", None)
+        old_image_path = None
+        default_property_image = "property_images/default_image.jpg"
+
+        if property_image:
+            if (
+                property_instance.image_url
+                and property_instance.image_url.name != default_property_image
+            ):
+                old_image_path = os.path.join(
+                    settings.MEDIA_ROOT, property_instance.image_url.name
+                )
+
+            property_image_serializer = PropertyImageSerializer(
+                property_instance, data={"image_url": property_image}
+            )
+            property_image_serializer.is_valid(raise_exception=True)
+            property_image_serializer.save()
+
+            if os.path.exists(old_image_path):
+                os.remove(old_image_path)
+
+        partial = kwargs.pop("partial", False)
+        serializer = self.get_serializer(
+            property_instance, data=request_data, partial=partial
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        property_instance.refresh_from_db()
+        response_serializer = PropertyRetrieveSerializer(
+            property_instance,
+            context=self.get_serializer_context(),
+        )
+
+        return Response(
+            {
+                "success": "Property updated successfully.",
+                "data": response_serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
     # pylint: disable=R0801
-    @extend_schema(
-        summary="List All Properties",
-        description=("Returns a paginated list of all Properties. "),
-        tags=["Property Management"],
-        request=None,
-        responses={
-            status.HTTP_200_OK: PropertyListSerializer,
-            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
-        },
-        examples=[
-            OpenApiExample(
-                name="Unauthorized Access",
-                response_only=True,
-                status_codes=["401"],
-                value={"error": "You are not authenticated."},
-            ),
-        ],
-    )
-    def list(self, request, *args, **kwargs):
-        """List all properties."""
-        return super().list(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Retrieve Single Property Details",
-        description="Returns the details of a specific property by ID.",
-        tags=["Property Management"],
-        request=None,
-        responses={
-            status.HTTP_200_OK: PropertyRetrieveSerializer,
-            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
-            status.HTTP_404_NOT_FOUND: OpenApiResponse(
-                response=ErrorResponseSerializer,
-                description=("Not Found. " "The Property ID does not exist "),
-            ),
-        },
-        examples=[
-            OpenApiExample(
-                name="Unauthorized Access",
-                response_only=True,
-                status_codes=["401"],
-                value={"error": "You are not authenticated."},
-            ),
-            OpenApiExample(
-                name="Not Found Error",
-                response_only=True,
-                status_codes=["404"],
-                value={"error": "Not found."},
-            ),
-        ],
-    )
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve a specific property."""
-        return super().retrieve(request, *args, **kwargs)
-
     @extend_schema(
         summary="Update Property Listing (Partial)",
         description=(
@@ -243,7 +325,21 @@ class PropertyViewSet(ModelViewSet):
         tags=["Property Management"],
         request={
             "application/json": PropertyUpdateRequestSerializer,
-            "multipart/form-data": PropertyUpdateRequestSerializer,
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "description": {"type": "string"},
+                    "price": {"type": "number", "format": "double"},
+                    "property_type": {"type": "string"},
+                    "address": {"type": "string"},
+                    "beds": {"type": "integer"},
+                    "baths": {"type": "integer"},
+                    "area_sqft": {"type": "integer"},
+                    "is_available": {"type": "boolean"},
+                    "property_image": {"type": "string", "format": "binary"},
+                },
+            },
         },
         responses={
             status.HTTP_200_OK: OpenApiResponse(
@@ -329,75 +425,28 @@ class PropertyViewSet(ModelViewSet):
                     "error": {"image_url": ["Property image type should be JPEG, PNG"]}
                 },
             ),
+            OpenApiExample(
+                name="Property Title Length Exceeded Error",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": {"title": ["property title length is more than 150."]}},
+            ),
+            OpenApiExample(
+                name="Property Address Length Exceeded Error",
+                response_only=True,
+                status_codes=["400"],
+                value={
+                    "error": {"title": ["property address length is more than 255."]}
+                },
+            ),
         ],
     )
     def partial_update(self, request, *args, **kwargs):
+        """Partial update property (PATCH method)."""
+        kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
     # pylint: enable=R0801
-    def update(self, request, *args, **kwargs):
-        """Allow only agents to update their own property.
-        Patch method allowed, Put method not allowed"""
-
-        not_allowed_method = self.http_method_not_allowed(request)
-
-        if not_allowed_method:
-            return not_allowed_method
-
-        current_user = self.request.user
-        property_instance = self.get_object()
-
-        if "slug" in request.data or "agent" in request.data:  # pylint: disable=R0916
-            return Response(
-                {"error": "Forbidden fields cannot be updated."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        if current_user != property_instance.agent.user:
-            return Response(
-                {"error": "You do not have permission to update this property."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        request_data = request.data.copy()
-        property_image = request_data.pop("property_image", None)
-        old_image_path = None
-        default_property_image = "property_images/default_image.jpg"
-
-        if property_image:
-            if (
-                property_instance.image_url
-                and property_instance.image_url.name != default_property_image
-            ):
-                old_image_path = os.path.join(
-                    settings.MEDIA_ROOT, property_instance.image_url.name
-                )
-
-            property_image_serializer = PropertyImageSerializer(
-                property_instance, data={"image_url": property_image}
-            )
-            property_image_serializer.is_valid(raise_exception=True)
-            property_image_serializer.save()
-
-            if os.path.exists(old_image_path):
-                os.remove(old_image_path)
-
-        partial = kwargs.pop("partial", False)
-        serializer = self.get_serializer(
-            property_instance, data=request_data, partial=partial
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        response_serializer = PropertyRetrieveSerializer(property_instance)
-
-        return Response(
-            {
-                "success": "Property updated successfully.",
-                "data": response_serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
 
     @extend_schema(
         summary="Delete Property Listing",
@@ -430,7 +479,7 @@ class PropertyViewSet(ModelViewSet):
                 name="Successful Deletion",
                 response_only=True,
                 status_codes=["204"],
-                value={"success": "Property [Title] deleted successfully."},
+                value={"success": "Property Nice House deleted successfully."},
             ),
             OpenApiExample(
                 name="Unauthorized Delete Error",
@@ -450,8 +499,12 @@ class PropertyViewSet(ModelViewSet):
         """Allow only agents and superusers to delete their own property."""
         current_user = self.request.user
         property_instance = self.get_object()
+        title = property_instance.title
 
-        if current_user != property_instance.agent.user:
+        if (
+            current_user != property_instance.agent.user
+            and not current_user.is_superuser
+        ):
             return Response(
                 {"error": "You are not authorized to delete this property."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -475,9 +528,7 @@ class PropertyViewSet(ModelViewSet):
 
         if response.status_code == status.HTTP_204_NO_CONTENT:
             return Response(
-                {
-                    "success": f"Property {property_instance.title} deleted successfully."
-                },
+                {"success": f"Property {title} deleted successfully."},
                 status=status.HTTP_204_NO_CONTENT,
             )
 

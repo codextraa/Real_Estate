@@ -10,14 +10,18 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiExample,
+    OpenApiResponse,
+)
 from backend.renderers import ViewRenderer
 from backend.mixins import http_method_mixin
 from backend.schema_serializers import (
@@ -214,6 +218,34 @@ def check_user_id(user_id):
         ),
     },
     examples=[
+        OpenApiExample(
+            name="Superuser Login Request Example",
+            value={
+                "email": "superuser@example.com",
+                "password": "Django@123",
+            },
+        ),
+        OpenApiExample(
+            name="Staff Login Request Example",
+            value={
+                "email": "staffuser@example.com",
+                "password": "Django@123",
+            },
+        ),
+        OpenApiExample(
+            name="Agent Login Request Example",
+            value={
+                "email": "agentuser@example.com",
+                "password": "Django@123",
+            },
+        ),
+        OpenApiExample(
+            name="Default User Login Request Example",
+            value={
+                "email": "defaultuser@example.com",
+                "password": "Django@123",
+            },
+        ),
         OpenApiExample(
             name="Successful Agent Login",
             response_only=True,
@@ -458,7 +490,7 @@ class RefreshTokenView(TokenRefreshView):
 
     renderer_classes = [ViewRenderer]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):  # pylint: disable=R0911
         """Post a request to RefreshTokenView. Verifies OTP and generates JWT tokens."""
         try:
             refresh_token = request.data.get("refresh")
@@ -486,7 +518,10 @@ class RefreshTokenView(TokenRefreshView):
             decoded_token = RefreshToken(refresh_token)
             user_id = decoded_token.get("user_id", None)
             if not user_id:
-                raise InvalidToken("Invalid refresh token")
+                return Response(
+                    {"error": "Invalid tokens"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             # Check user validity
             user = check_user_id(user_id)
@@ -568,6 +603,78 @@ class UserViewSet(ModelViewSet):
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="List All Users",
+        description=(
+            "Returns a paginated list of all user accounts. "
+            "Access is restricted to staff/superusers.",
+        ),
+        tags=["User Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: UserListSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. User does not have staff or superuser privileges.",
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Forbidden Access",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to perform this action."},
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        """List all users."""
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve Single User Details",
+        description="Returns the details of a specific user by ID.",
+        tags=["User Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: UserRetrieveSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=(
+                    "Not Found. "
+                    "The user ID does not exist "
+                    "or the authenticated user does not have permission to view it.",
+                ),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Not found."},
+            ),
+            OpenApiExample(
+                name="Forbidden Access",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to perform this action."},
+            ),
+            OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+        ],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific user."""
+        return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
         summary="Create New User",
@@ -695,83 +802,10 @@ class UserViewSet(ModelViewSet):
         if response.status_code != status.HTTP_201_CREATED:
             return response
 
-        # pylint: disable=R0801
         return Response(
             {"success": "User created successfully."},
             status=status.HTTP_201_CREATED,
         )
-
-    @extend_schema(
-        summary="List All Users",
-        description=(
-            "Returns a paginated list of all user accounts. "
-            "Access is restricted to staff/superusers.",
-        ),
-        tags=["User Management"],
-        request=None,
-        responses={
-            status.HTTP_200_OK: UserListSerializer,
-            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
-            status.HTTP_403_FORBIDDEN: OpenApiResponse(
-                response=ErrorResponseSerializer,
-                description="Forbidden. User does not have staff or superuser privileges.",
-            ),
-        },
-        examples=[
-            OpenApiExample(
-                name="Forbidden Access",
-                response_only=True,
-                status_codes=["403"],
-                value={"error": "You do not have permission to perform this action."},
-            ),
-        ],
-    )
-    def list(self, request, *args, **kwargs):
-        """List all users."""
-        return super().list(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Retrieve Single User Details",
-        description="Returns the details of a specific user by ID.",
-        tags=["User Management"],
-        request=None,
-        responses={
-            status.HTTP_200_OK: UserRetrieveSerializer,
-            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
-            status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
-            status.HTTP_404_NOT_FOUND: OpenApiResponse(
-                response=ErrorResponseSerializer,
-                description=(
-                    "Not Found. "
-                    "The user ID does not exist "
-                    "or the authenticated user does not have permission to view it.",
-                ),
-            ),
-        },
-        examples=[
-            OpenApiExample(
-                name="Not Found Error",
-                response_only=True,
-                status_codes=["404"],
-                value={"error": "Not found."},
-            ),
-            OpenApiExample(
-                name="Forbidden Access",
-                response_only=True,
-                status_codes=["403"],
-                value={"error": "You do not have permission to perform this action."},
-            ),
-            OpenApiExample(
-                name="Unauthorized Access",
-                response_only=True,
-                status_codes=["401"],
-                value={"error": "You are not authenticated."},
-            ),
-        ],
-    )
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve a specific user."""
-        return super().retrieve(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         """Allow only users to update their own profile. SuperUser can update any profile.
@@ -783,7 +817,6 @@ class UserViewSet(ModelViewSet):
             return not_allowed_method
 
         user = self.get_object()
-        # pylint: enable=R0801
 
         check_integrity = check_update_request_data(user, request)
 
@@ -793,7 +826,11 @@ class UserViewSet(ModelViewSet):
         response = super().update(request, *args, **kwargs)
 
         if response.status_code == status.HTTP_200_OK:
-            retrieve_serializer = UserRetrieveSerializer(user)
+            user.refresh_from_db()
+            retrieve_serializer = UserRetrieveSerializer(
+                user,
+                context=self.get_serializer_context(),
+            )
             return Response(
                 {
                     "success": "User profile updated successfully.",
@@ -829,6 +866,7 @@ class UserViewSet(ModelViewSet):
         examples=[
             OpenApiExample(
                 name="Success",
+                response_only=True,
                 status_codes=["200"],
                 value={
                     "success": "User profile updated successfully.",
@@ -926,6 +964,8 @@ class UserViewSet(ModelViewSet):
         ],
     )
     def partial_update(self, request, *args, **kwargs):
+        """Partially updates an existing user profile (PATCH method)."""
+        kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
@@ -982,7 +1022,7 @@ class UserViewSet(ModelViewSet):
         ],
     )
     def destroy(self, request, *args, **kwargs):
-        """Allow only superusers to delete normal or staff users and clean up profile image."""
+        """Allow user to delete their own profile and superuser to delete normal or staff users"""
         current_user = self.request.user
         user_to_delete = self.get_object()
 
@@ -1078,6 +1118,46 @@ class AgentViewSet(ModelViewSet):
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="List All Agents",
+        description=("Returns a paginated list of all Agent accounts. "),
+        tags=["Agent Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: AgentListSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+        },
+    )
+    def list(self, request, *args, **kwargs):
+        """List all Agents."""
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve Single Agent Details",
+        description="Returns the details of a specific agent by ID.",
+        tags=["Agent Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: AgentRetrieveSerializer,
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("Not Found. " "The agent ID does not exist "),
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Not Found Error",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Not found."},
+            ),
+        ],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific agent."""
+        return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
         summary="Register New Agent",
@@ -1206,7 +1286,7 @@ class AgentViewSet(ModelViewSet):
         ],
     )
     def create(self, request, *args, **kwargs):
-        """Create Agent Profile"""
+        """Create User and Agent Profile"""
 
         check_integrity = check_create_request_data(request)
 
@@ -1215,13 +1295,14 @@ class AgentViewSet(ModelViewSet):
 
         request_data = request.data.copy()
         agent_keys = ["company_name", "bio", "profile_image"]
-        user_request_data = request_data
+        user_request_data = {}
         agent_request_data = {}
 
-        for key in user_request_data.keys():
+        for key in request_data.keys():
             if key in agent_keys:
                 agent_request_data[key] = request_data[key]
-                user_request_data.pop(key)
+            else:
+                user_request_data[key] = request_data[key]
 
         user_serializer = UserSerializer(data=user_request_data)
         user_serializer.is_valid(raise_exception=True)
@@ -1240,47 +1321,80 @@ class AgentViewSet(ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    def update(self, request, *args, **kwargs):  # pylint: disable=R0914
+        """Update Agent Profile and User Profile"""
+
+        not_allowed_method = self.http_method_not_allowed(request)
+
+        if not_allowed_method:
+            return not_allowed_method
+
+        agent = self.get_object()
+        user_instance = agent.user
+
+        check_integrity = check_update_request_data(user_instance, request)
+
+        if isinstance(check_integrity, Response):
+            return check_integrity
+
+        request_data = request.data.copy()
+        agent_keys = ["company_name", "bio", "profile_image"]
+        user_request_data = {}
+        agent_request_data = {}
+
+        for key in request_data.keys():
+            if key in agent_keys:
+                agent_request_data[key] = request_data[key]
+            else:
+                user_request_data[key] = request_data[key]
+
+        partial = kwargs.pop("partial", False)
+        user_serializer = UserSerializer(
+            user_instance, data=user_request_data, partial=partial
+        )
+        user_serializer.is_valid(raise_exception=True)
+        user_serializer.save()
+
+        profile_image = agent_request_data.pop("profile_image", None)
+        old_image_path = None
+
+        if profile_image:
+            if (
+                agent.image_url
+                and agent.image_url.name != "profile_images/default_profile.jpg"
+            ):
+                old_image_path = os.path.join(settings.MEDIA_ROOT, agent.image_url.name)
+
+            agent_image_serializer = AgentImageSerializer(
+                agent, data={"image_url": profile_image}
+            )
+            agent_image_serializer.is_valid(raise_exception=True)
+            agent_image_serializer.save()
+
+            if old_image_path and os.path.exists(old_image_path):
+                os.remove(old_image_path)
+
+        agent_serializer = self.get_serializer(
+            agent, data=agent_request_data, partial=partial
+        )
+        agent_serializer.is_valid(raise_exception=True)
+        agent_serializer.save()
+
+        agent.refresh_from_db()
+        response_serializer = AgentRetrieveSerializer(
+            agent,
+            context=self.get_serializer_context(),
+        )
+
+        return Response(
+            {
+                "success": "Agent updated successfully",
+                "data": response_serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
     # pylint: disable=R0801
-    @extend_schema(
-        summary="List All Agents",
-        description=("Returns a paginated list of all Agent accounts. "),
-        tags=["Agent Management"],
-        request=None,
-        responses={
-            status.HTTP_200_OK: AgentListSerializer,
-            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
-        },
-    )
-    def list(self, request, *args, **kwargs):
-        """List all Agents."""
-        return super().list(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Retrieve Single Agent Details",
-        description="Returns the details of a specific agent by ID.",
-        tags=["Agent Management"],
-        request=None,
-        responses={
-            status.HTTP_200_OK: UserRetrieveSerializer,
-            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
-            status.HTTP_404_NOT_FOUND: OpenApiResponse(
-                response=ErrorResponseSerializer,
-                description=("Not Found. " "The agent ID does not exist "),
-            ),
-        },
-        examples=[
-            OpenApiExample(
-                name="Not Found Error",
-                response_only=True,
-                status_codes=["404"],
-                value={"error": "Not found."},
-            ),
-        ],
-    )
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve a specific user."""
-        return super().retrieve(request, *args, **kwargs)
-
     @extend_schema(
         summary="Update Agent Profile (Partial)",
         description=(
@@ -1290,7 +1404,19 @@ class AgentViewSet(ModelViewSet):
         tags=["Agent Management"],
         request={
             "application/json": AgentUpdateRequestSerializer,
-            "multipart/form-data": AgentUpdateRequestSerializer,
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "password": {"type": "string", "format": "password"},
+                    "c_password": {"type": "string", "format": "password"},
+                    "username": {"type": "string"},
+                    "first_name": {"type": "string"},
+                    "last_name": {"type": "string"},
+                    "company_name": {"type": "string"},
+                    "bio": {"type": "string"},
+                    "profile_image": {"type": "string", "format": "binary"},
+                },
+            },
         },
         responses={
             status.HTTP_200_OK: OpenApiResponse(
@@ -1460,76 +1586,11 @@ class AgentViewSet(ModelViewSet):
         ],
     )
     def partial_update(self, request, *args, **kwargs):
+        """Partially updates the Agent's profile (Use data and Agent data)."""
+        kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
     # pylint: enable=R0801
-    def update(self, request, *args, **kwargs):  # pylint: disable=R0914
-        """Update Agent Profile"""
-
-        not_allowed_method = self.http_method_not_allowed(request)
-
-        if not_allowed_method:
-            return not_allowed_method
-
-        agent = self.get_object()
-        user_instance = agent.user
-
-        check_integrity = check_update_request_data(user_instance, request)
-
-        if isinstance(check_integrity, Response):
-            return check_integrity
-
-        request_data = request.data.copy()
-        agent_keys = ["company_name", "bio", "profile_image"]
-        user_request_data = request_data
-        agent_request_data = {}
-
-        for key in user_request_data.keys():
-            if key in agent_keys:
-                agent_request_data[key] = request_data[key]
-                user_request_data.pop(key)
-
-        user_serializer = UserSerializer(
-            user_instance, data=user_request_data, partial=True
-        )
-        user_serializer.is_valid(raise_exception=True)
-        user_serializer.save()
-
-        profile_image = request.data.pop("profile_image", None)
-        old_image_path = None
-
-        if profile_image:
-            if (
-                agent.image_url
-                and agent.image_url.name != "profile_images/default_profile.jpg"
-            ):
-                old_image_path = os.path.join(settings.MEDIA_ROOT, agent.image_url.name)
-
-            agent_image_serializer = AgentImageSerializer(
-                agent, data={"image_url": profile_image}
-            )
-            agent_image_serializer.is_valid(raise_exception=True)
-            agent_image_serializer.save()
-
-            if os.path.exists(old_image_path):
-                os.remove(old_image_path)
-
-        partial = kwargs.pop("partial", False)
-        agent_serializer = self.get_serializer(
-            agent, data=agent_request_data, partial=partial
-        )
-        agent_serializer.is_valid(raise_exception=True)
-        self.perform_update(agent_serializer)
-
-        response_serializer = AgentRetrieveSerializer(agent)
-
-        return Response(
-            {
-                "success": "Agent updated successfully",
-                "data": response_serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
 
     @extend_schema(
         summary="Delete Agent Profile",
