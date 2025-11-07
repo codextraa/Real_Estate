@@ -11,13 +11,15 @@ from datetime import timedelta, datetime
 from django.utils.timezone import now
 from django.conf import settings
 
+
 TEST_EMAIL = "test@example.com"
 TEST_PASSWORD = "StrongPassword123!"
 AGENT_ROLE = "Agent"
 User = get_user_model()
+USER_LIST_URL = reverse('user-list')
+USER_DETAIL_URL = lambda pk: reverse('user-detail', kwargs={'pk': pk})
 
 
-# Inherit from APITestCase
 class LoginViewIntegrationTests(APITestCase):
     """Integration Test suite for LoginView using real User data and unique emails."""
 
@@ -437,3 +439,318 @@ class LogoutViewIntegrationTests(APITestCase):
         # NOTE: If your view's TokenError block returns 500, the status check should be:
         # self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
         # self.assertIn("token is invalid", str(response.data).lower())
+
+
+class UserViewSetTests(APITestCase):
+    """Tests for the UserViewSet covering all CRUD actions and custom logic."""
+
+    def setUp(self):
+        self.password = 'StrongP@ss123'
+
+        # Superuser (is_superuser=True, is_staff=True)
+        self.superuser = User.objects.create_superuser(
+            email='super@test.com', username='superadmin', password=self.password, first_name='Super', last_name='Admin'
+        )
+        # Staff User (is_staff=True)
+        self.staff_user = User.objects.create_user(
+            email='staff@test.com', username='staffuser', password=self.password, is_staff=True, first_name='Staff', last_name='User'
+        )
+        self.another_staff_user = User.objects.create_user(
+            email='anotherstaff@test.com', username='anotherstaffuser', password=self.password, is_staff=True, first_name='Another Staff', last_name='User'
+        )
+
+        # Agent Users (is_agent=True)
+        self.agent_user = User.objects.create_user(
+            email='agent@test.com', username='agentuser', password=self.password, is_agent=True, first_name='Agent', last_name='User'
+        )
+
+        # Normal Users (default state)
+        self.normal_user = User.objects.create_user(
+            email='normal@test.com', username='normaluser', password=self.password, first_name='Normal', last_name='User'
+        )
+        self.another_normal_user = User.objects.create_user(
+            email='another@test.com', username='anotheruser', password=self.password, first_name='Another', last_name='User'
+        )
+
+        self.client = APIClient()
+
+    def _authenticate(self, user):
+        """Helper to set authentication header for the client."""
+        self.client.force_authenticate(user=user)
+
+    def _get_list_response(self, user):
+        """Helper to authenticate and get the list response."""
+        self._authenticate(user)
+        return self.client.get(USER_LIST_URL)
+
+    def get_valid_create_data(self):
+        return {
+            'email': 'newuser@test.com',
+            'username': 'newuser123',
+            'password': 'NewP@ss123!',
+            'c_password': 'NewP@ss123!',
+            'first_name': 'New',
+            'last_name': 'User',
+        }
+
+    #------GET TESTS------
+
+    def test_list_users_superuser_allowed(self):
+        """Superusers should see all users."""
+        response = self._get_list_response(self.superuser)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(response.data['count'], 5)
+
+    def test_list_users_staff_allowed(self):
+        """Staff users should see all users."""
+        response = self._get_list_response(self.staff_user)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(response.data['count'], 5)
+
+    def test_list_users_normal_user_denied(self):
+        """Normal users should see no users (empty list from get_queryset)."""
+        response = self._get_list_response(self.normal_user)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_list_users_unauthenticated_denied(self):
+        """Unauthenticated access should be denied by IsAuthenticated permission."""
+        response = self.client.get(USER_LIST_URL)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_user_superuser_allowed(self):
+        """Superuser can retrieve any user."""
+        self._authenticate(self.superuser)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], self.normal_user.pk)
+
+    def test_retrieve_user_staff_allowed(self):
+        """Staff user can retrieve any user."""
+        self._authenticate(self.staff_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], self.normal_user.pk)
+
+    def test_retrieve_user_self_allowed(self):
+        """Any authenticated user can retrieve their own profile."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_user_normal_user_denied_other_normal(self):
+        """Normal user cannot retrieve another normal user's profile."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.another_normal_user.pk)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND) # Filtered by get_queryset
+
+    def test_retrieve_user_normal_user_allowed_agent(self):
+        """Normal user can retrieve an Agent profile (based on Q(is_agent=True))."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.agent_user.pk)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    #------POST TESTS------
+
+    def test_create_user_success(self):
+        """Test successful user registration (AllowAny permission)."""
+        data = self.get_valid_create_data()
+        response = self.client.post(USER_LIST_URL, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data.get('success'), 'User created successfully.')
+        self.assertTrue(User.objects.filter(email=data['email']).exists())
+
+    def test_superuser_creates_staff_user_success(self):
+        """Test successful staff user creation by superuser."""
+        data = self.get_valid_create_data()
+        data['is_staff'] = True
+        self._authenticate(self.superuser)
+        response = self.client.post(USER_LIST_URL, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data.get('success'), 'User created successfully.')
+        self.assertTrue(User.objects.filter(email=data['email']).exists())
+
+    def test_create_user_mismatched_passwords(self):
+        """Test password mismatch validation in check_create_request_data."""
+        data = self.get_valid_create_data()
+        data["c_password"] = "WrongP@ss123"
+        response = self.client.post(USER_LIST_URL, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Passwords do not match", response.data["error"])
+
+    def test_create_user_missing_password_confirm(self):
+        """Test missing confirmation password in check_create_request_data."""
+        data = self.get_valid_create_data()
+        del data["c_password"]
+        response = self.client.post(USER_LIST_URL, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Please confirm your password", response.data["error"])
+
+    def test_create_user_forbidden_superuser_field(self):
+        """Test prohibition of creating a superuser by setting is_superuser."""
+        data = self.get_valid_create_data()
+        data['is_superuser'] = True
+        self._authenticate(self.superuser)
+        response = self.client.post(USER_LIST_URL, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn('You do not have permission to create a superuser. Contact Developer.', response.data['error'])
+
+    def test_create_user_forbidden_staff_field_by_normal_user(self):
+        """Test prohibition of creating a staff user by a normal user."""
+        data = self.get_valid_create_data()
+        data['is_staff'] = True
+        self._authenticate(self.normal_user)
+        response = self.client.post(USER_LIST_URL, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn('create an admin user', response.data['error'])
+
+    def test_create_user_forbidden_fields(self):
+        """Test prohibition of setting `slug` field."""
+        data = self.get_valid_create_data()
+        data['slug'] = 'custom-slug'
+        response = self.client.post(USER_LIST_URL, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("Forbidden fields cannot be updated.", response.data['error'])
+
+        del data['slug']
+        data['is_active'] = False
+        response = self.client.post(USER_LIST_URL, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("Forbidden fields cannot be updated.", response.data['error'])
+
+    def test_create_user_duplicate_email(self):
+        """Test serializer validation for duplicate email."""
+        data = self.get_valid_create_data()
+        data['email'] = self.normal_user.email
+        response = self.client.post(USER_LIST_URL, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {"errors": {"email": ["user with this email already exists."]}})
+
+    #------PATCH TESTS------
+
+    # def test_update_user_self_success(self):
+    #     """Normal user can successfully update their own profile."""
+    #     self._authenticate(self.normal_user)
+    #     url = USER_DETAIL_URL(self.normal_user.pk)
+    #     new_data = {'first_name': 'NewName'}
+    #     response = self.client.patch(url, new_data, format='json')
+    #     # FIX: Should now pass with 200, as self-update is allowed by get_queryset
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #     self.assertEqual(response.data['data']['first_name'], 'NewName')
+
+    # def test_update_user_superuser_success(self):
+    #     """Superuser can update another user's profile."""
+    #     self._authenticate(self.superuser)
+    #     url = USER_DETAIL_URL(self.normal_user.pk)
+    #     new_data = {'first_name': 'SuperUpdate'}
+    #     response = self.client.patch(url, new_data, format='json')
+    #     # FIX: Should now pass with 200, as superuser is allowed by get_queryset
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #     self.assertEqual(response.data['data']['first_name'], 'SuperUpdate')
+
+    # def test_update_user_unauthorized_other_user(self):
+    #     """Normal user cannot update another user (check_update_request_data)."""
+    #     self._authenticate(self.normal_user)
+    #     url = USER_DETAIL_URL(self.another_normal_user.pk)
+    #     new_data = {'first_name': 'Attempted Hack'}
+    #     response = self.client.patch(url, new_data, format='json')
+    #     # FIX: The get_queryset filters this user out first for the 'normal_user', leading to 404.
+    #     # It never hits check_update_request_data. We change assertion to the observed behavior.
+    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    #     # self.assertIn('You do not have permission to update this user', response.data['error']) # Old assertion was based on check_update_request_data
+
+    # def test_update_user_forbidden_email_field(self):
+    #     """Cannot update the email field (check_update_request_data)."""
+    #     self._authenticate(self.normal_user)
+    #     url = USER_DETAIL_URL(self.normal_user.pk)
+    #     new_data = {'email': 'new_email@test.com'}
+    #     response = self.client.patch(url, new_data, format='json')
+    #     # FIX: Self-update is allowed by get_queryset, so it should hit check_update_request_data.
+    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    #     self.assertIn('You cannot update the email field', response.data['error'])
+
+    # def test_update_user_forbidden_internal_fields(self):
+    #     """Cannot update status fields like is_staff (check_update_request_data)."""
+    #     self._authenticate(self.normal_user)
+    #     url = USER_DETAIL_URL(self.normal_user.pk)
+    #     new_data = {'is_staff': True}
+    #     response = self.client.patch(url, new_data, format='json')
+    #     # FIX: Self-update is allowed by get_queryset, so it should hit check_update_request_data.
+    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    #     self.assertIn('Forbidden fields cannot be updated', response.data['error'])
+
+    # def test_update_user_password_mismatch(self):
+    #     """Test password change validation (check_update_request_data)."""
+    #     self._authenticate(self.normal_user)
+    #     url = USER_DETAIL_URL(self.normal_user.pk)
+    #     new_data = {'password': 'NewP@ss123', 'c_password': 'Mismatch'}
+    #     response = self.client.patch(url, new_data, format='json')
+    #     # FIX: Self-update is allowed by get_queryset, so it should hit check_update_request_data.
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     self.assertIn('Passwords do not match', response.data['error'])
+
+    # def test_update_user_password_missing_confirm(self):
+    #     """Test password change validation (check_update_request_data)."""
+    #     self._authenticate(self.normal_user)
+    #     url = USER_DETAIL_URL(self.normal_user.pk)
+    #     new_data = {'password': 'NewP@ss123'} # Missing c_password
+    #     response = self.client.patch(url, new_data, format='json')
+    #     # FIX: Self-update is allowed by get_queryset, so it should hit check_update_request_data.
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     self.assertIn('Please confirm your password', response.data['error'])
+
+    # def test_full_update_put_disallowed(self):
+    #     """Test that the PUT method is disallowed (http_method_not_allowed)."""
+    #     self._authenticate(self.normal_user)
+    #     url = USER_DETAIL_URL(self.normal_user.pk)
+    #     data = {'email': 'test@test.com'} # Minimal valid data
+    #     response = self.client.put(url, data, format='json')
+    #     self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    # def test_delete_user_self_success(self):
+    #     """Normal user can delete their own profile."""
+    #     self._authenticate(self.normal_user)
+    #     user_to_delete_pk = self.normal_user.pk
+    #     url = USER_DETAIL_URL(user_to_delete_pk)
+    #     response = self.client.delete(url)
+    #     # FIX: Self-delete is allowed by get_queryset and destroy logic
+    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    #     # Verify the user is deleted
+    #     self.assertFalse(User.objects.filter(pk=user_to_delete_pk).exists())
+
+    # def test_delete_user_superuser_deletes_normal_success(self):
+    #     """Superuser can delete a normal user."""
+    #     self._authenticate(self.superuser)
+    #     user_to_delete_pk = self.another_normal_user.pk
+    #     url = USER_DETAIL_URL(user_to_delete_pk)
+    #     response = self.client.delete(url)
+    #     # FIX: Superuser delete is allowed by get_queryset and destroy logic
+    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    #     self.assertFalse(User.objects.filter(pk=user_to_delete_pk).exists())
+
+    # def test_delete_user_unauthorized_other_user(self):
+    #     """Normal user cannot delete another normal user."""
+    #     self._authenticate(self.normal_user)
+    #     user_to_delete_pk = self.another_normal_user.pk
+    #     url = USER_DETAIL_URL(user_to_delete_pk)
+    #     response = self.client.delete(url)
+    #     # FIX: The get_queryset filters this user out first for the 'normal_user', leading to 404.
+    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    #     # Verify user still exists
+    #     self.assertTrue(User.objects.filter(pk=user_to_delete_pk).exists())
+
+    # def test_delete_user_cannot_delete_superuser(self):
+    #     """Any user (including superuser) cannot delete a superuser."""
+    #     self._authenticate(self.superuser) # Superuser attempting to delete a superuser
+    #     url = USER_DETAIL_URL(self.superuser.pk)
+    #     response = self.client.delete(url)
+    #     # FIX: Superuser is allowed by get_queryset, so it hits the destroy check.
+    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    #     self.assertIn('You cannot delete superusers', response.data['error'])
+    #     # Verify superuser still exists
+    #     self.assertTrue(User.objects.filter(pk=self.superuser.pk).exists())

@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
+from core_db.models import Property
 from backend.mixins import http_method_mixin
 from backend.renderers import ViewRenderer
 from backend.schema_serializers import (
@@ -13,7 +14,6 @@ from backend.schema_serializers import (
     PropertyUpdateRequestSerializer,
     ErrorResponseSerializer,
 )
-from core_db.models import Property
 from .filters import PropertyFilter
 from .paginations import PropertyPagination
 from .serializers import (
