@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from backend.validators import validate_password_complexity
 from core_db.models import User, Agent
+from backend.validators import validate_password_complexity
 
 
 class UserSerializer(serializers.ModelSerializer):
