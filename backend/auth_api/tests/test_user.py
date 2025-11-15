@@ -16,8 +16,8 @@ TEST_EMAIL = "test@example.com"
 TEST_PASSWORD = "StrongPassword123!"
 AGENT_ROLE = "Agent"
 User = get_user_model()
-USER_LIST_URL = reverse('user-list')
-USER_DETAIL_URL = lambda pk: reverse('user-detail', kwargs={'pk': pk})
+USER_LIST_URL = reverse("user-list")
+USER_DETAIL_URL = lambda pk: reverse("user-detail", kwargs={"pk": pk})
 
 
 class LoginViewIntegrationTests(APITestCase):
@@ -445,31 +445,58 @@ class UserViewSetTests(APITestCase):
     """Tests for the UserViewSet covering all CRUD actions and custom logic."""
 
     def setUp(self):
-        self.password = 'StrongP@ss123'
+        self.password = "StrongP@ss123"
 
         # Superuser (is_superuser=True, is_staff=True)
         self.superuser = User.objects.create_superuser(
-            email='super@test.com', username='superadmin', password=self.password, first_name='Super', last_name='Admin'
+            email="super@test.com",
+            username="superadmin",
+            password=self.password,
+            first_name="Super",
+            last_name="Admin",
         )
         # Staff User (is_staff=True)
         self.staff_user = User.objects.create_user(
-            email='staff@test.com', username='staffuser', password=self.password, is_staff=True, first_name='Staff', last_name='User'
+            email="staff@test.com",
+            username="staffuser",
+            password=self.password,
+            is_staff=True,
+            first_name="Staff",
+            last_name="User",
         )
         self.another_staff_user = User.objects.create_user(
-            email='anotherstaff@test.com', username='anotherstaffuser', password=self.password, is_staff=True, first_name='Another Staff', last_name='User'
+            email="anotherstaff@test.com",
+            username="anotherstaffuser",
+            password=self.password,
+            is_staff=True,
+            first_name="Another Staff",
+            last_name="User",
         )
 
         # Agent Users (is_agent=True)
         self.agent_user = User.objects.create_user(
-            email='agent@test.com', username='agentuser', password=self.password, is_agent=True, first_name='Agent', last_name='User'
+            email="agent@test.com",
+            username="agentuser",
+            password=self.password,
+            is_agent=True,
+            first_name="Agent",
+            last_name="User",
         )
 
         # Normal Users (default state)
         self.normal_user = User.objects.create_user(
-            email='normal@test.com', username='normaluser', password=self.password, first_name='Normal', last_name='User'
+            email="normal@test.com",
+            username="normaluser",
+            password=self.password,
+            first_name="Normal",
+            last_name="User",
         )
         self.another_normal_user = User.objects.create_user(
-            email='another@test.com', username='anotheruser', password=self.password, first_name='Another', last_name='User'
+            email="another@test.com",
+            username="anotheruser",
+            password=self.password,
+            first_name="Another",
+            last_name="User",
         )
 
         self.client = APIClient()
@@ -485,33 +512,33 @@ class UserViewSetTests(APITestCase):
 
     def get_valid_create_data(self):
         return {
-            'email': 'newuser@test.com',
-            'username': 'newuser123',
-            'password': 'NewP@ss123!',
-            'c_password': 'NewP@ss123!',
-            'first_name': 'New',
-            'last_name': 'User',
+            "email": "newuser@test.com",
+            "username": "newuser123",
+            "password": "NewP@ss123!",
+            "c_password": "NewP@ss123!",
+            "first_name": "New",
+            "last_name": "User",
         }
 
-    #------GET TESTS------
+    # ------GET TESTS------
 
     def test_list_users_superuser_allowed(self):
         """Superusers should see all users."""
         response = self._get_list_response(self.superuser)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(response.data['count'], 5)
+        self.assertGreaterEqual(response.data["count"], 5)
 
     def test_list_users_staff_allowed(self):
         """Staff users should see all users."""
         response = self._get_list_response(self.staff_user)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(response.data['count'], 5)
+        self.assertGreaterEqual(response.data["count"], 5)
 
     def test_list_users_normal_user_denied(self):
         """Normal users should see no users (empty list from get_queryset)."""
         response = self._get_list_response(self.normal_user)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.data["count"], 0)
 
     def test_list_users_unauthenticated_denied(self):
         """Unauthenticated access should be denied by IsAuthenticated permission."""
@@ -524,7 +551,7 @@ class UserViewSetTests(APITestCase):
         url = USER_DETAIL_URL(self.normal_user.pk)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['id'], self.normal_user.pk)
+        self.assertEqual(response.data["id"], self.normal_user.pk)
 
     def test_retrieve_user_staff_allowed(self):
         """Staff user can retrieve any user."""
@@ -532,7 +559,7 @@ class UserViewSetTests(APITestCase):
         url = USER_DETAIL_URL(self.normal_user.pk)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['id'], self.normal_user.pk)
+        self.assertEqual(response.data["id"], self.normal_user.pk)
 
     def test_retrieve_user_self_allowed(self):
         """Any authenticated user can retrieve their own profile."""
@@ -546,7 +573,9 @@ class UserViewSetTests(APITestCase):
         self._authenticate(self.normal_user)
         url = USER_DETAIL_URL(self.another_normal_user.pk)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND) # Filtered by get_queryset
+        self.assertEqual(
+            response.status_code, status.HTTP_404_NOT_FOUND
+        )  # Filtered by get_queryset
 
     def test_retrieve_user_normal_user_allowed_agent(self):
         """Normal user can retrieve an Agent profile (based on Q(is_agent=True))."""
@@ -555,25 +584,25 @@ class UserViewSetTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    #------POST TESTS------
+    # ------POST TESTS------
 
     def test_create_user_success(self):
         """Test successful user registration (AllowAny permission)."""
         data = self.get_valid_create_data()
-        response = self.client.post(USER_LIST_URL, data, format='json')
+        response = self.client.post(USER_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get('success'), 'User created successfully.')
-        self.assertTrue(User.objects.filter(email=data['email']).exists())
+        self.assertEqual(response.data.get("success"), "User created successfully.")
+        self.assertTrue(User.objects.filter(email=data["email"]).exists())
 
     def test_superuser_creates_staff_user_success(self):
         """Test successful staff user creation by superuser."""
         data = self.get_valid_create_data()
-        data['is_staff'] = True
+        data["is_staff"] = True
         self._authenticate(self.superuser)
-        response = self.client.post(USER_LIST_URL, data, format='json')
+        response = self.client.post(USER_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get('success'), 'User created successfully.')
-        self.assertTrue(User.objects.filter(email=data['email']).exists())
+        self.assertEqual(response.data.get("success"), "User created successfully.")
+        self.assertTrue(User.objects.filter(email=data["email"]).exists())
 
     def test_create_user_mismatched_passwords(self):
         """Test password mismatch validation in check_create_request_data."""
@@ -594,44 +623,50 @@ class UserViewSetTests(APITestCase):
     def test_create_user_forbidden_superuser_field(self):
         """Test prohibition of creating a superuser by setting is_superuser."""
         data = self.get_valid_create_data()
-        data['is_superuser'] = True
+        data["is_superuser"] = True
         self._authenticate(self.superuser)
-        response = self.client.post(USER_LIST_URL, data, format='json')
+        response = self.client.post(USER_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertIn('You do not have permission to create a superuser. Contact Developer.', response.data['error'])
+        self.assertIn(
+            "You do not have permission to create a superuser. Contact Developer.",
+            response.data["error"],
+        )
 
     def test_create_user_forbidden_staff_field_by_normal_user(self):
         """Test prohibition of creating a staff user by a normal user."""
         data = self.get_valid_create_data()
-        data['is_staff'] = True
+        data["is_staff"] = True
         self._authenticate(self.normal_user)
-        response = self.client.post(USER_LIST_URL, data, format='json')
+        response = self.client.post(USER_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertIn('create an admin user', response.data['error'])
+        self.assertIn("create an admin user", response.data["error"])
 
     def test_create_user_forbidden_fields(self):
         """Test prohibition of setting `slug` field."""
         data = self.get_valid_create_data()
-        data['slug'] = 'custom-slug'
-        response = self.client.post(USER_LIST_URL, data, format='json')
+        data["slug"] = "custom-slug"
+        response = self.client.post(USER_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertIn("Forbidden fields cannot be updated.", response.data['error'])
+        self.assertIn("Forbidden fields cannot be updated.", response.data["error"])
 
-        del data['slug']
-        data['is_active'] = False
-        response = self.client.post(USER_LIST_URL, data, format='json')
+        del data["slug"]
+        data["is_active"] = False
+        response = self.client.post(USER_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertIn("Forbidden fields cannot be updated.", response.data['error'])
+        self.assertIn("Forbidden fields cannot be updated.", response.data["error"])
 
     def test_create_user_duplicate_email(self):
         """Test serializer validation for duplicate email."""
         data = self.get_valid_create_data()
-        data['email'] = self.normal_user.email
-        response = self.client.post(USER_LIST_URL, data, format='json')
+        data["email"] = self.normal_user.email
+        response = self.client.post(USER_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {"errors": {"email": ["user with this email already exists."]}})
+        self.assertEqual(
+            response.json(),
+            {"errors": {"email": ["user with this email already exists."]}},
+        )
 
-    #------PATCH TESTS------
+    # ------PATCH TESTS------
 
     # def test_update_user_self_success(self):
     #     """Normal user can successfully update their own profile."""
