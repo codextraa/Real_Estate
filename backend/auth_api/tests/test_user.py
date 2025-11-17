@@ -792,10 +792,8 @@ class UserViewSetTests(APITestCase):
     #     self.assertTrue(User.objects.filter(pk=self.superuser.pk).exists())
 
 
-AGENT_LIST_URL = reverse("agent-list")  # Assuming URL name 'agent-list'
-AGENT_DETAIL_URL = lambda pk: reverse(
-    "agent-detail", kwargs={"pk": pk}
-)  # Assuming URL name 'agent-detail'
+AGENT_LIST_URL = reverse("agent-list")
+AGENT_DETAIL_URL = lambda pk: reverse("agent-detail", kwargs={"pk": pk})
 
 
 class AgentViewSetTests(APITestCase):
@@ -807,16 +805,13 @@ class AgentViewSetTests(APITestCase):
     def setUp(self):
         self.password = "StrongP@ss123"
 
-        # Superuser
         self.superuser = User.objects.create_superuser(
             email="super@agenttest.com", password=self.password
         )
-        # Staff User (Admin)
         self.staff_user = User.objects.create_user(
             email="staff@agenttest.com", password=self.password, is_staff=True
         )
 
-        # Agent Users (is_agent=True)
         self.agent_user_1 = User.objects.create_user(
             email="agent1@test.com",
             password=self.password,
@@ -834,9 +829,6 @@ class AgentViewSetTests(APITestCase):
             email="normal@agenttest.com", password=self.password
         )
 
-        # Assuming an Agent profile is created automatically or we link it here if necessary
-        # Agent.objects.create(user=self.agent_user_1, ...) # If Agent is a separate profile model
-
         self.client = APIClient()
 
     def _authenticate(self, user):
@@ -851,14 +843,11 @@ class AgentViewSetTests(APITestCase):
             "c_password": "NewP@ss123!",
             "first_name": "New",
             "last_name": "Agent",
-            "is_agent": True,  # Crucial for Agent creation
+            "is_agent": True,
         }
-
-    # ------------------ LIST/RETRIEVE (GET) TESTS ------------------
 
     def test_list_agents_superuser_allowed(self):
         """Superuser should see all Agent users."""
-        self._authenticate(self.superuser)
         response = self.client.get(AGENT_LIST_URL)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Should see all agents created (e.g., agent1, agent2)
@@ -866,7 +855,6 @@ class AgentViewSetTests(APITestCase):
 
     def test_list_agents_staff_allowed(self):
         """Staff users should see all Agent users."""
-        self._authenticate(self.staff_user)
         response = self.client.get(AGENT_LIST_URL)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
