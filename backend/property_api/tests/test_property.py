@@ -1,4 +1,3 @@
-import jwt
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse
@@ -7,7 +6,6 @@ from core_db.models import Property
 
 User = get_user_model()
 
-# Assuming your property URL names are 'property-list' and 'property-detail'
 PROPERTY_LIST_URL = reverse("property-list")
 PROPERTY_DETAIL_URL = lambda pk: reverse("property-detail", kwargs={"pk": pk})
 
@@ -62,7 +60,7 @@ class PropertyViewSetTests(APITestCase):
             title="Other Agent Listing",
             price=500000,
             is_published=True,
-            agent=self.agent_other,  # Owned by a different agent
+            agent=self.agent_other,
         )
 
     def _authenticate(self, user):
