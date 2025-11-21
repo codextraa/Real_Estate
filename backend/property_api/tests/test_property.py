@@ -21,18 +21,21 @@ class PropertyViewSetTests(APITestCase):
         self.superuser = User.objects.create_superuser(
             email="super@test.com", username="superadmin", password=self.password
         )
+
         self.staff_user = User.objects.create_user(
             email="staff@test.com",
             username="staffuser",
             password=self.password,
             is_staff=True,
         )
+
         self.agent_owner = User.objects.create_user(
             email="owner@test.com",
             username="agentowner",
             password=self.password,
             is_agent=True,
         )
+
         self.agent_other = User.objects.create_user(
             email="other@test.com",
             username="agentother",
@@ -50,12 +53,14 @@ class PropertyViewSetTests(APITestCase):
             is_published=True,
             agent=self.agent_owner,
         )
+
         self.draft_property = Property.objects.create(
             title="Draft Apartment",
             price=150000,
             is_published=False,
             agent=self.agent_owner,
         )
+
         self.other_agent_property = Property.objects.create(
             title="Other Agent Listing",
             price=500000,
