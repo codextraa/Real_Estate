@@ -12,7 +12,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from core_db.models import Agent
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
@@ -23,6 +22,7 @@ from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiResponse,
 )
+from core_db.models import Agent
 from backend.renderers import ViewRenderer
 from backend.mixins import http_method_mixin
 from backend.schema_serializers import (
