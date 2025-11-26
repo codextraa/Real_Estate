@@ -88,7 +88,7 @@ export default function ProfileCard({ userData, userRole }) {
               href={`/profile/${userData.slug}/edit`}
               className={styles.editProfileButton}
             >
-              <GlobalButton text="Edit Profile" />
+              Edit Profile
             </Link>
           </div>
         </>

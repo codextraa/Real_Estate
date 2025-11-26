@@ -18,5 +18,7 @@
 
 .profileCardContainer {
   position: relative;
+  width: 90%;
+  max-width: 864px;
   z-index: 1;
 }
