@@ -27,11 +27,21 @@ export default async function ProfilePage({ params }) {
   }
 
   return (
-    <div className={styles.profilePageBackground}>
-      <Image src={imgUrl} alt="background" fill priority />
-      <div className={styles.profileCardContainer}>
-        <ProfileCard userData={response} userRole={userRole} />
+    <>
+      <div className={styles.profileImageWrapper}>
+        <Image
+          className={styles.profilePageBackgroundImage}
+          src={imgUrl}
+          alt="background"
+          fill
+          priority
+        />
       </div>
-    </div>
+      <div className={styles.profilePageWrapper}>
+        <div className={styles.profileCardContainer}>
+          <ProfileCard userData={response} userRole={userRole} />
+        </div>
+      </div>
+    </>
   );
 }
