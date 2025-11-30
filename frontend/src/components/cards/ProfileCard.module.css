@@ -1,6 +1,9 @@
+/* Common styles for both Agent and Customer containers */
 .profileInfoContainer {
-  /* Common styles for both Agent and Customer containers */
   background: #f7f7f7;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  color: #13252e;
   border: 3px solid #415261;
   border-radius: 35px;
   padding-top: 10px;
@@ -10,10 +13,7 @@
 }
 
 .profileDetailTitle {
-  font-family: var(--font-old-standard-tt);
-  font-weight: 700;
   font-size: 50px;
-  color: #13252e;
   text-align: left;
   margin-bottom: 10px;
 }
@@ -21,6 +21,10 @@
 .profileInfos {
   display: flex;
   flex-direction: column;
+  gap: 20px;
+}
+
+.profileInfosUser {
   align-items: center;
   gap: 30px;
   margin-bottom: 25px;
@@ -32,10 +36,7 @@
 }
 
 .profileLabel {
-  font-family: var(--font-old-standard-tt);
-  font-weight: 700;
   font-size: 18px;
-  color: #13252e;
   margin-bottom: -2px;
   display: block;
 }
@@ -45,15 +46,13 @@
   border-radius: 6px;
   width: 100%;
   padding: 5px 10px;
-  font-family: var(--font-old-standard-tt);
-  font-weight: 700;
   font-size: 18px;
-  color: #13252e;
   line-height: 1.2;
   overflow-x: auto;
   white-space: nowrap;
-  /* text-overflow: ellipsis; */
-  /* overflow: hidden;
+  /* For text overflow with ... */
+  /* text-overflow: ellipsis;
+  overflow: hidden;
   white-space: nowrap; */
 }
 
@@ -69,8 +68,6 @@
   cursor: pointer;
   transition: background 0.3s;
   color: #f7f7f7;
-  font-family: var(--font-old-standard-tt);
-  font-weight: 700;
   font-size: 18px;
   text-align: center;
   text-decoration: none;
@@ -85,6 +82,104 @@
   box-shadow: 0 0 5px rgba(19, 37, 46, 0.5);
 }
 
+/* Agent profile parts */
+
+.agentProfileContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 26px;
+}
+
+.ImageContainer {
+  width: 200px;
+  height: 150px;
+  border-radius: 12px;
+  border: 3px solid #415261;
+}
+
+.ImageContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9px;
+}
+
+.profileContainer {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.bioInfo {
+  margin-bottom: 30px;
+}
+
+.subTitle {
+  font-size: 25px;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.aboutMeLabel {
+  font-size: 20px;
+  margin-bottom: -2px;
+}
+
+.storedText {
+  border: 2px solid #415261;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 790px;
+  min-height: 65px;
+  padding: 5px 10px;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.profileDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 25px;
+}
+
+.profileBoxLabelAgent {
+  max-width: 710px;
+}
+
+.subTitle2 {
+  font-size: 20px;
+}
+
+.agentProfileButtonContainer {
+  display: flex;
+  max-width: 710px;
+  justify-content: space-between;
+}
+
+.editAgentProfileButton {
+  border-radius: 10px;
+  padding: 3px 36px;
+}
+
+.myListingsButton {
+  justify-content: space-between;
+  gap: 18px;
+  border-radius: 10px;
+  padding: 4px 13px;
+}
+
+.arrowIcon {
+  width: 23px;
+  height: 15px;
+}
+
+@media (max-width: 1200px) {
+  .agentProfileContainer {
+    flex-direction: column;
+  }
+}
+
 @media (max-width: 550px) {
   .profileInfoContainer {
     padding-bottom: 30px;
@@ -92,6 +187,22 @@
 
   .profileDetailTitle {
     font-size: 30px;
+  }
+
+  .subTitle {
+    font-size: 20px;
+  }
+
+  .aboutMeLabel {
+    font-size: 16px;
+  }
+
+  .storedText {
+    font-size: 16px;
+  }
+
+  .subTitle2 {
+    font-size: 18px;
   }
 
   .profileInfos {
@@ -113,6 +224,27 @@
     border-radius: 13px;
     padding: 6px 40px;
   }
+
+  .agentProfileButtonContainer {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .editAgentProfileButton {
+    max-width: 180px;
+    padding: 3px 36px;
+  }
+
+  .myListingsButton {
+    max-width: 180px;
+    padding: 4px 13px;
+  }
+
+  .arrowIcon {
+    width: 21px;
+    height: 13px;
+  }
 }
 
 @media (max-width: 400px) {
@@ -122,6 +254,22 @@
 
   .profileDetailTitle {
     font-size: 25px;
+  }
+
+  .subTitle {
+    font-size: 18px;
+  }
+
+  .aboutMeLabel {
+    font-size: 14px;
+  }
+
+  .storedText {
+    font-size: 14px;
+  }
+
+  .subTitle2 {
+    font-size: 16px;
   }
 
   .profileInfos {
@@ -142,140 +290,19 @@
     border-radius: 11px;
     padding: 5px 35px;
   }
+
+  .editAgentProfileButton {
+    max-width: 180px;
+    padding: 3px 36px;
+  }
+
+  .myListingsButton {
+    max-width: 180px;
+    padding: 4px 13px;
+  }
+
+  .arrowIcon {
+    width: 19px;
+    height: 11px;
+  }
 }
-
-/* @media (max-width: 900px) {
-  .profileInfoContainer:not(.agent) {
-    background-color: lightcoral;
-    width: 750px;
-    margin: 0 auto;
-  }
-
-  .profileInfos {
-    max-width: 50px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-} */
-
-/* --- Responsive Styles (Mobile First: Up to iPhone 6/SE) --- */
-
-/* @media (max-width: 768px) {
-  .profileInfoContainer:not(.agent) {
-    background-color: lightblue;
-    width: 600px;
-    margin: 0 auto;
-  }
-
-  .profileInfos {
-    grid-template-columns: 1fr;
-    max-width: 544px;
-    margin-left: auto;
-    margin-right: auto;
-  } */
-
-/* .profileDetailTitle {
-    font-size: 40px;
-    position: relative;
-    left:-20px;
-  } */
-
-/* Adjustments for stored content on mobile */
-/* .storedContent {
-    font-size: 16px;
-    margin-bottom: 15px;
-  } */
-
-/* Agent specific adjustments */
-
-/* .agentProfileContainer {
-    flex-direction: column; 
-    gap: 20px;
-  }
-
-  .ImageContainer {
-    width: 100%; 
-    height: 200px; 
-    margin-top: 0;
-  }
-
-
-  .subTitle {
-    font-size: 22px;
-  }
-
-  .subTitle2 {
-    font-size: 18px;
-  } */
-
-/* .agentProfileDetailButtonContainer,
-  .profileDetailButtonContainer {
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    margin-top: 30px;
-  }
-
-  .editProfileButton .globalButton,
-  .myListingsButton .globalButton {
-    width: 100%;
-    max-width: 280px;
-  }
-
-  @media (max-width: 620px) {
-    .profileInfoContainer:not(.agent) {
-      background-color: rgb(26, 196, 11);
-      max-width: 480px;
-      margin: 0 auto;
-    }
-
-    .profileInfos {
-      grid-template-columns: 1fr;
-      max-width: 240px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .profileBoxLabel {
-      width: 420px;
-    }
-  }
-
-  @media (max-width: 490px) {
-    .profileInfoContainer:not(.agent) {
-      background-color: rgb(196, 11, 113);
-      max-width: 350px;
-      margin: 0 auto;
-    }
-
-    .profileInfos {
-      grid-template-columns: 1fr;
-      max-width: 240px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .profileBoxLabel {
-      width: 320px;
-    }
-  }
-
-  @media (max-width: 360px) {
-    .profileInfoContainer:not(.agent) {
-      background-color: rgb(196, 153, 11);
-      max-width: 230px;
-      margin: 0 auto;
-    }
-
-    .profileInfos {
-      grid-template-columns: 1fr;
-      max-width: 240px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .profileBoxLabel {
-      width: 220px;
-    }
-  }
-} */

@@ -33,3 +33,7 @@
   padding-top: 60px;
   padding-bottom: 60px;
 }
+
+.profileCardContainerAgent {
+  max-width: 1117px;
+}

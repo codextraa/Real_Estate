@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./ProfileCard.module.css";
-import { GlobalButton } from "@/components/buttons/Buttons";
 
 export default function ProfileCard({ userData, userRole }) {
   return (
@@ -26,46 +25,80 @@ export default function ProfileCard({ userData, userRole }) {
               <label className={styles.aboutMeLabel}>About Me</label>
               <div className={styles.storedText}>{userData.bio}</div>
             </div>
-            <div className={styles.profileInfos}>
+            <div className={styles.profileDetails}>
               <h1 className={styles.subTitle2}>Details</h1>
-              <label className={styles.profileLabel}>Email Address</label>
-              <div className={styles.storedContent}>{userData.user.email}</div>
-              <label className={styles.profileLabel}>First Name</label>
-              <div className={styles.storedContent}>
-                {userData.user.first_name}
-              </div>
-              <label className={styles.profileLabel}>Last Name</label>
-              <div className={styles.storedContent}>
-                {userData.user.last_name}
-              </div>
-              <label className={styles.profileLabel}>Username</label>
-              <div className={styles.storedContent}>
-                {userData.user.username}
+              <div className={styles.profileInfos}>
+                <div
+                  className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                >
+                  <label className={styles.profileLabel}>Email Address</label>
+                  <div className={styles.storedContent}>
+                    {userData.user.email}
+                  </div>
+                </div>
+                <div
+                  className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                >
+                  <label className={styles.profileLabel}>First Name</label>
+                  <div className={styles.storedContent}>
+                    {userData.user.first_name}
+                  </div>
+                </div>
+                <div
+                  className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                >
+                  <label className={styles.profileLabel}>Last Name</label>
+                  <div className={styles.storedContent}>
+                    {userData.user.last_name}
+                  </div>
+                </div>
+                <div
+                  className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                >
+                  <label className={styles.profileLabel}>Username</label>
+                  <div className={styles.storedContent}>
+                    {userData.user.username}
+                  </div>
+                </div>
               </div>
             </div>
-            <div className={styles.companyInfo}>
+            <div className={styles.profileDetails}>
               <h1 className={styles.subTitle2}>Company Information</h1>
-              <label className={styles.profileLabel}>Company Name</label>
-              <div className={styles.storedContent}>
-                {userData.company_name}
+              <div
+                className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+              >
+                <label className={styles.profileLabel}>Company Name</label>
+                <div className={styles.storedContent}>
+                  {userData.company_name}
+                </div>
               </div>
             </div>
-            <div className={styles.agentProfileDetailButtonContainer}>
+            <div className={styles.agentProfileButtonContainer}>
               <Link
                 href={`/profile/${userData.user.slug}/edit`}
-                className={styles.editProfileButton}
+                className={`${styles.editProfileButton} ${styles.editAgentProfileButton}`}
               >
-                <GlobalButton text="Edit Profile" />
+                Edit Profile
               </Link>
-              <Link href={`/my-listings`} className={styles.myListingsButton}>
-                <GlobalButton text="My Listings" />
+              <Link
+                href={`/my-listings`}
+                className={`${styles.editProfileButton} ${styles.myListingsButton}`}
+              >
+                View Listings
+                <Image
+                  className={styles.arrowIcon}
+                  src="/assets/button-arrow.svg"
+                  alt="Right Arrow Icon"
+                  width={53}
+                  height={45}
+                />
               </Link>
             </div>
           </div>
         </div>
       ) : (
         <>
-          <div className={styles.profileInfos}>
+          <div className={`${styles.profileInfos} ${styles.profileInfosUser}`}>
             <div className={styles.profileBoxLabel}>
               <label className={styles.profileLabel}>Email Address</label>
               <div className={styles.storedContent}>{userData.email}</div>

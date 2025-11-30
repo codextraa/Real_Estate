@@ -26,6 +26,10 @@ export default async function ProfilePage({ params }) {
     return notFound();
   }
 
+  const containerClassStyle = `${styles.profileCardContainer} ${
+    userRole === "Agent" ? styles.profileCardContainerAgent : ""
+  }`;
+
   return (
     <>
       <div className={styles.profileImageWrapper}>
@@ -38,7 +42,7 @@ export default async function ProfilePage({ params }) {
         />
       </div>
       <div className={styles.profilePageWrapper}>
-        <div className={styles.profileCardContainer}>
+        <div className={containerClassStyle}>
           <ProfileCard userData={response} userRole={userRole} />
         </div>
       </div>

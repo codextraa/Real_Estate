@@ -84,7 +84,7 @@ class Command(BaseCommand):
 
         # Agent 2 (6 Properties)
         agent2 = AgentFactory.create()
-        agent1.user.groups.add(agent_group)
+        agent2.user.groups.add(agent_group)
         PropertyFactory.create_batch(6, agent=agent2)
         self.stdout.write(
             self.style.SUCCESS(
