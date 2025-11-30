@@ -1,14 +1,14 @@
-.profilePageBackground {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
+.profileImageWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
   height: 100vh;
+  z-index: 0;
   overflow: hidden;
 }
 
-.profilePageBackground img {
+.profilePageBackgroundImage {
   object-fit: cover;
   width: 100%;
   height: 100%;
@@ -16,7 +16,24 @@
   transform: scale(1.02);
 }
 
+.profilePageWrapper {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
 .profileCardContainer {
   position: relative;
+  width: 90%;
+  max-width: 864px;
   z-index: 1;
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+.profileCardContainerAgent {
+  max-width: 1117px;
 }

@@ -1,10 +1,11 @@
+/* Common styles for both Agent and Customer containers */
 .profileInfoContainer {
-  /* Common styles for both Agent and Customer containers */
   background: #f7f7f7;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  color: #13252e;
   border: 3px solid #415261;
   border-radius: 35px;
-  width: 864px;
-  /* Using padding and margin for flexible positioning instead of absolute top/left */
   padding-top: 10px;
   padding-bottom: 40px;
   padding-left: 30px;
@@ -12,11 +13,7 @@
 }
 
 .profileDetailTitle {
-  font-family: var(--font-old-standard-tt);
-  font-weight: 700;
   font-size: 50px;
-  /* Text color is dark, based on the background color given for the text */
-  color: #13252e;
   text-align: left;
   margin-bottom: 10px;
 }
@@ -24,42 +21,39 @@
 .profileInfos {
   display: flex;
   flex-direction: column;
+  gap: 20px;
+}
+
+.profileInfosUser {
   align-items: center;
   gap: 30px;
   margin-bottom: 25px;
 }
 
+.profileBoxLabel {
+  width: 100%;
+  max-width: 544px;
+}
+
 .profileLabel {
-  font-family: var(--font-old-standard-tt);
-  font-weight: 700;
   font-size: 18px;
-  color: #13252e;
-  margin-bottom: -3px;
+  margin-bottom: -2px;
   display: block;
 }
 
-.profileBoxLabel {
-  width: 544px;
-}
-
 .storedContent {
-  /* Box style from spec */
-
-  border: 1.5px solid #415261;
+  border: 2px solid #415261;
   border-radius: 6px;
-  height: 33px;
-  width: 100%; /* Default to full width of its container */
+  width: 100%;
   padding: 5px 10px;
-
-  /* Text style from spec */
-  font-family: var(--font-old-standard-tt);
-  font-weight: 700;
   font-size: 18px;
-  color: #13252e;
   line-height: 1.2;
-  overflow: hidden; /* Ensures text doesn't flow out */
-  text-overflow: ellipsis;
+  overflow-x: auto;
   white-space: nowrap;
+  /* For text overflow with ... */
+  /* text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap; */
 }
 
 .profileDetailButtonContainer {
@@ -67,172 +61,248 @@
   justify-content: center;
 }
 
-.editProfileButton .globalButton,
-.myListingsButton .globalButton {
-  /* Button box dimensions and background from spec */
+.editProfileButton {
   border-radius: 15px;
   background: #13252e;
   border: none;
   cursor: pointer;
   transition: background 0.3s;
-  /* Text style from spec */
   color: #f7f7f7;
-  font-family: var(--font-old-standard-tt);
-  font-weight: 700;
   font-size: 18px;
   text-align: center;
+  text-decoration: none;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 9px 47px 9px 47px;
+  padding: 7px 47px;
 }
 
-.editProfileButton .globalButton:hover,
-.myListingsButton .globalButton:hover {
-  opacity: 0.9;
+.editProfileButton:hover {
+  background: #233e4f;
   box-shadow: 0 0 5px rgba(19, 37, 46, 0.5);
 }
 
-@media (max-width: 900px) {
-  /* Customer Container dimensions from spec: 864x525 */
-  .profileInfoContainer:not(.agent) {
-    /* Since the content is dynamic, setting a fixed height is tricky, let content define it */
-    background-color: lightcoral;
-    width: 750px;
-    margin: 0 auto;
-  }
+/* Agent profile parts */
 
-  /* Customer stored content should be centered within the 864px container's available space */
-  .profileInfos {
-    /* Single column flow for customer fields */
-    max-width: 50px; /* Width of the stored content box in spec */
-    margin-left: auto;
-    margin-right: auto;
+.agentProfileContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 26px;
+}
+
+.ImageContainer {
+  width: 200px;
+  height: 150px;
+  border-radius: 12px;
+  border: 3px solid #415261;
+}
+
+.ImageContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9px;
+}
+
+.profileContainer {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.bioInfo {
+  margin-bottom: 30px;
+}
+
+.subTitle {
+  font-size: 25px;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.aboutMeLabel {
+  font-size: 20px;
+  margin-bottom: -2px;
+}
+
+.storedText {
+  border: 2px solid #415261;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 790px;
+  min-height: 65px;
+  padding: 5px 10px;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.profileDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 25px;
+}
+
+.profileBoxLabelAgent {
+  max-width: 710px;
+}
+
+.subTitle2 {
+  font-size: 20px;
+}
+
+.agentProfileButtonContainer {
+  display: flex;
+  max-width: 710px;
+  justify-content: space-between;
+}
+
+.editAgentProfileButton {
+  border-radius: 10px;
+  padding: 3px 36px;
+}
+
+.myListingsButton {
+  justify-content: space-between;
+  gap: 18px;
+  border-radius: 10px;
+  padding: 4px 13px;
+}
+
+.arrowIcon {
+  width: 23px;
+  height: 15px;
+}
+
+@media (max-width: 1200px) {
+  .agentProfileContainer {
+    flex-direction: column;
   }
 }
 
-/* --- Responsive Styles (Mobile First: Up to iPhone 6/SE) --- */
-
-@media (max-width: 768px) {
-  .profileInfoContainer:not(.agent) {
-    background-color: lightblue;
-    width: 600px;
-    margin: 0 auto;
-    /* Full width on mobile */
+@media (max-width: 550px) {
+  .profileInfoContainer {
+    padding-bottom: 30px;
   }
 
-  .profileInfos {
-    grid-template-columns: 1fr;
-    max-width: 544px;
-    margin-left: auto;
-    margin-right: auto;
+  .profileDetailTitle {
+    font-size: 30px;
   }
-
-  /* .profileDetailTitle {
-    font-size: 40px;
-    position: relative;
-    left:-20px;
-  } */
-
-  /* Adjustments for stored content on mobile */
-  /* .storedContent {
-    font-size: 16px;
-    margin-bottom: 15px;
-  } */
-
-  /* Agent specific adjustments */
-
-  /* .agentProfileContainer {
-    flex-direction: column; 
-    gap: 20px;
-  }
-
-  .ImageContainer {
-    width: 100%; 
-    height: 200px; 
-    margin-top: 0;
-  }
-
 
   .subTitle {
-    font-size: 22px;
+    font-size: 20px;
+  }
+
+  .aboutMeLabel {
+    font-size: 16px;
+  }
+
+  .storedText {
+    font-size: 16px;
   }
 
   .subTitle2 {
     font-size: 18px;
-  } */
+  }
 
-  .agentProfileDetailButtonContainer,
-  .profileDetailButtonContainer {
+  .profileInfos {
+    gap: 25px;
+    margin-bottom: 20px;
+  }
+
+  .profileLabel {
+    font-size: 16px;
+  }
+
+  .storedContent {
+    border: 1.5px solid #415261;
+    font-size: 16px;
+  }
+
+  .editProfileButton {
+    font-size: 16px;
+    border-radius: 13px;
+    padding: 6px 40px;
+  }
+
+  .agentProfileButtonContainer {
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    margin-top: 30px;
   }
 
-  .editProfileButton .globalButton,
-  .myListingsButton .globalButton {
-    width: 100%;
-    max-width: 280px;
+  .editAgentProfileButton {
+    max-width: 180px;
+    padding: 3px 36px;
   }
 
-  @media (max-width: 620px) {
-    .profileInfoContainer:not(.agent) {
-      background-color: rgb(26, 196, 11);
-      max-width: 480px;
-      margin: 0 auto;
-      /* Full width on mobile */
-    }
-
-    .profileInfos {
-      grid-template-columns: 1fr;
-      max-width: 240px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .profileBoxLabel {
-      width: 420px;
-    }
+  .myListingsButton {
+    max-width: 180px;
+    padding: 4px 13px;
   }
 
-  @media (max-width: 490px) {
-    .profileInfoContainer:not(.agent) {
-      background-color: rgb(196, 11, 113);
-      max-width: 350px;
-      margin: 0 auto;
-      /* Full width on mobile */
-    }
+  .arrowIcon {
+    width: 21px;
+    height: 13px;
+  }
+}
 
-    .profileInfos {
-      grid-template-columns: 1fr;
-      max-width: 240px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .profileBoxLabel {
-      width: 320px;
-    }
+@media (max-width: 400px) {
+  .profileInfoContainer {
+    padding-bottom: 20px;
   }
 
-  @media (max-width: 360px) {
-    .profileInfoContainer:not(.agent) {
-      background-color: rgb(196, 153, 11);
-      max-width: 230px;
-      margin: 0 auto;
-      /* Full width on mobile */
-    }
+  .profileDetailTitle {
+    font-size: 25px;
+  }
 
-    .profileInfos {
-      grid-template-columns: 1fr;
-      max-width: 240px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+  .subTitle {
+    font-size: 18px;
+  }
 
-    .profileBoxLabel {
-      width: 220px;
-    }
+  .aboutMeLabel {
+    font-size: 14px;
+  }
+
+  .storedText {
+    font-size: 14px;
+  }
+
+  .subTitle2 {
+    font-size: 16px;
+  }
+
+  .profileInfos {
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .profileLabel {
+    font-size: 14px;
+  }
+
+  .storedContent {
+    font-size: 14px;
+  }
+
+  .editProfileButton {
+    font-size: 14px;
+    border-radius: 11px;
+    padding: 5px 35px;
+  }
+
+  .editAgentProfileButton {
+    max-width: 180px;
+    padding: 3px 36px;
+  }
+
+  .myListingsButton {
+    max-width: 180px;
+    padding: 4px 13px;
+  }
+
+  .arrowIcon {
+    width: 19px;
+    height: 11px;
   }
 }
