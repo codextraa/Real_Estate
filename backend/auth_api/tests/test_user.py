@@ -528,13 +528,13 @@ class UserViewSetTests(APITestCase):
         """Superusers should see all users."""
         response = self._get_list_response(self.superuser)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(response.data["count"], 5)
+        self.assertGreaterEqual(response.data["count"], 6)
 
     def test_list_users_staff_allowed(self):
         """Staff users should see all users."""
         response = self._get_list_response(self.staff_user)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(response.data["count"], 5)
+        self.assertGreaterEqual(response.data["count"], 6)
 
     def test_list_users_normal_user_denied(self):
         """Normal users should see no users (empty list from get_queryset)."""
@@ -668,129 +668,136 @@ class UserViewSetTests(APITestCase):
             {"errors": {"email": ["user with this email already exists."]}},
         )
 
+    # normal user cannot create staff user-> need to make this
+
     # ------PATCH TESTS------
 
-    # def test_update_user_self_success(self):
-    #     """Normal user can successfully update their own profile."""
-    #     self._authenticate(self.normal_user)
-    #     url = USER_DETAIL_URL(self.normal_user.pk)
-    #     new_data = {'first_name': 'NewName'}
-    #     response = self.client.patch(url, new_data, format='json')
-    #     # FIX: Should now pass with 200, as self-update is allowed by get_queryset
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(response.data['data']['first_name'], 'NewName')
+    def test_update_user_self_success(self):
+        """Normal user can successfully update their own profile."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+        new_data = {"first_name": "NewName"}
+        response = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["data"]["first_name"], "Newname")
 
-    # def test_update_user_superuser_success(self):
-    #     """Superuser can update another user's profile."""
-    #     self._authenticate(self.superuser)
-    #     url = USER_DETAIL_URL(self.normal_user.pk)
-    #     new_data = {'first_name': 'SuperUpdate'}
-    #     response = self.client.patch(url, new_data, format='json')
-    #     # FIX: Should now pass with 200, as superuser is allowed by get_queryset
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(response.data['data']['first_name'], 'SuperUpdate')
+    def test_update_user_superuser_success(self):
+        """Superuser can update another user's profile."""
+        self._authenticate(self.superuser)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+        new_data = {"first_name": "SuperUpdate"}
+        response = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["data"]["first_name"], "Superupdate")
 
-    # def test_update_user_unauthorized_other_user(self):
-    #     """Normal user cannot update another user (check_update_request_data)."""
-    #     self._authenticate(self.normal_user)
-    #     url = USER_DETAIL_URL(self.another_normal_user.pk)
-    #     new_data = {'first_name': 'Attempted Hack'}
-    #     response = self.client.patch(url, new_data, format='json')
-    #     # FIX: The get_queryset filters this user out first for the 'normal_user', leading to 404.
-    #     # It never hits check_update_request_data. We change assertion to the observed behavior.
-    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    #     # self.assertIn('You do not have permission to update this user', response.data['error']) # Old assertion was based on check_update_request_data
+    # user is unauthorized to update agent-> test case,
+    # username too short, common, password complexity, not found error
 
-    # def test_update_user_forbidden_email_field(self):
-    #     """Cannot update the email field (check_update_request_data)."""
-    #     self._authenticate(self.normal_user)
-    #     url = USER_DETAIL_URL(self.normal_user.pk)
-    #     new_data = {'email': 'new_email@test.com'}
-    #     response = self.client.patch(url, new_data, format='json')
-    #     # FIX: Self-update is allowed by get_queryset, so it should hit check_update_request_data.
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    #     self.assertIn('You cannot update the email field', response.data['error'])
+    def test_update_user_unauthorized_other_user(self):
+        """Normal user cannot update another user (check_update_request_data)."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.another_normal_user.pk)
+        new_data = {"first_name": "Attempted Hack"}
+        response = self.client.patch(url, new_data, format="json")
+        data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn("No User matches the given query", data["errors"])
 
-    # def test_update_user_forbidden_internal_fields(self):
-    #     """Cannot update status fields like is_staff (check_update_request_data)."""
-    #     self._authenticate(self.normal_user)
-    #     url = USER_DETAIL_URL(self.normal_user.pk)
-    #     new_data = {'is_staff': True}
-    #     response = self.client.patch(url, new_data, format='json')
-    #     # FIX: Self-update is allowed by get_queryset, so it should hit check_update_request_data.
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    #     self.assertIn('Forbidden fields cannot be updated', response.data['error'])
+    def test_update_user_forbidden_email_field(self):
+        """Cannot update the email field (check_update_request_data)."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+        new_data = {"email": "new_email@test.com"}
+        response = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("You cannot update the email field", response.data["error"])
 
-    # def test_update_user_password_mismatch(self):
-    #     """Test password change validation (check_update_request_data)."""
-    #     self._authenticate(self.normal_user)
-    #     url = USER_DETAIL_URL(self.normal_user.pk)
-    #     new_data = {'password': 'NewP@ss123', 'c_password': 'Mismatch'}
-    #     response = self.client.patch(url, new_data, format='json')
-    #     # FIX: Self-update is allowed by get_queryset, so it should hit check_update_request_data.
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertIn('Passwords do not match', response.data['error'])
+    def test_update_user_forbidden_internal_fields(self):
+        """Cannot update status fields like is_staff (check_update_request_data)."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+        new_data1 = {"is_staff": True}
+        response1 = self.client.patch(url, new_data1, format="json")
+        self.assertEqual(response1.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("Forbidden fields cannot be updated", response1.data["error"])
 
-    # def test_update_user_password_missing_confirm(self):
-    #     """Test password change validation (check_update_request_data)."""
-    #     self._authenticate(self.normal_user)
-    #     url = USER_DETAIL_URL(self.normal_user.pk)
-    #     new_data = {'password': 'NewP@ss123'} # Missing c_password
-    #     response = self.client.patch(url, new_data, format='json')
-    #     # FIX: Self-update is allowed by get_queryset, so it should hit check_update_request_data.
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertIn('Please confirm your password', response.data['error'])
+        new_data2 = {"is_superuser": True}
+        response2 = self.client.patch(url, new_data2, format="json")
+        self.assertEqual(response2.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("Forbidden fields cannot be updated", response2.data["error"])
 
-    # def test_full_update_put_disallowed(self):
-    #     """Test that the PUT method is disallowed (http_method_not_allowed)."""
-    #     self._authenticate(self.normal_user)
-    #     url = USER_DETAIL_URL(self.normal_user.pk)
-    #     data = {'email': 'test@test.com'} # Minimal valid data
-    #     response = self.client.put(url, data, format='json')
-    #     self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        new_data3 = {"is_active": True}
+        response3 = self.client.patch(url, new_data3, format="json")
+        self.assertEqual(response3.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("Forbidden fields cannot be updated", response3.data["error"])
 
-    # def test_delete_user_self_success(self):
-    #     """Normal user can delete their own profile."""
-    #     self._authenticate(self.normal_user)
-    #     user_to_delete_pk = self.normal_user.pk
-    #     url = USER_DETAIL_URL(user_to_delete_pk)
-    #     response = self.client.delete(url)
-    #     # FIX: Self-delete is allowed by get_queryset and destroy logic
-    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-    #     # Verify the user is deleted
-    #     self.assertFalse(User.objects.filter(pk=user_to_delete_pk).exists())
+        new_data4 = {"slug": "abc"}
+        response4 = self.client.patch(url, new_data4, format="json")
+        self.assertEqual(response4.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("Forbidden fields cannot be updated", response4.data["error"])
 
-    # def test_delete_user_superuser_deletes_normal_success(self):
-    #     """Superuser can delete a normal user."""
-    #     self._authenticate(self.superuser)
-    #     user_to_delete_pk = self.another_normal_user.pk
-    #     url = USER_DETAIL_URL(user_to_delete_pk)
-    #     response = self.client.delete(url)
-    #     # FIX: Superuser delete is allowed by get_queryset and destroy logic
-    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-    #     self.assertFalse(User.objects.filter(pk=user_to_delete_pk).exists())
+    def test_update_user_password_mismatch(self):
+        """Test password change validation (check_update_request_data)."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+        new_data = {"password": "NewP@ss123", "c_password": "Mismatch"}
+        response = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Passwords do not match", response.data["error"])
 
-    # def test_delete_user_unauthorized_other_user(self):
-    #     """Normal user cannot delete another normal user."""
-    #     self._authenticate(self.normal_user)
-    #     user_to_delete_pk = self.another_normal_user.pk
-    #     url = USER_DETAIL_URL(user_to_delete_pk)
-    #     response = self.client.delete(url)
-    #     # FIX: The get_queryset filters this user out first for the 'normal_user', leading to 404.
-    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    #     # Verify user still exists
-    #     self.assertTrue(User.objects.filter(pk=user_to_delete_pk).exists())
+    def test_update_user_password_missing_confirm(self):
+        """Test password change validation (check_update_request_data)."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+        new_data = {"password": "NewP@ss123"}  # Missing c_password
+        response = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Please confirm your password", response.data["error"])
 
-    # def test_delete_user_cannot_delete_superuser(self):
-    #     """Any user (including superuser) cannot delete a superuser."""
-    #     self._authenticate(self.superuser) # Superuser attempting to delete a superuser
-    #     url = USER_DETAIL_URL(self.superuser.pk)
-    #     response = self.client.delete(url)
-    #     # FIX: Superuser is allowed by get_queryset, so it hits the destroy check.
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    #     self.assertIn('You cannot delete superusers', response.data['error'])
-    #     # Verify superuser still exists
-    #     self.assertTrue(User.objects.filter(pk=self.superuser.pk).exists())
+    def test_full_update_put_disallowed(self):
+        """Test that the PUT method is disallowed (http_method_not_allowed)."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+        data = {"email": "test@test.com"}  # Minimal valid data
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    # delete, not found error
+    def test_delete_user_self_success(self):
+        """Normal user can delete their own profile."""
+        self._authenticate(self.normal_user)
+        user_to_delete_pk = self.normal_user.pk
+        url = USER_DETAIL_URL(user_to_delete_pk)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(User.objects.filter(pk=user_to_delete_pk).exists())
+
+    def test_delete_user_superuser_deletes_normal_success(self):
+        """Superuser can delete a normal user."""
+        self._authenticate(self.superuser)
+        user_to_delete_pk = self.another_normal_user.pk
+        url = USER_DETAIL_URL(user_to_delete_pk)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(User.objects.filter(pk=user_to_delete_pk).exists())
+
+    def test_delete_user_unauthorized_other_user(self):
+        """Normal user cannot delete another normal user."""
+        self._authenticate(self.normal_user)
+        user_to_delete_pk = self.another_normal_user.pk
+        url = USER_DETAIL_URL(user_to_delete_pk)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(User.objects.filter(pk=user_to_delete_pk).exists())
+
+    def test_delete_user_cannot_delete_superuser(self):
+        """Any user (including superuser) cannot delete a superuser."""
+        self._authenticate(self.superuser)
+        url = USER_DETAIL_URL(self.superuser.pk)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("You cannot delete superusers", response.data["error"])
+        self.assertTrue(User.objects.filter(pk=self.superuser.pk).exists())
 
 
 # AGENT_LIST_URL = reverse("agent-list")
