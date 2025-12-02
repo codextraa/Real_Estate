@@ -401,16 +401,13 @@ class LogoutViewIntegrationTests(APITestCase):
             refresh_response.status_code,
             [status.HTTP_401_UNAUTHORIZED, status.HTTP_400_BAD_REQUEST],
         )
-        # Assert against the generic error message your view returns for blacklisted/invalid tokens
         self.assertIn("Invalid refresh token", str(refresh_response.data))
 
     def test_02_logout_without_refresh_token_in_body(self):
         """Tests the required field validation for the refresh token payload."""
 
-        # Post an empty payload (missing the 'refresh' key)
         response = self.client.post(self.logout_url, {}, format="json")
 
-        # 1. Assert the status code returned by your view's manual check
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         self.assertEqual(response.data.get("error"), "Tokens are required")
@@ -418,29 +415,16 @@ class LogoutViewIntegrationTests(APITestCase):
     def test_03_logout_with_invalid_refresh_token(self):
         """Tests the case where a malformed or fake refresh token is provided."""
 
-        # 1. FIX PAYLOAD KEY: Use the correct key 'refresh'
-        # 2. Provide a value that is truly malformed (not just an empty string)
         invalid_payload = {"refresh": "this.is.a.bad.token"}
 
         response = self.client.post(self.logout_url, invalid_payload, format="json")
 
-        # When the token is invalid, the view will raise a TokenError inside
-        # `RefreshToken(refresh_token)`, which is caught by the view's generic exception handler:
-
-        # 3. Assert the status code returned by the Simple JWT exception handler.
-        # (Assuming Simple JWT errors are caught by your final except Exception block)
         self.assertIn(
             response.status_code,
             [status.HTTP_400_BAD_REQUEST, status.HTTP_500_INTERNAL_SERVER_ERROR],
         )
 
-        # 4. FIX ASSERTION: Assert against the error message returned by your view's exception handler (e.g., Token is invalid)
-        # Your view's generic exception handler returns HTTP_500 and the error string from TokenError.
         self.assertIn("token is invalid", str(response.data).lower())
-
-        # NOTE: If your view's TokenError block returns 500, the status check should be:
-        # self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # self.assertIn("token is invalid", str(response.data).lower())
 
 
 class UserViewSetTests(APITestCase):
@@ -586,7 +570,7 @@ class UserViewSetTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # ------POST TESTS------
+    # # ------POST TESTS------
 
     def test_create_user_success(self):
         """Test successful user registration (AllowAny permission)."""
@@ -668,9 +652,28 @@ class UserViewSetTests(APITestCase):
             {"errors": {"email": ["user with this email already exists."]}},
         )
 
-    # normal user cannot create staff user-> need to make this
+    def test_create_user_normal_user_cannot_create_staff(self):
+        """
+        Tests that a normal user, when creating a new user, cannot set the 'is_staff'
+        field to True, resulting in an HTTP 403 or 400 error.
+        """
+        self._authenticate(self.normal_user)
 
-    # ------PATCH TESTS------
+        new_user_data = self.get_valid_create_data()
+
+        new_user_data["username"] = "staffwannabe"
+        new_user_data["email"] = "staffwannabe@test.com"
+        new_user_data["is_staff"] = True
+
+        response = self.client.post(USER_LIST_URL, new_user_data, format="json")
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.assertFalse(User.objects.filter(username="staffwannabe").exists())
+        self.assertIn("you do not have permission", data["errors"].lower())
+
+    # # # ------PATCH TESTS------
 
     def test_update_user_self_success(self):
         """Normal user can successfully update their own profile."""
@@ -689,9 +692,6 @@ class UserViewSetTests(APITestCase):
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["data"]["first_name"], "Superupdate")
-
-    # user is unauthorized to update agent-> test case,
-    # username too short, common, password complexity, not found error
 
     def test_update_user_unauthorized_other_user(self):
         """Normal user cannot update another user (check_update_request_data)."""
@@ -762,7 +762,133 @@ class UserViewSetTests(APITestCase):
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    # delete, not found error
+    def test_update_user_not_found(self):
+        """
+        Tests that a DELETE request for a non-existent user ID returns HTTP 404 Not Found.
+        """
+        self._authenticate(self.superuser)
+        largest_pk = User.objects.all().order_by("-pk").first().pk
+        non_existent_pk = largest_pk + 1
+
+        url = USER_DETAIL_URL(non_existent_pk)
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        if "detail" in response.data:
+            self.assertIn(
+                "no user matches the given query", str(response.data["detail"]).lower()
+            )
+        else:
+            self.assertIn("errors", response.json())
+
+    def test_update_user_username_too_short(self):
+        """Test username change validation: too short (less than 6 characters)."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+
+        new_data = {"username": "tiny"}
+
+        response = self.client.patch(url, new_data, format="json")
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertIn("username", data["errors"])
+        self.assertIn(
+            "Username must be at least 6 characters long.",
+            str(data["errors"]["username"]),
+        )
+
+    def test_update_user_username_already_exists(self):
+        """Test username change validation: prevents updating to an existing username."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+
+        existing_username = self.another_normal_user.username
+
+        new_data = {"username": existing_username}
+
+        response = self.client.patch(url, new_data, format="json")
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertIn("username", data["errors"])
+        self.assertIn(
+            "user with this username already exists", str(data["errors"]["username"])
+        )
+
+    def test_update_user_password_complexity(self):
+        """Test password change validation: verifies all complexity requirements (length, uppercase, digit, special char)."""
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.normal_user.pk)
+
+        short_password = "Short1!"
+        data = {"password": short_password, "c_password": short_password}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error_list = response.json()["errors"]["password"]
+        self.assertIn("Password must be at least 8 characters.", error_list)
+
+        no_uppercase = "nouppercase1!@"
+        data = {"password": no_uppercase, "c_password": no_uppercase}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error_list = response.json()["errors"]["password"]
+        self.assertIn(
+            "Password must contain at least one uppercase letter.", error_list
+        )
+
+        no_lowercase = "NOLOWERCASE1!@"
+        data = {"password": no_lowercase, "c_password": no_lowercase}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error_list = response.json()["errors"]["password"]
+        self.assertIn(
+            "Password must contain at least one lowercase letter.", error_list
+        )
+
+        no_digit = "NoDigit!@#ABCD"
+        data = {"password": no_digit, "c_password": no_digit}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error_list = response.json()["errors"]["password"]
+        self.assertIn("Password must contain at least one number.", error_list)
+
+        no_special = "NoSpecial1234"
+        data = {"password": no_special, "c_password": no_special}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error_list = response.json()["errors"]["password"]
+        self.assertIn(
+            "Password must contain at least one special character.", error_list
+        )
+
+    def test_update_user_unauthorized_to_update_agent(self):
+        """
+        Normal user is unauthorized to update an Agent user's profile.
+        This is typically enforced via object-level permissions or custom logic.
+        """
+        self._authenticate(self.normal_user)
+
+        url = USER_DETAIL_URL(self.agent_user.pk)
+
+        new_data = {"first_name": "Agent Hack Attempt"}
+
+        response = self.client.patch(url, new_data, format="json")
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        self.assertIn("No User matches the given query", data["errors"])
+
+        self.agent_user.refresh_from_db()
+        self.assertNotEqual(self.agent_user.first_name, new_data["first_name"])
+
+    # # # ------DELETE TESTS------
+
     def test_delete_user_self_success(self):
         """Normal user can delete their own profile."""
         self._authenticate(self.normal_user)
@@ -798,6 +924,22 @@ class UserViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("You cannot delete superusers", response.data["error"])
         self.assertTrue(User.objects.filter(pk=self.superuser.pk).exists())
+
+    def test_delete_user_not_found(self):
+        """
+        Tests that a DELETE request for a non-existent user ID returns HTTP 404 Not Found.
+        """
+        self._authenticate(self.superuser)
+        largest_pk = User.objects.all().order_by("-pk").first().pk
+        non_existent_pk = largest_pk + 1
+
+        url = USER_DETAIL_URL(non_existent_pk)
+
+        response = self.client.delete(url)
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn("no user matches the given query", data["errors"].lower())
 
 
 # AGENT_LIST_URL = reverse("agent-list")
