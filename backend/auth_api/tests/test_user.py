@@ -1153,16 +1153,16 @@ class AgentViewSetTests(APITestCase):
 
     def test_delete_agent_not_found(self):
         """
-        Test that attempting to delete an Agent with a non-existent User PK
-        returns HTTP 404 NOT FOUND.
+        Test that attempting to delete an Agent profile using a non-existent Agent ID.
         """
+
         self._authenticate(self.superuser)
 
-        max_pk = User.objects.all().aggregate(max_pk=models.Max("pk"))["max_pk"] or 0
-        non_existent_pk = max_pk + 1
+        non_existent_agent_pk = self.normal_user.pk
 
-        url = AGENT_DETAIL_URL(non_existent_pk)
+        url = AGENT_DETAIL_URL(non_existent_agent_pk)
 
-        response = self.client.delete(url)
+        update_data = {"company_name": "Non-Existent Agent Update"}
 
+        response = self.client.patch(url, update_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
