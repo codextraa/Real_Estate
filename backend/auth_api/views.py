@@ -1308,7 +1308,7 @@ class AgentViewSet(ModelViewSet):
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
 
-        agent_request_data["user"] = user
+        agent_request_data["user"] = user.pk
         agent_serializer = self.get_serializer(data=agent_request_data)
         agent_serializer.is_valid(raise_exception=True)
         agent = agent_serializer.save()
@@ -1644,6 +1644,7 @@ class AgentViewSet(ModelViewSet):
 
         current_user = self.request.user
         agent_to_delete = self.get_object()
+        user_to_delete = agent_to_delete.user  # Get the User instance
 
         if not current_user.is_superuser and current_user.id != agent_to_delete.user.id:
             return Response(
@@ -1663,8 +1664,12 @@ class AgentViewSet(ModelViewSet):
             )
 
         response = super().destroy(request, *args, **kwargs)
+        user_to_delete.delete()
 
-        if os.path.exists(old_agent_image):
+        # if os.path.exists(old_agent_image):
+        #     os.remove(old_agent_image)
+
+        if old_agent_image and os.path.exists(old_agent_image):
             os.remove(old_agent_image)
 
         if response.status_code == status.HTTP_204_NO_CONTENT:
