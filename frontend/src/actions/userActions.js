@@ -1,7 +1,7 @@
 "use server";
 
-import { createUser } from "@/libs/api";
-import { updateUser } from "@/libs/api";
+import { createUser, updateUser, deleteUser } from "@/libs/api";
+import { deleteSessionCookie } from "@/libs/cookie";
 import { revalidatePath } from "next/cache";
 
 const userError = (response) => {
@@ -281,5 +281,22 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       success: "",
       formUserData: newUserFormData,
     };
+  }
+};
+
+export const deleteUserAction = async (id) => {
+  try {
+    const response = await deleteUser(id);
+
+    if (response.error) {
+      return { error: response.error };
+    }
+
+    await deleteSessionCookie();
+
+    return { success: response.success };
+  } catch (error) {
+    console.error(error);
+    return { error: error.message || "An unexpected error occurred" };
   }
 };

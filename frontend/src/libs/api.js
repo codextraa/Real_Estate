@@ -48,3 +48,8 @@ export const updateUser = async (id, data, userRole, isImage = false) => {
   }
   return apiClient.patch(`/auth-api/${base_url}/${id}/`, data);
 };
+
+export const deleteUser = async (id, userRole) => {
+  const base_url = userRole === "Agent" ? "agents" : "users";
+  return apiClient.request(`/auth-api/${base_url}/${id}/`, "DELETE");
+};
