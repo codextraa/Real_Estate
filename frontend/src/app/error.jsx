@@ -36,8 +36,8 @@ export default function Error({ error, reset }) {
           />
         </div>
         <div className={styles.errorTextContainer}>
-          <div className={styles.errorTitle}>Oops!</div>
-          <div className={styles.errorMessage}>Something went wrong</div>
+          <div className={styles.errorTitle}>Oops</div>
+          <div className={styles.errorMessage}>Something went wrong!</div>
           <div className={styles.button}>
             <GlobalButton text="Try Again" onClick={() => reset()} />
           </div>
