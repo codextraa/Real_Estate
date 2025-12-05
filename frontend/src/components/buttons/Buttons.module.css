@@ -2,42 +2,18 @@
  * Desktop Styles
  */
 .formButton {
-  /* Mimics the style.formButton login button styles */
-  width: 100%; /* Take the full width of .buttonContainer (416px) */
-  height: 45px;
-  border-radius: 37px;
-  background: #13252e; /* Dark background */
   border: none;
   cursor: pointer;
-
-  /* Text styles */
   font-family: "Old Standard TT", serif;
   font-weight: 700;
   font-style: bold;
-  font-size: 18px;
-  line-height: 1; /* 100% line-height */
-  color: #f7f7f7; /* Light text */
-
+  line-height: 1;
   transition: background 0.3s ease;
-}
-
-.formButton:hover:not(:disabled) {
-  background: #233e4f; /* Slightly lighter on hover */
 }
 
 .formButton:disabled {
   cursor: not-allowed;
   opacity: 0.7;
-}
-
-/*
- * Mobile Styles
- */
-@media (max-width: 600px) {
-  .formButton {
-    height: 40px;
-    font-size: 16px;
-  }
 }
 
 /* --- Password Toggle Icon Styles --- */
