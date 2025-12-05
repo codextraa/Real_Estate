@@ -1044,7 +1044,7 @@ class UserViewSet(ModelViewSet):
         if response.status_code == status.HTTP_204_NO_CONTENT:
             return Response(
                 {"success": f"User {email} deleted successfully."},
-                status=status.HTTP_204_NO_CONTENT,
+                status=status.HTTP_200_OK,
             )
 
         return response
@@ -1652,7 +1652,7 @@ class AgentViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        default_profile_image = "/profile_images/default_profile.jpg"
+        default_profile_image = "profile_images/default_profile.jpg"
         old_agent_image = None
 
         if (
@@ -1666,16 +1666,13 @@ class AgentViewSet(ModelViewSet):
         response = super().destroy(request, *args, **kwargs)
         user_to_delete.delete()
 
-        # if os.path.exists(old_agent_image):
-        #     os.remove(old_agent_image)
-
         if old_agent_image and os.path.exists(old_agent_image):
             os.remove(old_agent_image)
 
         if response.status_code == status.HTTP_204_NO_CONTENT:
             return Response(
                 {"success": "Agent profile deleted successfully."},
-                status=status.HTTP_204_NO_CONTENT,
+                status=status.HTTP_200_OK,
             )
 
         return response

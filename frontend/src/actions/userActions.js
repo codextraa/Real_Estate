@@ -124,7 +124,6 @@ export const createUserAction = async (user, prevState, formData) => {
 
   try {
     const response = await createUser(data, user);
-    console.log(response);
     if (response.error) {
       const backend_errors = userError(response);
       return {
@@ -237,7 +236,6 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
         formData.delete(key);
       }
 
-      console.log("form data with image upload", formData);
       response = await updateUser(id, formData, userRole, true);
     } else {
       const data = {
@@ -251,8 +249,6 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       };
       response = await updateUser(id, data, userRole);
     }
-
-    console.log("response", response);
 
     if (response.error) {
       const backend_errors = userError(response);

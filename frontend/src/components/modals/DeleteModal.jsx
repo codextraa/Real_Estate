@@ -2,7 +2,6 @@
 
 import styles from "./DeleteModal.module.css";
 import { deleteUserAction } from "@/actions/userActions";
-import { redirect } from "next/navigation";
 export default function DeleteModal({
   title,
   userData,
@@ -17,10 +16,8 @@ export default function DeleteModal({
           throw new Error("Missing userData or userRole");
         } else {
           const userId = userRole === "Agent" ? userData.user.id : userData.id;
-          await deleteUserAction(userId, userRole);
-          setTimeout(() => {
-            redirect("/auth/login");
-          }, 1500);
+          const response = await deleteUserAction(userId, userRole);
+          console.log(response.success);
         }
       }
     } catch (error) {

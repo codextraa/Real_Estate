@@ -5,6 +5,7 @@ import { updateUserAction } from "@/actions/userActions";
 import { getUserIdAction, getUserRoleAction } from "@/actions/authActions";
 import ProfileForm from "@/components/forms/ProfileForm";
 import styles from "@/styles/ProfilePage.module.css";
+import { redirect } from "next/navigation";
 
 export default async function EditPage({ params }) {
   const urlParams = await params;
@@ -12,6 +13,10 @@ export default async function EditPage({ params }) {
   const userId = await getUserIdAction();
   const userRole = await getUserRoleAction();
   const imgUrl = "/real-estate/real-estate.jpg";
+
+  if (!userId || !userRole) {
+    redirect("/");
+  }
 
   let response;
   let response_slug;
