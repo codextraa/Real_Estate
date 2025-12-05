@@ -45,11 +45,15 @@ export default async function EditPage({ params }) {
           alt="background"
           fill
           priority
-        /> 
+        />
       </div>
       <div className={styles.profilePageWrapper}>
         <div className={containerClassStyle}>
-          <ProfileForm userData={response} userRole={userRole} updateProfileAction={updateProfileAction}/>
+          <ProfileForm
+            userData={response}
+            userRole={userRole}
+            updateProfileAction={updateProfileAction}
+          />
         </div>
       </div>
     </>

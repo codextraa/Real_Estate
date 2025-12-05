@@ -9,7 +9,11 @@ export function FormButton({ text, pendingText, type, className }) {
   const { pending } = useFormStatus();
 
   return (
-    <button type={type} disabled={pending} className={`${styles.formButton} ${className}`}>
+    <button
+      type={type}
+      disabled={pending}
+      className={`${styles.formButton} ${className}`}
+    >
       {pending ? pendingText : text}
     </button>
   );
@@ -80,6 +84,19 @@ export function HomePageButton({ text }) {
       className={styles.HomePageButton}
       onClick={handleClick}
       disabled={status === "loading"}
+    >
+      {text}
+    </button>
+  );
+}
+
+export function DeleteButton({ type, text, onClick, className, disabled }) {
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={`${styles.deleteButton} ${className}`}
     >
       {text}
     </button>

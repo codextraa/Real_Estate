@@ -7,7 +7,8 @@ import { useEffect, useRef } from "react";
 import { FormButton } from "@/components/buttons/Buttons";
 import { EyeButton } from "@/components/buttons/Buttons";
 import { useActionState, useState } from "react";
-import { GlobalButton } from "@/components/buttons/Buttons";
+import { GlobalButton, DeleteButton } from "@/components/buttons/Buttons";
+import DeleteModal from "@/components/modals/DeleteModal";
 import styles from "./ProfileForm.module.css";
 
 export default function ProfileForm({
@@ -29,6 +30,7 @@ export default function ProfileForm({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [displaySuccess, setDisplaySuccess] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -72,9 +74,27 @@ export default function ProfileForm({
     }
   }, [state.success]);
 
+  const openDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
   return (
     <div className={styles.profileInfoContainer}>
       <div className={styles.profileDetailTitle}>Profile Information</div>
+      {isDeleteModalOpen && (
+        <DeleteModal
+          title="Are you sure you want to delete your account?"
+          userData={userData}
+          userRole={userRole}
+          actionName="deleteUser"
+          onCancel={closeDeleteModal}
+        />
+      )}
+
       {userRole === "Agent" ? (
         <Form action={formActions} className={styles.Form}>
           <div className={styles.agentProfileContainer}>
@@ -115,7 +135,9 @@ export default function ProfileForm({
             <div className={styles.profileContainer}>
               <div className={styles.bioInfo}>
                 <h1 className={styles.subTitle}>{name}</h1>
-                <label className={styles.aboutMeLabel} htmlFor="bio">About Me</label>
+                <label className={styles.aboutMeLabel} htmlFor="bio">
+                  About Me
+                </label>
                 <div className={styles.bioContainer}>
                   <textarea
                     id="bio"
@@ -137,8 +159,12 @@ export default function ProfileForm({
               <div className={styles.profileDetails}>
                 <h1 className={styles.subTitle2}>Details</h1>
                 <div className={styles.profileInfos}>
-                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
-                    <label className={styles.profileLabel} htmlFor="email">Email Address</label>
+                  <div
+                    className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                  >
+                    <label className={styles.profileLabel} htmlFor="email">
+                      Email Address
+                    </label>
                     <input
                       type="email"
                       id="email"
@@ -153,8 +179,12 @@ export default function ProfileForm({
                         </span>
                       )}
                   </div>
-                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
-                    <label className={styles.profileLabel} htmlFor="first_name">First Name</label>
+                  <div
+                    className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                  >
+                    <label className={styles.profileLabel} htmlFor="first_name">
+                      First Name
+                    </label>
                     <input
                       type="text"
                       id="first_name"
@@ -164,8 +194,12 @@ export default function ProfileForm({
                       className={styles.storedContent}
                     />
                   </div>
-                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
-                    <label className={styles.profileLabel} htmlFor="last_name">Last Name</label>
+                  <div
+                    className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                  >
+                    <label className={styles.profileLabel} htmlFor="last_name">
+                      Last Name
+                    </label>
                     <input
                       type="text"
                       id="last_name"
@@ -175,8 +209,12 @@ export default function ProfileForm({
                       className={styles.storedContent}
                     />
                   </div>
-                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
-                    <label className={styles.profileLabel} htmlFor="username">Username</label>
+                  <div
+                    className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                  >
+                    <label className={styles.profileLabel} htmlFor="username">
+                      Username
+                    </label>
                     <input
                       type="text"
                       id="username"
@@ -196,8 +234,12 @@ export default function ProfileForm({
               </div>
               <div className={styles.profileDetails}>
                 <h1 className={styles.subTitle2}>Company Information</h1>
-                <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
-                  <label className={styles.profileLabel} htmlFor="company_name">Company Name</label>
+                <div
+                  className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                >
+                  <label className={styles.profileLabel} htmlFor="company_name">
+                    Company Name
+                  </label>
                   <input
                     type="text"
                     id="company_name"
@@ -217,7 +259,9 @@ export default function ProfileForm({
               <div className={styles.profileDetails}>
                 <h1 className={styles.subTitle2}>Change Password</h1>
                 <div className={styles.profileInfos}>
-                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
+                  <div
+                    className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                  >
                     <label className={styles.profileLabel} htmlFor="password">
                       Password
                     </label>
@@ -242,7 +286,9 @@ export default function ProfileForm({
                         </span>
                       )}
                   </div>
-                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
+                  <div
+                    className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
+                  >
                     <label className={styles.profileLabel} htmlFor="c_password">
                       Confirm Password
                     </label>
@@ -292,10 +338,12 @@ export default function ProfileForm({
                     />
                   </div>
                   <div className={styles.deleteProfileButton}>
-                    <FormButton
+                    <DeleteButton
                       text="Delete Profile"
-                      pendingText="Deleting..."
-                      type="submit"
+                      type="button"
+                      onClick={openDeleteModal}
+                      className={styles.deleteButton}
+                      disabled={isPending}
                     />
                   </div>
                 </div>
@@ -452,10 +500,12 @@ export default function ProfileForm({
                   />
                 </div>
                 <div className={styles.deleteProfileButton}>
-                  <FormButton
+                  <DeleteButton
                     text="Delete Profile"
-                    pendingText="Deleting..."
-                    type="submit"
+                    type="button"
+                    onClick={openDeleteModal}
+                    className={styles.deleteButton}
+                    disabled={isPending}
                   />
                 </div>
               </div>
