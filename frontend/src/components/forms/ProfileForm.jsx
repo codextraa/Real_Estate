@@ -73,13 +73,13 @@ export default function ProfileForm({
   }, [state.success]);
 
   return (
-    <div className={styles.ProfileFormContainer}>
-      <div className={styles.ProfileFormTitle}>Edit Profile Information</div>
+    <div className={styles.profileInfoContainer}>
+      <div className={styles.profileDetailTitle}>Profile Information</div>
       {userRole === "Agent" ? (
         <Form action={formActions} className={styles.Form}>
-          <div className={styles.mainContainer}>
+          <div className={styles.agentProfileContainer}>
             <div className={styles.inputImageContainer}>
-              <div className={styles.imageContainer}>
+              <div className={styles.ImageContainer}>
                 <Image
                   className={styles.profileImage}
                   src={previewUrl}
@@ -112,99 +112,99 @@ export default function ProfileForm({
                   </span>
                 )}
             </div>
-            <div className={styles.agentFormContainer}>
-              <div className={styles.nameBioContainer}>
-                <div className={styles.Name}>{name}</div>
-                <div className={styles.inputContainer}>
-                  <label htmlFor="bio">About Me</label>
-                  <div className={styles.bioContainer}>
-                    <textarea
-                      id="bio"
-                      name="bio"
-                      disabled={isPending}
-                      value={bioContent}
-                      onChange={(e) => setBioContent(e.target.value)}
-                      maxLength={250}
-                      className={styles.input}
-                    />
-                    <div className={styles.charCount}>
-                      {bioContent.length} / 250
-                    </div>
+            <div className={styles.profileContainer}>
+              <div className={styles.bioInfo}>
+                <h1 className={styles.subTitle}>{name}</h1>
+                <label className={styles.aboutMeLabel} htmlFor="bio">About Me</label>
+                <div className={styles.bioContainer}>
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    disabled={isPending}
+                    value={bioContent}
+                    onChange={(e) => setBioContent(e.target.value)}
+                    maxLength={250}
+                    className={styles.storedText}
+                  />
+                  <div className={styles.charCount}>
+                    {bioContent.length} / 250
                   </div>
-                  {Object.keys(state.errors).length > 0 && state.errors.bio && (
-                    <span className={styles.errorText}>{state.errors.bio}</span>
-                  )}
+                </div>
+                {Object.keys(state.errors).length > 0 && state.errors.bio && (
+                  <span className={styles.errorText}>{state.errors.bio}</span>
+                )}
+              </div>
+              <div className={styles.profileDetails}>
+                <h1 className={styles.subTitle2}>Details</h1>
+                <div className={styles.profileInfos}>
+                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
+                    <label className={styles.profileLabel} htmlFor="email">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      disabled={isPending}
+                      defaultValue={state.formUserData.user.email || ""}
+                      className={styles.storedContent}
+                    />
+                    {Object.keys(state.errors).length > 0 &&
+                      state.errors.email && (
+                        <span className={styles.errorText}>
+                          {state.errors.email}
+                        </span>
+                      )}
+                  </div>
+                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
+                    <label className={styles.profileLabel} htmlFor="first_name">First Name</label>
+                    <input
+                      type="text"
+                      id="first_name"
+                      name="first_name"
+                      disabled={isPending}
+                      defaultValue={state.formUserData.user.first_name || ""}
+                      className={styles.storedContent}
+                    />
+                  </div>
+                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
+                    <label className={styles.profileLabel} htmlFor="last_name">Last Name</label>
+                    <input
+                      type="text"
+                      id="last_name"
+                      name="last_name"
+                      disabled={isPending}
+                      defaultValue={state.formUserData.user.last_name || ""}
+                      className={styles.storedContent}
+                    />
+                  </div>
+                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
+                    <label className={styles.profileLabel} htmlFor="username">Username</label>
+                    <input
+                      type="text"
+                      id="username"
+                      name="username"
+                      disabled={isPending}
+                      defaultValue={state.formUserData.user.username || ""}
+                      className={styles.storedContent}
+                    />
+                    {Object.keys(state.errors).length > 0 &&
+                      state.errors.username && (
+                        <span className={styles.errorText}>
+                          {state.errors.username}
+                        </span>
+                      )}
+                  </div>
                 </div>
               </div>
-              <div className={styles.detailContainer}>
-                <h2 className={styles.details}>Details</h2>
-                <div className={styles.inputContainer}>
-                  <label htmlFor="email">Email Address</label>
-                  <input
-                    type="email"
-                    id="email"
-                    disabled={isPending}
-                    defaultValue={state.formUserData.user.email || ""}
-                    className={styles.input}
-                  />
-                  {Object.keys(state.errors).length > 0 &&
-                    state.errors.email && (
-                      <span className={styles.errorText}>
-                        {state.errors.email}
-                      </span>
-                    )}
-                </div>
-                <div className={styles.inputContainer}>
-                  <label htmlFor="first_name">First Name</label>
-                  <input
-                    type="text"
-                    id="first_name"
-                    name="first_name"
-                    disabled={isPending}
-                    defaultValue={state.formUserData.user.first_name || ""}
-                    className={styles.input}
-                  />
-                </div>
-                <div className={styles.inputContainer}>
-                  <label htmlFor="last_name">Last Name</label>
-                  <input
-                    type="text"
-                    id="last_name"
-                    name="last_name"
-                    disabled={isPending}
-                    defaultValue={state.formUserData.user.last_name || ""}
-                    className={styles.input}
-                  />
-                </div>
-                <div className={styles.inputContainer}>
-                  <label htmlFor="username">Username</label>
-                  <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    disabled={isPending}
-                    defaultValue={state.formUserData.user.username || ""}
-                    className={styles.input}
-                  />
-                  {Object.keys(state.errors).length > 0 &&
-                    state.errors.username && (
-                      <span className={styles.errorText}>
-                        {state.errors.username}
-                      </span>
-                    )}
-                </div>
-              </div>
-              <div className={styles.Container}>
-                <h2 className={styles.companyInfoTitle}>Company Information</h2>
-                <div className={styles.inputContainer}>
-                  <label htmlFor="company_name">Company Name</label>
+              <div className={styles.profileDetails}>
+                <h1 className={styles.subTitle2}>Company Information</h1>
+                <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
+                  <label className={styles.profileLabel} htmlFor="company_name">Company Name</label>
                   <input
                     type="text"
                     id="company_name"
                     name="company_name"
                     disabled={isPending}
                     defaultValue={state.formUserData.company_name || ""}
-                    className={styles.input}
+                    className={styles.storedContent}
                   />
                   {Object.keys(state.errors).length > 0 &&
                     state.errors.company_name && (
@@ -214,57 +214,59 @@ export default function ProfileForm({
                     )}
                 </div>
               </div>
-              <div className={styles.passwordContainer}>
-                <h2 className={styles.changePasswordTitle}>Change Password</h2>
-                <div className={styles.inputContainer}>
-                  <label className={styles.profileLabel} htmlFor="password">
-                    Password
-                  </label>
-                  <div className={styles.passwordInputContainer}>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="password"
-                      name="password"
-                      disabled={isPending}
-                      className={styles.input}
-                    />
-                    <EyeButton
-                      action={toggleShowPassword}
-                      showPassword={showPassword}
-                      isPending={isPending}
-                    />
+              <div className={styles.profileDetails}>
+                <h1 className={styles.subTitle2}>Change Password</h1>
+                <div className={styles.profileInfos}>
+                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
+                    <label className={styles.profileLabel} htmlFor="password">
+                      Password
+                    </label>
+                    <div className={styles.passwordInputContainer}>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        id="password"
+                        name="password"
+                        disabled={isPending}
+                        className={styles.storedContent}
+                      />
+                      <EyeButton
+                        action={toggleShowPassword}
+                        showPassword={showPassword}
+                        isPending={isPending}
+                      />
+                    </div>
+                    {Object.keys(state.errors).length > 0 &&
+                      state.errors.password && (
+                        <span className={styles.errorText}>
+                          {state.errors.password}
+                        </span>
+                      )}
                   </div>
-                  {Object.keys(state.errors).length > 0 &&
-                    state.errors.password && (
-                      <span className={styles.errorText}>
-                        {state.errors.password}
-                      </span>
-                    )}
-                </div>
-                <div className={styles.inputContainer}>
-                  <label className={styles.profileLabel} htmlFor="c_password">
-                    Confirm Password
-                  </label>
-                  <div className={styles.passwordInputContainer}>
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      id="c_password"
-                      name="c_password"
-                      disabled={isPending}
-                      className={styles.input}
-                    />
-                    <EyeButton
-                      action={toggleShowConfirmPassword}
-                      showPassword={showConfirmPassword}
-                      isPending={isPending}
-                    />
+                  <div className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}>
+                    <label className={styles.profileLabel} htmlFor="c_password">
+                      Confirm Password
+                    </label>
+                    <div className={styles.passwordInputContainer}>
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        id="c_password"
+                        name="c_password"
+                        disabled={isPending}
+                        className={styles.storedContent}
+                      />
+                      <EyeButton
+                        action={toggleShowConfirmPassword}
+                        showPassword={showConfirmPassword}
+                        isPending={isPending}
+                      />
+                    </div>
+                    {Object.keys(state.errors).length > 0 &&
+                      state.errors.c_password && (
+                        <span className={styles.errorText}>
+                          {state.errors.c_password}
+                        </span>
+                      )}
                   </div>
-                  {Object.keys(state.errors).length > 0 &&
-                    state.errors.c_password && (
-                      <span className={styles.errorText}>
-                        {state.errors.c_password}
-                      </span>
-                    )}
                 </div>
               </div>
               {Object.keys(state.errors).length > 0 && state.errors.general && (
@@ -302,9 +304,9 @@ export default function ProfileForm({
           </div>
         </Form>
       ) : (
-        <Form action={formActions} className={styles.Form}>
-          <div className={styles.formContainer}>
-            <div className={styles.inputContainer}>
+        <Form action={formActions}>
+          <div className={`${styles.profileInfos} ${styles.profileInfosUser}`}>
+            <div className={styles.profileBoxLabel}>
               <label className={styles.profileLabel} htmlFor="email">
                 Email Address
               </label>
@@ -313,11 +315,11 @@ export default function ProfileForm({
                 id="email"
                 disabled={isPending}
                 defaultValue={state.formUserData.email || ""}
-                className={styles.input}
+                className={styles.storedContent}
                 readOnly
               />
             </div>
-            <div className={styles.inputContainer}>
+            <div className={styles.profileBoxLabel}>
               <label className={styles.profileLabel} htmlFor="first_name">
                 First Name
               </label>
@@ -327,7 +329,7 @@ export default function ProfileForm({
                 name="first_name"
                 disabled={isPending}
                 defaultValue={state.formUserData.first_name || ""}
-                className={styles.input}
+                className={styles.storedContent}
               />
               {Object.keys(state.errors).length > 0 &&
                 state.errors.first_name && (
@@ -336,7 +338,7 @@ export default function ProfileForm({
                   </span>
                 )}
             </div>
-            <div className={styles.inputContainer}>
+            <div className={styles.profileBoxLabel}>
               <label className={styles.profileLabel} htmlFor="last_name">
                 Last Name
               </label>
@@ -346,7 +348,7 @@ export default function ProfileForm({
                 name="last_name"
                 disabled={isPending}
                 defaultValue={state.formUserData.last_name || ""}
-                className={styles.input}
+                className={styles.storedContent}
               />
               {Object.keys(state.errors).length > 0 &&
                 state.errors.last_name && (
@@ -355,7 +357,7 @@ export default function ProfileForm({
                   </span>
                 )}
             </div>
-            <div className={styles.inputContainer}>
+            <div className={styles.profileBoxLabel}>
               <label className={styles.profileLabel} htmlFor="username">
                 Username
               </label>
@@ -365,7 +367,7 @@ export default function ProfileForm({
                 name="username"
                 disabled={isPending}
                 defaultValue={state.formUserData.username || ""}
-                className={styles.input}
+                className={styles.storedContent}
               />
               {Object.keys(state.errors).length > 0 &&
                 state.errors.username && (
@@ -376,7 +378,7 @@ export default function ProfileForm({
             </div>
             <div className={styles.passwordContainer}>
               <h2 className={styles.changePasswordTitle}>Change Password</h2>
-              <div className={styles.inputContainer}>
+              <div className={styles.profileBoxLabel}>
                 <label className={styles.profileLabel} htmlFor="password">
                   Password
                 </label>
@@ -386,7 +388,7 @@ export default function ProfileForm({
                     id="password"
                     name="password"
                     disabled={isPending}
-                    className={styles.input}
+                    className={styles.storedContent}
                   />
                   <EyeButton
                     action={toggleShowPassword}
@@ -401,7 +403,7 @@ export default function ProfileForm({
                     </span>
                   )}
               </div>
-              <div className={styles.inputContainer}>
+              <div className={styles.profileBoxLabel}>
                 <label className={styles.profileLabel} htmlFor="c_password">
                   Confirm Password
                 </label>
@@ -411,7 +413,7 @@ export default function ProfileForm({
                     id="c_password"
                     name="c_password"
                     disabled={isPending}
-                    className={styles.input}
+                    className={styles.storedContent}
                   />
                   <EyeButton
                     action={toggleShowConfirmPassword}

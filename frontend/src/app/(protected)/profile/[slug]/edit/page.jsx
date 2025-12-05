@@ -32,16 +32,26 @@ export default async function EditPage({ params }) {
       ? updateUserAction.bind(null, response.user.id, userRole)
       : updateUserAction.bind(null, response.id, userRole);
 
+  const containerClassStyle = `${styles.profileCardContainer} ${
+    userRole === "Agent" ? styles.profileCardContainerAgent : ""
+  }`;
+
   return (
-    <div className={styles.profilePageBackground}>
-      <Image src={imgUrl} alt="background" fill priority />
-      <div className={styles.profileCardContainer}>
-        <ProfileForm
-          userData={response}
-          userRole={userRole}
-          updateProfileAction={updateProfileAction}
-        />
+    <>
+      <div className={styles.profileImageWrapper}>
+        <Image
+          className={styles.profilePageBackgroundImage}
+          src={imgUrl}
+          alt="background"
+          fill
+          priority
+        /> 
       </div>
-    </div>
+      <div className={styles.profilePageWrapper}>
+        <div className={containerClassStyle}>
+          <ProfileForm userData={response} userRole={userRole} updateProfileAction={updateProfileAction}/>
+        </div>
+      </div>
+    </>
   );
 }
