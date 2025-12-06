@@ -1,18 +1,12 @@
-/* Navbar.module.css */
-
 .navbar {
-  position: fixed;
-  top: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 162px);
-  max-width: 1118px;
+  /* margin-bottom: -70px; */
+  position: relative;
   height: auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 1000;
-  padding: 0 20px;
+  z-index: 500;
+  padding: 15px 80px 0px 80px;
 }
 
 .logo {
@@ -21,6 +15,7 @@
   font-size: 20px;
   line-height: 100%;
   text-align: center;
+  justify-items: left;
   color: #13252e;
   cursor: pointer;
   letter-spacing: 0%;
@@ -29,16 +24,14 @@
 
 .navLinks {
   display: flex;
-  align-items: center;
+  justify-items: right;
   gap: 20px;
 }
 
 /* Responsive Styles */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 800px) {
   .navbar {
-    width: calc(100% - 40px);
-    top: 10px;
-    padding: 0 10px;
+    padding: 10px 20px 0px 20px;
   }
 
   .logo {
@@ -48,14 +41,11 @@
 
 @media screen and (max-width: 480px) {
   .navbar {
-    width: calc(100% - 20px);
-    padding: 0 5px;
+    padding: 3px 5px 0px 5px;
   }
-
   .logo {
     font-size: 16px;
   }
-
   .navLinks {
     gap: 10px;
   }

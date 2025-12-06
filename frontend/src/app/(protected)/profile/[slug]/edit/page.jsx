@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 import { getUser, getAgent } from "@/libs/api";
 import { updateUserAction } from "@/actions/userActions";
 import { getUserIdAction, getUserRoleAction } from "@/actions/authActions";
+import { DEFAULT_LOGIN_REDIRECT } from "@/route";
+import { redirect } from "next/navigation";
 import ProfileForm from "@/components/forms/ProfileForm";
 import styles from "@/styles/ProfilePage.module.css";
-import { redirect } from "next/navigation";
 
 export default async function EditPage({ params }) {
   const urlParams = await params;
@@ -15,7 +16,7 @@ export default async function EditPage({ params }) {
   const imgUrl = "/real-estate/real-estate.jpg";
 
   if (!userId || !userRole) {
-    redirect("/");
+    redirect(DEFAULT_LOGIN_REDIRECT);
   }
 
   let response;

@@ -1,6 +1,7 @@
 "use client";
 
 import styles from "./DeleteModal.module.css";
+import { useState } from "react";
 import { deleteUserAction } from "@/actions/userActions";
 export default function DeleteModal({
   title,
@@ -9,6 +10,8 @@ export default function DeleteModal({
   actionName,
   onCancel,
 }) {
+  // const router = useRouter();
+  const [deletionError, setDeletionError] = useState(null);
   const handleDeleteAction = async () => {
     try {
       if (actionName === "deleteUser") {
@@ -17,11 +20,19 @@ export default function DeleteModal({
         } else {
           const userId = userRole === "Agent" ? userData.user.id : userData.id;
           const response = await deleteUserAction(userId, userRole);
-          console.log(response.success);
+          if (response && response.error) {
+            setDeletionError(
+              response.error ||
+                "Account deletion failed due to an unknown server error.",
+            );
+          }
         }
       }
     } catch (error) {
       console.error("Error deleting account:", error);
+      setDeletionError(
+        error.message || "A client-side error occurred during deletion.",
+      );
     }
   };
 
@@ -41,6 +52,9 @@ export default function DeleteModal({
             No
           </button>
         </div>
+        {deletionError && (
+          <div className={styles.errorMessage}>{deletionError}</div>
+        )}
       </div>
     </div>
   );

@@ -54,13 +54,13 @@ export default function ProfileForm({
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setPreviewUrl(URL.createObjectURL(file)); // Create preview URL
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
   const handleIconClick = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.click(); // Programmatically click the hidden file input
+      fileInputRef.current.click();
     }
   };
 
