@@ -325,7 +325,9 @@ export default function ProfileForm({
               {displaySuccess && (
                 <div className={styles.successContainer}>{displaySuccess}</div>
               )}
-              <div className={styles.buttonContainer}>
+              <div
+                className={`${styles.buttonContainer} ${styles.buttonContainerAgent}`}
+              >
                 <div className={styles.cancelProfileButton}>
                   <Link href={`/profile/${state.formUserData.user.slug}`}>
                     Cancel
