@@ -1,0 +1,88 @@
+/* DeleteModal.module.css */
+
+.modalOverlay {
+  /* Fixes the position relative to the viewport */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.modalContent {
+  width: 660.84130859375px;
+  height: 219px;
+  top: 469px;
+  left: 310px;
+  opacity: 1;
+  border-radius: 15px;
+  box-shadow:
+    2px 2px 14px 3px #415261,
+    -2px -2px 14px 3px #415261;
+  background-color: #f7f7f7;
+  padding: 30px 0px 0px 0px;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.modalText {
+  font-size: 25px;
+  font-weight: 700;
+  margin: 25px 25px 15px 25px;
+  color: #333;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.yesButton,
+.noButton,
+.deleteButton {
+  padding: 3px 20px 1.5px 20px;
+  border: none;
+  border-radius: 17px;
+  cursor: pointer;
+  font: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-style: bold;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.yesButton {
+  background-color: #b70000;
+  color: #f7f7f7;
+}
+
+.yesButton:hover {
+  background-color: #e20800;
+}
+
+.noButton {
+  background-color: #13252e;
+  color: #f7f7f7;
+}
+
+.noButton:hover {
+  background-color: #2a495c;
+}
+
+.deleteButton {
+  background-color: #d9534f;
+  color: white;
+}
+
+.deleteButton:hover {
+  background-color: #c9302c;
+}

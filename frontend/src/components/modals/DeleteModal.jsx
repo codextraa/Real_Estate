@@ -29,17 +29,16 @@ export default function DeleteModal({
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
         <div className={styles.modalText}>{title}</div>
-
         <div className={styles.buttonContainer}>
-          <button type="button" onClick={onCancel} className={styles.noButton}>
-            No
-          </button>
           <button
             type="button"
             onClick={handleDeleteAction}
             className={styles.yesButton}
           >
             Yes
+          </button>
+          <button type="button" onClick={onCancel} className={styles.noButton}>
+            No
           </button>
         </div>
       </div>
