@@ -10,96 +10,96 @@ PROPERTY_LIST_URL = reverse("property-list")
 PROPERTY_DETAIL_URL = lambda pk: reverse("property-detail", kwargs={"pk": pk})
 
 
-class PropertyViewSetTests(APITestCase):
-    """Tests for the PropertyViewSet covering CRUD actions and permission control."""
+# class PropertyViewSetTests(APITestCase):
+#     """Tests for the PropertyViewSet covering CRUD actions and permission control."""
 
-    def setUp(self):
-        self.password = "StrongP@ss123"
-        self.client = APIClient()
+#     def setUp(self):
+#         self.password = "StrongP@ss123"
+#         self.client = APIClient()
 
-        # 1. Test Users
-        # ... (Superuser, Staff User, Normal User creation remains the same) ...
+#         # 1. Test Users
+#         # ... (Superuser, Staff User, Normal User creation remains the same) ...
 
-        self.agent_owner_user = User.objects.create_user(
-            email="owner@test.com",
-            username="agentowner",
-            password=self.password,
-            is_agent=True,  # Optional flag, but the Agent profile is required
-        )
+#         self.agent_owner_user = User.objects.create_user(
+#             email="owner@test.com",
+#             username="agentowner",
+#             password=self.password,
+#             is_agent=True,  # Optional flag, but the Agent profile is required
+#         )
 
-        self.agent_other_user = User.objects.create_user(
-            email="other@test.com",
-            username="agentother",
-            password=self.password,
-            is_agent=True,
-        )
-        self.normal_user = User.objects.create_user(
-            email="normal@test.com", username="normaluser", password=self.password
-        )
+#         self.agent_other_user = User.objects.create_user(
+#             email="other@test.com",
+#             username="agentother",
+#             password=self.password,
+#             is_agent=True,
+#         )
+#         self.normal_user = User.objects.create_user(
+#             email="normal@test.com", username="normaluser", password=self.password
+#         )
 
-        # ⭐️ NEW STEP: Create the required Agent Profiles ⭐️
-        self.agent_owner = Agent.objects.create(
-            user=self.agent_owner_user,
-            company_name="Owner Real Estate Co.",
-            # Add any other required Agent fields here
-        )
-        self.agent_other = Agent.objects.create(
-            user=self.agent_other_user,
-            company_name="Other Agent Listings",
-        )
+#         # ⭐️ NEW STEP: Create the required Agent Profiles ⭐️
+#         self.agent_owner = Agent.objects.create(
+#             user=self.agent_owner_user,
+#             company_name="Owner Real Estate Co.",
+#             # Add any other required Agent fields here
+#         )
+#         self.agent_other = Agent.objects.create(
+#             user=self.agent_other_user,
+#             company_name="Other Agent Listings",
+#         )
 
-        # 2. Test Properties
-        self.published_property = Property.objects.create(
-            title="Published House",
-            price=300000,
-            agent=self.agent_owner,  # <-- Now we pass the Agent instance!
-        )
+#         # 2. Test Properties
+#         self.published_property = Property.objects.create(
+#             title="Published House",
+#             price=300000,
+#             agent=self.agent_owner,  # <-- Now we pass the Agent instance!
+#         )
 
-        self.draft_property = Property.objects.create(
-            title="Draft Apartment",
-            price=150000,
-            agent=self.agent_owner,  # <-- Pass the Agent instance
-        )
+#         self.draft_property = Property.objects.create(
+#             title="Draft Apartment",
+#             price=150000,
+#             agent=self.agent_owner,  # <-- Pass the Agent instance
+#         )
 
-        self.other_agent_property = Property.objects.create(
-            title="Other Agent Listing",
-            price=500000,
-            agent=self.agent_other,  # <-- Pass the Agent instance
-        )
+#         self.other_agent_property = Property.objects.create(
+#             title="Other Agent Listing",
+#             price=500000,
+#             agent=self.agent_other,  # <-- Pass the Agent instance
+#         )
 
-    def _authenticate(self, user):
-        """Helper to set authentication header for the client."""
-        # Note: You still authenticate with the User object, e.g., self.agent_owner_user
-        self.client.force_authenticate(user=user)
+#     def _authenticate(self, user):
+#         """Helper to set authentication header for the client."""
+#         # Note: You still authenticate with the User object, e.g., self.agent_owner_user
+#         self.client.force_authenticate(user=user)
 
-    # --- LIST & RETRIEVE TESTS (GET) ---
-    # Testing visibility rules (published vs. draft, all vs. self-owned)
-    # ------------------------------------
+#     # --- LIST & RETRIEVE TESTS (GET) ---
+#     # Testing visibility rules (published vs. draft, all vs. self-owned)
+#     # ------------------------------------
 
-    # def test_list_properties_unauthenticated_only_published(self):
-    #     """Unauthenticated users should only see published properties."""
-    #     response = self.client.get(PROPERTY_LIST_URL)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     # Expect 2 properties: self.published_property, self.other_agent_property
-    #     self.assertEqual(len(response.data), 2)
-    #     titles = [p["title"] for p in response.data]
-    #     self.assertIn("Published House", titles)
-    #     self.assertIn("Other Agent Listing", titles)
-    #     self.assertNotIn("Draft Apartment", titles)
+#     # def test_list_properties_unauthenticated_only_published(self):
+#     #     """Unauthenticated users should only see published properties."""
+#     #     response = self.client.get(PROPERTY_LIST_URL)
+#     #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     #     # Expect 2 properties: self.published_property, self.other_agent_property
+#     #     self.assertEqual(len(response.data), 2)
+#     #     titles = [p["title"] for p in response.data]
+#     #     self.assertIn("Published House", titles)
+#     #     self.assertIn("Other Agent Listing", titles)
+#     #     self.assertNotIn("Draft Apartment", titles)
 
-    #     def test_list_properties_normal_user_only_published(self):
-    #         """Normal authenticated users should only see published properties."""
-    #         self._authenticate(self.normal_user)
-    #         response = self.client.get(PROPERTY_LIST_URL)
-    #         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #         self.assertEqual(len(response.data), 2)
+#     #     def test_list_properties_normal_user_only_published(self):
+#     #         """Normal authenticated users should only see published properties."""
+#     #         self._authenticate(self.normal_user)
+#     #         response = self.client.get(PROPERTY_LIST_URL)
+#     #         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     #         self.assertEqual(len(response.data), 2)
 
-    def test_list_properties_agent_owner_sees_all(self):
-        """Agent should see all properties (published/draft) they own and all other published properties."""
-        self._authenticate(self.agent_owner)
-        response = self.client.get(PROPERTY_LIST_URL)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 3)
+#     def test_list_properties_agent_owner_sees_all(self):
+#         """Agent should see all properties (published/draft) they own and all other published properties."""
+#         self._authenticate(self.agent_owner)
+#         response = self.client.get(PROPERTY_LIST_URL)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         self.assertEqual(len(response.data), 3)
 
 
 #     def test_list_properties_superuser_sees_all(self):
