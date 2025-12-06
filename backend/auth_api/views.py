@@ -707,7 +707,7 @@ class UserViewSet(ModelViewSet):
                 value={"success": "User created successfully."},
             ),
             OpenApiExample(
-                name="Creating Admin Error",
+                name="Creating Admin as a User Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You do not have permission to create an admin user."},
@@ -1179,7 +1179,7 @@ class AgentViewSet(ModelViewSet):
                 value={"success": "Agent created successfully"},
             ),
             OpenApiExample(
-                name="Creating Admin Error",
+                name="Creating Admin as a Agent Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You do not have permission to create an admin user."},
