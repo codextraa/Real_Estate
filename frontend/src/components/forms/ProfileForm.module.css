@@ -33,27 +33,16 @@
 .profileBoxLabel {
   width: 100%;
   max-width: 544px;
-  font-family: Old Standard TT;
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 100%;
-  letter-spacing: 0%;
-  color: #13252e;
 }
 
 .profileLabel {
   font-size: 18px;
   margin-bottom: -2px;
   display: block;
-  font-family: Old Standard TT;
-  font-weight: 700;
-  line-height: 100%;
-  letter-spacing: 0%;
-  color: #13252e;
 }
 
 .storedContent {
-  border: 1.5px solid #415261;
+  border: 2px solid #415261;
   border-radius: 6px;
   width: 100%;
   padding: 5px 10px;
@@ -68,9 +57,9 @@
   background: transparent;
 }
 
-/* Background color only for email field */
 input[type="email"].storedContent {
   background: #41526145;
+  cursor: not-allowed;
 }
 
 .profileDetailButtonContainer {
@@ -97,6 +86,152 @@ input[type="email"].storedContent {
 .editProfileButton:hover {
   background: #233e4f;
   box-shadow: 0 0 5px rgba(19, 37, 46, 0.5);
+}
+
+.passwordContainer {
+  width: 100%;
+  max-width: 544px;
+}
+
+.changePasswordTitle {
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+.wholePasswordContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.passwordInputContainer {
+  position: relative;
+  opacity: 1;
+}
+
+.passwordInputContainer input {
+  padding-right: 40px;
+  border: 2px solid #415261;
+  border-radius: 6px;
+}
+
+/* Button Container Styles */
+.buttonContainer {
+  display: flex;
+  gap: 10px;
+  margin-top: -5px;
+  align-items: center;
+}
+
+.formProfileButtons {
+  display: flex;
+  gap: 60px;
+  justify-content: space-between;
+}
+
+.cancelProfileButton {
+  opacity: 1;
+  border-radius: 11px;
+  border: 1px solid #13252e;
+  background: transparent;
+  padding: 9px 21px;
+  transition: background 0.3s;
+}
+
+.cancelProfileButton a {
+  color: #13252e;
+  font-family: Old Standard TT;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+
+.cancelProfileButton:hover {
+  background: rgba(19, 37, 46, 0.05);
+}
+
+.updateProfileButton {
+  opacity: 1;
+  border-radius: 15px;
+  background: #13252e;
+  transition: background 0.3s;
+}
+
+.updateProfileButton:hover {
+  background: #233e4f;
+}
+
+.updateButton {
+  font-family: Old Standard TT;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  color: #f7f7f7;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 10px 35px;
+}
+
+.deleteProfileButton {
+  opacity: 1;
+  border-radius: 15px;
+  border: 1.5px solid #b70000;
+  background: #b70000;
+  transition: background 0.3s;
+}
+
+.deleteProfileButton:hover {
+  background: #940000;
+}
+
+.deleteButton {
+  font-family: Old Standard TT;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  color: #f7f7f7;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 10px 35px;
+}
+
+/* Error and Success Messages */
+.errorText {
+  color: #b70000;
+  font-size: 14px;
+  display: block;
+  margin-top: 5px;
+}
+
+.errorContainer {
+  background: #ffeaea;
+  border: 1px solid #b70000;
+  border-radius: 8px;
+  padding: 10px 15px;
+  color: #b70000;
+  text-align: center;
+}
+
+.successContainer {
+  background: #eaffea;
+  border: 1px solid #00b700;
+  border-radius: 8px;
+  padding: 10px 15px;
+  color: #00b700;
+  text-align: center;
 }
 
 /* Agent profile parts */
@@ -222,154 +357,6 @@ input[type="email"].storedContent {
 }
 
 /* Password Container Styles */
-.passwordContainer {
-  margin-bottom: 25px;
-}
-
-.changePasswordTitle {
-  font-family: Old Standard TT;
-  font-weight: 700;
-  font-size: 20px;
-  line-height: 100%;
-  letter-spacing: 0%;
-  color: #13252e;
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-
-.wholePasswordContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.passwordInputContainer {
-  position: relative;
-  opacity: 1;
-}
-
-.passwordInputContainer input {
-  padding-right: 40px;
-  border: 1.5px solid #415261;
-  border-radius: 6px;
-}
-
-/* Button Container Styles */
-.buttonContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-items: center;
-}
-
-.formProfileButtons {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.cancelProfileButton {
-  opacity: 1;
-  border-radius: 11px;
-  border: 1px solid #13252e;
-  background: transparent;
-  padding: 10px 47px;
-  transition: background 0.3s;
-}
-
-.cancelProfileButton a {
-  color: #13252e;
-  font-family: Old Standard TT;
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 100%;
-  letter-spacing: 0%;
-  text-align: center;
-  text-decoration: none;
-  display: block;
-}
-
-.cancelProfileButton:hover {
-  background: rgba(19, 37, 46, 0.05);
-}
-
-.updateProfileButton {
-  opacity: 1;
-  border-radius: 15px;
-  background: #13252e;
-  transition: background 0.3s;
-}
-
-.updateProfileButton:hover {
-  background: #233e4f;
-}
-
-.updateButton {
-  font-family: Old Standard TT;
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 100%;
-  letter-spacing: 0%;
-  text-align: center;
-  color: #f7f7f7;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 10px 35px;
-}
-
-.deleteProfileButton {
-  opacity: 1;
-  border-radius: 15px;
-  border: 1.5px solid #b70000;
-  background: #b70000;
-  transition: background 0.3s;
-}
-
-.deleteProfileButton:hover {
-  background: #940000;
-}
-
-.deleteButton {
-  font-family: Old Standard TT;
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 100%;
-  letter-spacing: 0%;
-  text-align: center;
-  color: #f7f7f7;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 10px 35px;
-}
-
-/* Error and Success Messages */
-.errorText {
-  color: #b70000;
-  font-size: 14px;
-  display: block;
-  margin-top: 5px;
-}
-
-.errorContainer {
-  background: #ffeaea;
-  border: 1px solid #b70000;
-  border-radius: 8px;
-  padding: 10px 15px;
-  color: #b70000;
-  text-align: center;
-}
-
-.successContainer {
-  background: #eaffea;
-  border: 1px solid #00b700;
-  border-radius: 8px;
-  padding: 10px 15px;
-  color: #00b700;
-  text-align: center;
-}
 
 @media (max-width: 1200px) {
   .agentProfileContainer {

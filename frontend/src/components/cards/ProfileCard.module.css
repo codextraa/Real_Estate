@@ -47,7 +47,8 @@
   width: 100%;
   padding: 5px 10px;
   font-size: 18px;
-  line-height: 1.2;
+  line-height: 100%;
+  letter-spacing: 0%;
   overflow-x: auto;
   white-space: nowrap;
   /* For text overflow with ... */
