@@ -37,7 +37,6 @@ PROPERTY_DETAIL_URL = lambda pk: reverse("property-detail", kwargs={"pk": pk})
 #             email="normal@test.com", username="normaluser", password=self.password
 #         )
 
-#         # ⭐️ NEW STEP: Create the required Agent Profiles ⭐️
 #         self.agent_owner = Agent.objects.create(
 #             user=self.agent_owner_user,
 #             company_name="Owner Real Estate Co.",
