@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import { FormButton } from "@/components/buttons/Buttons";
 import { EyeButton } from "@/components/buttons/Buttons";
 import { useActionState, useState } from "react";
-import { GlobalButton, DeleteButton } from "@/components/buttons/Buttons";
+import { DeleteButton } from "@/components/buttons/Buttons";
 import DeleteModal from "@/components/modals/DeleteModal";
 import styles from "./ProfileForm.module.css";
 
@@ -328,7 +328,7 @@ export default function ProfileForm({
               <div className={styles.buttonContainer}>
                 <div className={styles.cancelProfileButton}>
                   <Link href={`/profile/${state.formUserData.user.slug}`}>
-                    <GlobalButton text="Cancel" />
+                    Cancel
                   </Link>
                 </div>
                 <div className={styles.formProfileButtons}>
@@ -337,6 +337,7 @@ export default function ProfileForm({
                       text="Update Profile"
                       pendingText="Updating..."
                       type="submit"
+                      className={styles.updateButton}
                     />
                   </div>
                   <div className={styles.deleteProfileButton}>
@@ -428,55 +429,57 @@ export default function ProfileForm({
             </div>
             <div className={styles.passwordContainer}>
               <h2 className={styles.changePasswordTitle}>Change Password</h2>
-              <div className={styles.profileBoxLabel}>
-                <label className={styles.profileLabel} htmlFor="password">
-                  Password
-                </label>
-                <div className={styles.passwordInputContainer}>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    disabled={isPending}
-                    className={styles.storedContent}
-                  />
-                  <EyeButton
-                    action={toggleShowPassword}
-                    showPassword={showPassword}
-                    isPending={isPending}
-                  />
+              <div className={styles.wholePasswordContainer}>
+                <div className={styles.profileBoxLabel}>
+                  <label className={styles.profileLabel} htmlFor="password">
+                    Password
+                  </label>
+                  <div className={styles.passwordInputContainer}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      disabled={isPending}
+                      className={styles.storedContent}
+                    />
+                    <EyeButton
+                      action={toggleShowPassword}
+                      showPassword={showPassword}
+                      isPending={isPending}
+                    />
+                  </div>
+                  {Object.keys(state.errors).length > 0 &&
+                    state.errors.password && (
+                      <span className={styles.errorText}>
+                        {state.errors.password}
+                      </span>
+                    )}
                 </div>
-                {Object.keys(state.errors).length > 0 &&
-                  state.errors.password && (
-                    <span className={styles.errorText}>
-                      {state.errors.password}
-                    </span>
-                  )}
-              </div>
-              <div className={styles.profileBoxLabel}>
-                <label className={styles.profileLabel} htmlFor="c_password">
-                  Confirm Password
-                </label>
-                <div className={styles.passwordInputContainer}>
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    id="c_password"
-                    name="c_password"
-                    disabled={isPending}
-                    className={styles.storedContent}
-                  />
-                  <EyeButton
-                    action={toggleShowConfirmPassword}
-                    showPassword={showConfirmPassword}
-                    isPending={isPending}
-                  />
+                <div className={styles.profileBoxLabel}>
+                  <label className={styles.profileLabel} htmlFor="c_password">
+                    Confirm Password
+                  </label>
+                  <div className={styles.passwordInputContainer}>
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      id="c_password"
+                      name="c_password"
+                      disabled={isPending}
+                      className={styles.storedContent}
+                    />
+                    <EyeButton
+                      action={toggleShowConfirmPassword}
+                      showPassword={showConfirmPassword}
+                      isPending={isPending}
+                    />
+                  </div>
+                  {Object.keys(state.errors).length > 0 &&
+                    state.errors.c_password && (
+                      <span className={styles.errorText}>
+                        {state.errors.c_password}
+                      </span>
+                    )}
                 </div>
-                {Object.keys(state.errors).length > 0 &&
-                  state.errors.c_password && (
-                    <span className={styles.errorText}>
-                      {state.errors.c_password}
-                    </span>
-                  )}
               </div>
             </div>
             {Object.keys(state.errors).length > 0 && state.errors.general && (
@@ -489,9 +492,7 @@ export default function ProfileForm({
             )}
             <div className={styles.buttonContainer}>
               <div className={styles.cancelProfileButton}>
-                <Link href={`/profile/${state.formUserData.slug}`}>
-                  <GlobalButton text="Cancel" />
-                </Link>
+                <Link href={`/profile/${state.formUserData.slug}`}>Cancel</Link>
               </div>
               <div className={styles.formProfileButtons}>
                 <div className={styles.updateProfileButton}>
@@ -499,6 +500,7 @@ export default function ProfileForm({
                     text="Update Profile"
                     pendingText="Updating..."
                     type="submit"
+                    className={styles.updateButton}
                   />
                 </div>
                 <div className={styles.deleteProfileButton}>
