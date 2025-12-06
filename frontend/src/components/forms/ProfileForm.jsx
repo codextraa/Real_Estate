@@ -76,10 +76,12 @@ export default function ProfileForm({
 
   const openDeleteModal = () => {
     setIsDeleteModalOpen(true);
+    document.body.style.overflow = "hidden";
   };
 
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
+    document.body.style.overflow = "auto";
   };
 
   return (
