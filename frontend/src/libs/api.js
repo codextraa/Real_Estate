@@ -51,5 +51,25 @@ export const updateUser = async (id, data, userRole, isImage = false) => {
 
 export const deleteUser = async (id, userRole) => {
   const base_url = userRole === "Agent" ? "agents" : "users";
-  return apiClient.request(`/auth-api/${base_url}/${id}/`, "DELETE");
+  return apiClient.delete(`/auth-api/${base_url}/${id}/`);
+};
+
+export const getProperties = async () => {
+  return apiClient.get("/property-api/properties/");
+};
+
+export const createProperty = async (data) => {
+  return apiClient.post("/property-api/properties/", data);
+};
+
+export const getProperty = async (id) => {
+  return apiClient.get(`/property-api/properties/${id}/`);
+};
+
+export const updateProperty = async (id, data) => {
+  return apiClient.patch(`/property-api/properties/${id}/`, data);
+};
+
+export const deleteProperty = async (id) => {
+  return apiClient.delete(`/property-api/properties/${id}/`);
 };

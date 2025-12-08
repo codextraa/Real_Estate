@@ -3,6 +3,8 @@
 import styles from "./DeleteModal.module.css";
 import { useState } from "react";
 import { deleteUserAction } from "@/actions/userActions";
+// import { useRouter } from "next/navigation";
+// import { DEFAULT_LOGIN_REDIRECT } from "@/route";
 export default function DeleteModal({
   title,
   userData,
@@ -12,6 +14,7 @@ export default function DeleteModal({
 }) {
   // const router = useRouter();
   const [deletionError, setDeletionError] = useState(null);
+  // const [successMessage, setSuccessMessage] = useState(null);
   const handleDeleteAction = async () => {
     try {
       if (actionName === "deleteUser") {
@@ -26,6 +29,12 @@ export default function DeleteModal({
                 "Account deletion failed due to an unknown server error.",
             );
           }
+          //  else if (response && response.success) {
+          //   setSuccessMessage(response.success || "Account deleted successfully.");
+          //   setTimeout(() => {
+          //         router.push(DEFAULT_LOGIN_REDIRECT);
+          //       }, 1500);
+          // }
         }
       }
     } catch (error) {
@@ -55,6 +64,9 @@ export default function DeleteModal({
         {deletionError && (
           <div className={styles.errorMessage}>{deletionError}</div>
         )}
+        {/* {successMessage && (
+          <div className={styles.successMessage}>{successMessage}</div>
+        )} */}
       </div>
     </div>
   );
