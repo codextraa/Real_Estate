@@ -803,7 +803,7 @@ class UserViewSet(ModelViewSet):
             return response
 
         return Response(
-            {"success": "User created successfully."},
+            {"success": "User profile created successfully."},
             status=status.HTTP_201_CREATED,
         )
 
@@ -1316,7 +1316,7 @@ class AgentViewSet(ModelViewSet):
         agent.save()
         return Response(
             {
-                "success": "Agent created successfully",
+                "success": "Agent profile created successfully",
             },
             status=status.HTTP_201_CREATED,
         )
@@ -1388,7 +1388,7 @@ class AgentViewSet(ModelViewSet):
 
         return Response(
             {
-                "success": "Agent updated successfully",
+                "success": "Profile updated successfully",
                 "data": response_serializer.data,
             },
             status=status.HTTP_200_OK,

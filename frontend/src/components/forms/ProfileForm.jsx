@@ -3,10 +3,9 @@
 import Form from "next/form";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useActionState, useState } from "react";
 import { FormButton } from "@/components/buttons/Buttons";
 import { EyeButton } from "@/components/buttons/Buttons";
-import { useActionState, useState } from "react";
 import { DeleteButton } from "@/components/buttons/Buttons";
 import DeleteModal from "@/components/modals/DeleteModal";
 import styles from "./ProfileForm.module.css";
@@ -49,8 +48,9 @@ export default function ProfileForm({
 
   const [bioContent, setBioContent] = useState(state.formUserData.bio || "");
   const [previewUrl, setPreviewUrl] = useState(state.formUserData.image_url);
-
+  const textAreaRef = useRef(null);
   const fileInputRef = useRef(null);
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -64,6 +64,13 @@ export default function ProfileForm({
     }
   };
 
+  const autoResize = (element) => {
+    if (element) {
+      element.style.height = "auto";
+      element.style.height = element.scrollHeight + "px";
+    }
+  };
+
   useEffect(() => {
     if (state.success) {
       setDisplaySuccess(state.success);
@@ -73,6 +80,21 @@ export default function ProfileForm({
       return () => clearTimeout(timer);
     }
   }, [state.success]);
+
+  useEffect(() => {
+    autoResize(textAreaRef.current);
+  }, [bioContent]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      autoResize(textAreaRef.current);
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const openDeleteModal = () => {
     setIsDeleteModalOpen(true);
@@ -86,7 +108,7 @@ export default function ProfileForm({
 
   return (
     <div className={styles.profileInfoContainer}>
-      <div className={styles.profileDetailTitle}>Profile Information</div>
+      <div className={styles.profileDetailTitle}>Edit Profile Information</div>
       {isDeleteModalOpen && (
         <DeleteModal
           title="Are you sure you want to delete your account?"
@@ -96,9 +118,8 @@ export default function ProfileForm({
           onCancel={closeDeleteModal}
         />
       )}
-
       {userRole === "Agent" ? (
-        <Form action={formActions} className={styles.Form}>
+        <Form action={formActions}>
           <div className={styles.agentProfileContainer}>
             <div className={styles.inputImageContainer}>
               <div className={styles.ImageContainer}>
@@ -110,7 +131,7 @@ export default function ProfileForm({
                   height={142}
                 />
                 <Image
-                  className={styles.updateIcon} // cursor: pointer;
+                  className={styles.updateIcon}
                   onClick={handleIconClick}
                   src="/assets/update-icon.svg"
                   alt="Update Icon"
@@ -123,7 +144,7 @@ export default function ProfileForm({
                   onChange={handleFileChange}
                   name="profile_image"
                   accept="image/*"
-                  className={styles.fileInput} // display: none;
+                  className={styles.fileInput}
                   disabled={isPending}
                 />
               </div>
@@ -144,14 +165,15 @@ export default function ProfileForm({
                   <textarea
                     id="bio"
                     name="bio"
+                    ref={textAreaRef}
                     disabled={isPending}
                     value={bioContent}
                     onChange={(e) => setBioContent(e.target.value)}
-                    maxLength={250}
+                    maxLength={150}
                     className={styles.storedText}
                   />
                   <div className={styles.charCount}>
-                    {bioContent.length} / 250
+                    {bioContent.length} / 150
                   </div>
                 </div>
                 {Object.keys(state.errors).length > 0 && state.errors.bio && (
@@ -258,9 +280,17 @@ export default function ProfileForm({
                     )}
                 </div>
               </div>
-              <div className={styles.profileDetails}>
-                <h1 className={styles.subTitle2}>Change Password</h1>
-                <div className={styles.profileInfos}>
+              <div
+                className={`${styles.passwordContainer} ${styles.passwordContainerAgent}`}
+              >
+                <h2
+                  className={`${styles.changePasswordTitle} ${styles.changePasswordTitleAgent}`}
+                >
+                  Change Password
+                </h2>
+                <div
+                  className={`${styles.wholePasswordContainer} ${styles.wholePasswordContainerAgent}`}
+                >
                   <div
                     className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
                   >
@@ -318,36 +348,48 @@ export default function ProfileForm({
                 </div>
               </div>
               {Object.keys(state.errors).length > 0 && state.errors.general && (
-                <div className={styles.errorContainer}>
+                <div
+                  className={`${styles.errorContainer} ${styles.errorContainerAgent}`}
+                >
                   {state.errors.general}
                 </div>
               )}
               {displaySuccess && (
-                <div className={styles.successContainer}>{displaySuccess}</div>
+                <div
+                  className={`${styles.successContainer} ${styles.successContainerAgent}`}
+                >
+                  {displaySuccess}
+                </div>
               )}
               <div
                 className={`${styles.buttonContainer} ${styles.buttonContainerAgent}`}
               >
-                <div className={styles.cancelProfileButton}>
+                <div
+                  className={`${styles.cancelProfileButton} ${styles.cancelProfileButtonAgent}`}
+                >
                   <Link href={`/profile/${state.formUserData.user.slug}`}>
                     Cancel
                   </Link>
                 </div>
                 <div className={styles.formProfileButtons}>
-                  <div className={styles.updateProfileButton}>
+                  <div
+                    className={`${styles.updateProfileButton} ${styles.updateProfileButtonAgent}`}
+                  >
                     <FormButton
                       text="Update Profile"
                       pendingText="Updating..."
                       type="submit"
-                      className={styles.updateButton}
+                      className={`${styles.updateButton} ${styles.updateButtonAgent}`}
                     />
                   </div>
-                  <div className={styles.deleteProfileButton}>
+                  <div
+                    className={`${styles.deleteProfileButton} ${styles.deleteProfileButtonAgent}`}
+                  >
                     <DeleteButton
                       text="Delete Profile"
                       type="button"
                       onClick={openDeleteModal}
-                      className={styles.deleteButton}
+                      className={`${styles.deleteButton} ${styles.deleteButtonAgent}`}
                       disabled={isPending}
                     />
                   </div>

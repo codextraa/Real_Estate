@@ -27,7 +27,6 @@
 .profileInfosUser {
   align-items: center;
   gap: 30px;
-  margin-bottom: 25px;
 }
 
 .profileBoxLabel {
@@ -57,35 +56,15 @@
   background: transparent;
 }
 
+.storedContent:focus,
+.storedContent:active {
+  outline: none;
+  border: 2px solid #13252e;
+}
+
 input[type="email"].storedContent {
   background: #41526145;
   cursor: not-allowed;
-}
-
-.profileDetailButtonContainer {
-  display: flex;
-  justify-content: center;
-}
-
-.editProfileButton {
-  border-radius: 15px;
-  background: #13252e;
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s;
-  color: #f7f7f7;
-  font-size: 18px;
-  text-align: center;
-  text-decoration: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 7px 47px;
-}
-
-.editProfileButton:hover {
-  background: #233e4f;
-  box-shadow: 0 0 5px rgba(19, 37, 46, 0.5);
 }
 
 .passwordContainer {
@@ -128,10 +107,6 @@ input[type="email"].storedContent {
   max-width: 546px;
 }
 
-.buttonContainerAgent {
-  max-width: 710px;
-}
-
 .formProfileButtons {
   display: flex;
   flex-grow: 1;
@@ -143,14 +118,12 @@ input[type="email"].storedContent {
   border-radius: 11px;
   border: 1px solid #13252e;
   background: transparent;
-  padding: 9px 21px;
+  padding: 11px 21px 9px 21px;
   transition: background 0.3s;
 }
 
 .cancelProfileButton a {
   color: #13252e;
-  font-family: Old Standard TT;
-  font-weight: 700;
   font-size: 18px;
   line-height: 100%;
   letter-spacing: 0%;
@@ -170,17 +143,11 @@ input[type="email"].storedContent {
   transition: background 0.3s;
 }
 
-.updateProfileButtonAgent {
-  padding: 5px 24px;
-}
-
 .updateProfileButton:hover {
   background: #233e4f;
 }
 
 .updateButton {
-  font-family: Old Standard TT;
-  font-weight: 700;
   font-size: 18px;
   line-height: 100%;
   letter-spacing: 0%;
@@ -189,12 +156,14 @@ input[type="email"].storedContent {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 10px 35px;
+  padding: 11px 35px 9px 35px;
 }
 
 .deleteProfileButton {
   opacity: 1;
   border-radius: 15px;
+  line-height: 100%;
+  letter-spacing: 0%;
   border: 1.5px solid #b70000;
   background: #b70000;
   transition: background 0.3s;
@@ -215,37 +184,31 @@ input[type="email"].storedContent {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 10px 35px;
+  padding: 11px 37px 9px 37px;
 }
 
 /* Error and Success Messages */
 .errorText {
   color: #b70000;
-  font-size: 14px;
+  font-size: 18px;
   display: block;
-  margin-top: 5px;
+  padding-left: 10px;
+  padding-top: 4px;
 }
 
 .errorContainer {
-  background: #ffeaea;
-  border: 1px solid #b70000;
-  border-radius: 8px;
-  padding: 10px 15px;
-  color: #b70000;
+  color: #e30202;
+  font-size: 18px;
   text-align: center;
 }
 
 .successContainer {
-  background: #eaffea;
-  border: 1px solid #00b700;
-  border-radius: 8px;
-  padding: 10px 15px;
-  color: #00b700;
+  color: #368c04;
+  font-size: 18px;
   text-align: center;
 }
 
-/* Agent profile parts */
-
+/* Agent profile styles */
 .agentProfileContainer {
   display: flex;
   flex-direction: row;
@@ -296,81 +259,159 @@ input[type="email"].storedContent {
 .subTitle {
   font-size: 25px;
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .aboutMeLabel {
   font-size: 20px;
-  margin-bottom: -2px;
+  line-height: 1;
 }
 
 .bioContainer {
   position: relative;
-}
-
-.storedText {
   border: 2px solid #415261;
   border-radius: 10px;
   width: 100%;
   max-width: 790px;
-  min-height: 65px;
-  padding: 5px 10px;
+  min-height: auto;
+}
+
+.bioContainer:focus,
+.bioContainer:active {
+  outline: none;
+  border: 2px solid #13252e;
+}
+
+.storedText {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  color: #13252e;
+  background: #f7f7f7;
+  border: none;
+  border-radius: 10px;
+  width: 100%;
+  padding: 5px 10px 15px 10px;
   font-size: 18px;
   line-height: 1.2;
-  resize: vertical;
+  resize: none;
+  overflow: hidden;
+}
+
+.storedText:active,
+.storedText:focus {
+  outline: none;
 }
 
 .charCount {
   position: absolute;
-  bottom: 5px;
-  right: 10px;
-  font-size: 14px;
+  bottom: 2px;
+  right: 7px;
+  font-size: 16px;
+  line-height: 1;
   color: #415261;
 }
 
 .profileDetails {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 25px;
-}
-
-.profileBoxLabelAgent {
-  max-width: 710px;
+  gap: 7px;
+  margin-bottom: 35px;
 }
 
 .subTitle2 {
   font-size: 20px;
 }
 
-.agentProfileButtonContainer {
-  display: flex;
+.profileBoxLabelAgent {
   max-width: 710px;
-  justify-content: space-between;
 }
 
-.editAgentProfileButton {
-  border-radius: 10px;
-  padding: 3px 36px;
+.passwordContainerAgent {
+  width: 100%;
+  max-width: 710px;
+  margin-bottom: 20px;
 }
 
-.myListingsButton {
-  justify-content: space-between;
-  gap: 18px;
-  border-radius: 10px;
-  padding: 4px 13px;
+.changePasswordTitleAgent {
+  margin-bottom: 12px;
 }
 
-.arrowIcon {
-  width: 23px;
-  height: 15px;
+.wholePasswordContainerAgent {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-/* Password Container Styles */
+.buttonContainerAgent {
+  max-width: 710px;
+  margin-top: 0;
+}
+
+.cancelProfileButtonAgent {
+  line-height: 1;
+  padding: 7px 21px 5px 21px;
+}
+
+.updateProfileButtonAgent {
+  border-radius: 11px;
+}
+
+.updateButtonAgent {
+  padding: 8px 24px 6px 24px;
+}
+
+.deleteProfileButtonAgent {
+  border-radius: 11px;
+}
+
+.deleteButtonAgent {
+  padding: 8px 27px 6px 27px;
+}
+
+.errorContainerAgent,
+.successContainerAgent {
+  width: 100%;
+  max-width: 710px;
+  margin-bottom: 20px;
+}
+
+/* Media styles */
 
 @media (max-width: 1200px) {
   .agentProfileContainer {
     flex-direction: column;
+  }
+}
+
+/* Media styles for mobile */
+
+@media (max-width: 700px) {
+  .profileDetailTitle {
+    font-size: 30px;
+  }
+
+  .buttonContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 0px;
+  }
+
+  .formProfileButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex-grow: 0;
+    justify-content: none;
+    align-items: center;
+  }
+
+  .cancelProfileButton {
+    padding: 10px 65px 8px 65px;
+  }
+
+  .cancelProfileButtonAgent {
+    padding: 7px 55px 5px 55px;
   }
 }
 
@@ -380,7 +421,7 @@ input[type="email"].storedContent {
   }
 
   .profileDetailTitle {
-    font-size: 30px;
+    font-size: 25px;
   }
 
   .subTitle {
@@ -393,6 +434,11 @@ input[type="email"].storedContent {
 
   .storedText {
     font-size: 16px;
+    padding: 5px 10px 10px 10px;
+  }
+
+  .charCount {
+    font-size: 14px;
   }
 
   .subTitle2 {
@@ -405,6 +451,9 @@ input[type="email"].storedContent {
 
   .profileInfos {
     gap: 25px;
+  }
+
+  .profileInfosUser {
     margin-bottom: 20px;
   }
 
@@ -417,31 +466,16 @@ input[type="email"].storedContent {
     font-size: 16px;
   }
 
-  .editProfileButton {
-    font-size: 16px;
-    border-radius: 13px;
-    padding: 6px 40px;
+  .passwordInputContainer input {
+    border: 1.5px solid #415261;
   }
 
-  .agentProfileButtonContainer {
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
+  .cancelProfileButton {
+    padding: 10px 60px 8px 60px;
   }
 
-  .editAgentProfileButton {
-    max-width: 180px;
-    padding: 3px 36px;
-  }
-
-  .myListingsButton {
-    max-width: 180px;
-    padding: 4px 13px;
-  }
-
-  .arrowIcon {
-    width: 21px;
-    height: 13px;
+  .cancelProfileButtonAgent {
+    padding: 7px 50px 5px 50px;
   }
 
   .cancelProfileButton a,
@@ -449,15 +483,38 @@ input[type="email"].storedContent {
   .deleteButton {
     font-size: 16px;
   }
+
+  .errorText {
+    font-size: 16px;
+    padding-left: 10px;
+    padding-top: 4px;
+  }
+
+  .errorContainer {
+    font-size: 16px;
+  }
+
+  .successContainer {
+    font-size: 16px;
+  }
+
+  .profileDetails {
+    gap: 5px;
+    margin-bottom: 25px;
+  }
+
+  .changePasswordTitleAgent {
+    margin-bottom: 9px;
+  }
 }
 
 @media (max-width: 400px) {
-  .profileInfoContainer {
-    padding-bottom: 20px;
+  .profileDetailTitle {
+    font-size: 20px;
   }
 
-  .profileDetailTitle {
-    font-size: 25px;
+  .profileInfoContainer {
+    padding-bottom: 20px;
   }
 
   .subTitle {
@@ -482,6 +539,9 @@ input[type="email"].storedContent {
 
   .profileInfos {
     gap: 20px;
+  }
+
+  .profileInfosUser {
     margin-bottom: 20px;
   }
 
@@ -489,34 +549,49 @@ input[type="email"].storedContent {
     font-size: 14px;
   }
 
-  .storedContent {
+  .storedText {
     font-size: 14px;
+    padding: 5px 10px;
   }
 
-  .editProfileButton {
-    font-size: 14px;
-    border-radius: 11px;
-    padding: 5px 35px;
+  .charCount {
+    font-size: 12px;
   }
 
-  .editAgentProfileButton {
-    max-width: 180px;
-    padding: 3px 36px;
+  .cancelProfileButton {
+    padding: 10px 55px 8px 55px;
   }
 
-  .myListingsButton {
-    max-width: 180px;
-    padding: 4px 13px;
-  }
-
-  .arrowIcon {
-    width: 19px;
-    height: 11px;
+  .cancelProfileButtonAgent {
+    padding: 7px 45px 5px 45px;
   }
 
   .cancelProfileButton a,
   .updateButton,
   .deleteButton {
     font-size: 14px;
+  }
+
+  .errorText {
+    font-size: 14px;
+    padding-left: 10px;
+    padding-top: 4px;
+  }
+
+  .errorContainer {
+    font-size: 14px;
+  }
+
+  .successContainer {
+    font-size: 14px;
+  }
+
+  .profileDetails {
+    gap: 3px;
+    margin-bottom: 15px;
+  }
+
+  .changePasswordTitleAgent {
+    margin-bottom: 6px;
   }
 }
