@@ -283,7 +283,6 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
 export const deleteUserAction = async (id, userRole) => {
   try {
     const response = await deleteUser(id, userRole);
-
     if (response.error) {
       return { error: response.error };
     }
