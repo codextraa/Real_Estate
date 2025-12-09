@@ -581,7 +581,9 @@ class UserViewSetTests(APITestCase):
         data = self.get_valid_create_data()
         response = self.client.post(USER_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get("success"), "User created successfully.")
+        self.assertEqual(
+            response.data.get("success"), "User profile created successfully."
+        )
         self.assertTrue(User.objects.filter(email=data["email"]).exists())
 
     def test_superuser_creates_staff_user_success(self):
@@ -591,7 +593,9 @@ class UserViewSetTests(APITestCase):
         self._authenticate(self.superuser)
         response = self.client.post(USER_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get("success"), "User created successfully.")
+        self.assertEqual(
+            response.data.get("success"), "User profile created successfully."
+        )
         self.assertTrue(User.objects.filter(email=data["email"]).exists())
 
     def test_create_user_mismatched_passwords(self):
