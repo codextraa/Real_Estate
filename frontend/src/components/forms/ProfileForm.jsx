@@ -127,8 +127,8 @@ export default function ProfileForm({
                   className={styles.profileImage}
                   src={previewUrl}
                   alt="Profile Image"
-                  width={203}
-                  height={142}
+                  width={333}
+                  height={250}
                 />
                 <Image
                   className={styles.updateIcon}

@@ -201,7 +201,7 @@ class PropertyViewSet(ModelViewSet):
                 response_only=True,
                 status_codes=["400"],
                 value={
-                    "error": {"title": ["property address length is more than 255."]}
+                    "error": {"address": ["property address length is more than 255."]}
                 },
             ),
         ],
@@ -436,7 +436,7 @@ class PropertyViewSet(ModelViewSet):
                 response_only=True,
                 status_codes=["400"],
                 value={
-                    "error": {"title": ["property address length is more than 255."]}
+                    "error": {"address": ["property address length is more than 255."]}
                 },
             ),
         ],

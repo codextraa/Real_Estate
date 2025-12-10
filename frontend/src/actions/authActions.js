@@ -91,8 +91,10 @@ export const loginAction = async (prevState, formData) => {
   }
 };
 
-export const logoutAction = async () => {
-  await logout();
+export const logoutAction = async (isLogout = true) => {
+  if (isLogout) {
+    await logout();
+  }
   await deleteSessionCookie();
   redirect("/");
 };

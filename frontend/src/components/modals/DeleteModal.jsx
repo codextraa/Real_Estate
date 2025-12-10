@@ -3,8 +3,7 @@
 import styles from "./DeleteModal.module.css";
 import { useState } from "react";
 import { deleteUserAction } from "@/actions/userActions";
-import { useRouter } from "next/navigation";
-import { DEFAULT_LOGIN_REDIRECT } from "@/route";
+import { logoutAction } from "@/actions/authActions";
 export default function DeleteModal({
   title,
   userData,
@@ -12,14 +11,11 @@ export default function DeleteModal({
   actionName,
   onCancel,
 }) {
-  const router = useRouter();
   const [deletionError, setDeletionError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleDeleteAction = async () => {
-    if (isDeleting) return; // Prevent multiple clicks
     try {
-      setIsDeleting(true);
       if (actionName === "deleteUser") {
         if (!userData || !userRole) {
           throw new Error("Missing userData or userRole");
@@ -32,14 +28,13 @@ export default function DeleteModal({
             response.error ||
               "Account deletion failed due to an unknown server error.",
           );
-          setIsDeleting(false);
         } else if (response && response.success) {
           setSuccessMessage(
             response.success || "Account deleted successfully.",
           );
           setTimeout(async () => {
-            router.push(DEFAULT_LOGIN_REDIRECT);
-          }, 5500);
+            await logoutAction(false);
+          }, 2000);
         }
       }
     } catch (error) {
@@ -47,7 +42,6 @@ export default function DeleteModal({
       setDeletionError(
         error.message || "A client-side error occurred during deletion.",
       );
-      setIsDeleting(false);
     }
   };
 
