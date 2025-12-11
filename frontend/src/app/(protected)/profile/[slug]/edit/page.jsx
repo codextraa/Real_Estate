@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getUser, getAgent } from "@/libs/api";
 import { updateUserAction } from "@/actions/userActions";
 import { getUserIdAction, getUserRoleAction } from "@/actions/authActions";
+import { DEFAULT_LOGIN_REDIRECT } from "@/route";
+import { redirect } from "next/navigation";
 import ProfileForm from "@/components/forms/ProfileForm";
 import styles from "@/styles/ProfilePage.module.css";
 
@@ -12,6 +14,10 @@ export default async function EditPage({ params }) {
   const userId = await getUserIdAction();
   const userRole = await getUserRoleAction();
   const imgUrl = "/real-estate/real-estate.jpg";
+
+  if (!userId || !userRole) {
+    redirect(DEFAULT_LOGIN_REDIRECT);
+  }
 
   let response;
   let response_slug;
@@ -32,16 +38,30 @@ export default async function EditPage({ params }) {
       ? updateUserAction.bind(null, response.user.id, userRole)
       : updateUserAction.bind(null, response.id, userRole);
 
+  const containerClassStyle = `${styles.profileCardContainer} ${
+    userRole === "Agent" ? styles.profileCardContainerAgent : ""
+  }`;
+
   return (
-    <div className={styles.profilePageBackground}>
-      <Image src={imgUrl} alt="background" fill priority />
-      <div className={styles.profileCardContainer}>
-        <ProfileForm
-          userData={response}
-          userRole={userRole}
-          updateProfileAction={updateProfileAction}
+    <>
+      <div className={styles.profileImageWrapper}>
+        <Image
+          className={styles.profilePageBackgroundImage}
+          src={imgUrl}
+          alt="background"
+          fill
+          priority
         />
       </div>
-    </div>
+      <div className={styles.profilePageWrapper}>
+        <div className={containerClassStyle}>
+          <ProfileForm
+            userData={response}
+            userRole={userRole}
+            updateProfileAction={updateProfileAction}
+          />
+        </div>
+      </div>
+    </>
   );
 }

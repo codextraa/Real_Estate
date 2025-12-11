@@ -201,7 +201,7 @@ class PropertyViewSet(ModelViewSet):
                 response_only=True,
                 status_codes=["400"],
                 value={
-                    "error": {"title": ["property address length is more than 255."]}
+                    "error": {"address": ["property address length is more than 255."]}
                 },
             ),
         ],
@@ -436,7 +436,7 @@ class PropertyViewSet(ModelViewSet):
                 response_only=True,
                 status_codes=["400"],
                 value={
-                    "error": {"title": ["property address length is more than 255."]}
+                    "error": {"address": ["property address length is more than 255."]}
                 },
             ),
         ],
@@ -529,7 +529,7 @@ class PropertyViewSet(ModelViewSet):
         if response.status_code == status.HTTP_204_NO_CONTENT:
             return Response(
                 {"success": f"Property {title} deleted successfully."},
-                status=status.HTTP_204_NO_CONTENT,
+                status=status.HTTP_200_OK,
             )
 
         return response

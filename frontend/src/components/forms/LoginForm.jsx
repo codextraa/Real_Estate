@@ -83,7 +83,12 @@ export default function LoginForm() {
           </div>
         </div>
         <div className={styles.buttonContainer}>
-          <FormButton text="Login" pendingText="Logging in..." type="submit" />
+          <FormButton
+            text="Login"
+            pendingText="Logging in..."
+            type="submit"
+            className={styles.loginFormButton}
+          />
         </div>
         <div className={styles.logInLast}>
           Don't have an account?

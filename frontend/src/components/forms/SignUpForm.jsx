@@ -195,12 +195,14 @@ export default function SignUpForm({ userType }) {
               text="Create Agent Account"
               pendingText="Creating Account..."
               type="submit"
+              className={styles.signUpFormButton}
             />
           ) : (
             <FormButton
               text="Create Customer Account"
               pendingText="Creating Account..."
               type="submit"
+              className={styles.signUpFormButton}
             />
           )}
         </div>

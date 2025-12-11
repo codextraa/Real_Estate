@@ -1,7 +1,6 @@
 "use server";
 
-import { createUser } from "@/libs/api";
-import { updateUser } from "@/libs/api";
+import { createUser, updateUser, deleteUser } from "@/libs/api";
 import { revalidatePath } from "next/cache";
 
 const userError = (response) => {
@@ -66,7 +65,7 @@ const userError = (response) => {
   return { general: response.error };
 };
 
-export const createUserAction = async (user, prevState, formData) => {
+export const createUserAction = async (userRole, prevState, formData) => {
   const email = formData.get("email");
   const username = formData.get("username");
   const password = formData.get("password");
@@ -95,7 +94,7 @@ export const createUserAction = async (user, prevState, formData) => {
     errors.c_password = "Passwords do not match";
   }
 
-  if (user === "agent" && !company_name) {
+  if (userRole === "agent" && !company_name) {
     errors.company_name = "Company Name is required";
   }
 
@@ -119,12 +118,11 @@ export const createUserAction = async (user, prevState, formData) => {
     ...(last_name && { last_name }),
     ...(username && { username }),
     ...(company_name && { company_name }),
-    ...(user === "agent" && { is_agent: true }),
+    ...(userRole === "agent" && { is_agent: true }),
   };
 
   try {
-    const response = await createUser(data, user);
-    console.log(response);
+    const response = await createUser(data, userRole);
     if (response.error) {
       const backend_errors = userError(response);
       return {
@@ -221,23 +219,6 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       profile_image && profile_image instanceof File && profile_image.size > 0;
 
     if (isNewImageUploaded) {
-      const keys_to_delete = [];
-      for (const [key, value] of formData.entries()) {
-        if (
-          key.startsWith("$") ||
-          key === "" ||
-          (key === "password" && value === "") ||
-          (key === "c_password" && value === "")
-        ) {
-          keys_to_delete.push(key);
-        }
-      }
-
-      for (const key of keys_to_delete) {
-        formData.delete(key);
-      }
-
-      console.log("form data with image upload", formData);
       response = await updateUser(id, formData, userRole, true);
     } else {
       const data = {
@@ -251,8 +232,6 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       };
       response = await updateUser(id, data, userRole);
     }
-
-    console.log("response", response);
 
     if (response.error) {
       const backend_errors = userError(response);
@@ -281,5 +260,19 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       success: "",
       formUserData: newUserFormData,
     };
+  }
+};
+
+export const deleteUserAction = async (id, userRole) => {
+  try {
+    const response = await deleteUser(id, userRole);
+    if (response.error) {
+      return { error: response.error };
+    }
+
+    return { success: response.success };
+  } catch (error) {
+    console.error(error);
+    return { error: error.message || "An unexpected error occurred" };
   }
 };

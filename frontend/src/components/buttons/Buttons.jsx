@@ -5,13 +5,15 @@ import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import styles from "./Buttons.module.css";
 
-export function FormButton({ text, pendingText, type }) {
+export function FormButton({ text, pendingText, type, className }) {
   const { pending } = useFormStatus();
-  const textClassName =
-    text === "Delete Profile" ? styles.deleteProfileButton : styles.formButton;
 
   return (
-    <button type={type} disabled={pending} className={textClassName}>
+    <button
+      type={type}
+      disabled={pending}
+      className={`${styles.formButton} ${className}`}
+    >
       {pending ? pendingText : text}
     </button>
   );
@@ -82,6 +84,19 @@ export function HomePageButton({ text }) {
       className={styles.HomePageButton}
       onClick={handleClick}
       disabled={status === "loading"}
+    >
+      {text}
+    </button>
+  );
+}
+
+export function DeleteButton({ type, text, onClick, className, disabled }) {
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={`${styles.deleteButton} ${className}`}
     >
       {text}
     </button>

@@ -1,0 +1,121 @@
+/* DeleteModal.module.css */
+
+.modalOverlay {
+  /* Fixes the position relative to the viewport */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.modalContent {
+  opacity: 1;
+  border-radius: 15px;
+  box-shadow:
+    2px 2px 14px 3px #415261,
+    -2px -2px 14px 3px #415261;
+  background-color: #f7f7f7;
+  padding: 70px 76px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.modalText {
+  font-size: 25px;
+  font-weight: 700;
+  color: #333;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.yesButton,
+.noButton {
+  padding: 9px 22px 6px 22px;
+  border: none;
+  border-radius: 17px;
+  cursor: pointer;
+  font: var(--font-old-standard-tt);
+  font-weight: 700;
+  line-height: 1;
+  font-style: bold;
+  font-size: 18px;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.yesButton {
+  background-color: #b70000;
+  color: #f7f7f7;
+}
+
+.yesButton:hover {
+  background-color: #e20800;
+}
+
+.noButton {
+  background-color: #13252e;
+  color: #f7f7f7;
+}
+
+.noButton:hover {
+  background-color: #2a495c;
+}
+
+.errorMessage {
+  margin-top: 10px;
+  color: #b70000;
+  font-weight: 600;
+}
+.successMessage {
+  margin-top: 10px;
+  color: #368c04;
+  font-weight: 600;
+}
+
+@media (max-width: 800px) {
+  .modalContent {
+    padding: 40px 40px;
+  }
+
+  .modalText {
+    font-size: 20px;
+  }
+
+  .yesButton,
+  .noButton {
+    padding: 8px 20px 5px 20px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 500px) {
+  .modalContent {
+    padding: 20px 20px;
+  }
+
+  .modalText {
+    font-size: 16px;
+  }
+
+  .yesButton,
+  .noButton {
+    padding: 6px 15px 3px 15px;
+    font-size: 14px;
+  }
+}

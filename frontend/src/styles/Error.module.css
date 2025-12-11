@@ -38,7 +38,8 @@
   /* Dimensions based on 955x664 for the reference layout, but made responsive */
   position: relative;
   width: 955px;
-  height: 664px;
+  height: 80%;
+  max-height: 664px;
 
   /* Glass-morphism effect */
   background: rgba(247, 247, 247, 0.7); /* #F7F7F7B2 */

@@ -1,0 +1,597 @@
+/* Common styles for both Agent and Customer containers */
+.profileInfoContainer {
+  background: #f7f7f7;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  color: #13252e;
+  border: 3px solid #415261;
+  border-radius: 35px;
+  padding-top: 10px;
+  padding-bottom: 40px;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+.profileDetailTitle {
+  font-size: 50px;
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+.profileInfos {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profileInfosUser {
+  align-items: center;
+  gap: 30px;
+}
+
+.profileBoxLabel {
+  width: 100%;
+  max-width: 544px;
+}
+
+.profileLabel {
+  font-size: 18px;
+  margin-bottom: -2px;
+  display: block;
+}
+
+.storedContent {
+  border: 2px solid #415261;
+  border-radius: 6px;
+  width: 100%;
+  padding: 5px 10px;
+  font-family: Old Standard TT;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 100%;
+  color: #13252e;
+  letter-spacing: 0%;
+  overflow-x: auto;
+  white-space: nowrap;
+  background: transparent;
+}
+
+.storedContent:focus,
+.storedContent:active {
+  outline: none;
+  border: 2px solid #13252e;
+}
+
+input[type="email"].storedContent {
+  background: #41526145;
+  cursor: not-allowed;
+}
+
+.passwordContainer {
+  width: 100%;
+  max-width: 544px;
+}
+
+.changePasswordTitle {
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+.wholePasswordContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.passwordInputContainer {
+  position: relative;
+  opacity: 1;
+}
+
+.passwordInputContainer input {
+  padding-right: 40px;
+  border: 2px solid #415261;
+  border-radius: 6px;
+}
+
+/* Button Container Styles */
+.buttonContainer {
+  display: flex;
+  gap: 10px;
+  margin-top: -5px;
+  align-items: center;
+  width: 100%;
+  max-width: 546px;
+}
+
+.formProfileButtons {
+  display: flex;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.cancelProfileButton {
+  opacity: 1;
+  border-radius: 11px;
+  border: 1px solid #13252e;
+  background: transparent;
+  padding: 11px 21px 9px 21px;
+  transition: background 0.3s;
+}
+
+.cancelProfileButton a {
+  color: #13252e;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+
+.cancelProfileButton:hover {
+  background: rgba(19, 37, 46, 0.05);
+}
+
+.updateProfileButton {
+  opacity: 1;
+  border-radius: 15px;
+  background: #13252e;
+  transition: background 0.3s;
+}
+
+.updateProfileButton:hover {
+  background: #233e4f;
+}
+
+.updateButton {
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  color: #f7f7f7;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 11px 35px 9px 35px;
+}
+
+.deleteProfileButton {
+  opacity: 1;
+  border-radius: 15px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  border: 1.5px solid #b70000;
+  background: #b70000;
+  transition: background 0.3s;
+}
+
+.deleteProfileButton:hover {
+  background: #940000;
+}
+
+.deleteButton {
+  font-family: Old Standard TT;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  color: #f7f7f7;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 11px 37px 9px 37px;
+}
+
+/* Error and Success Messages */
+.errorText {
+  color: #b70000;
+  font-size: 18px;
+  display: block;
+  padding-left: 10px;
+  padding-top: 4px;
+}
+
+.errorContainer {
+  color: #e30202;
+  font-size: 18px;
+  text-align: center;
+}
+
+.successContainer {
+  color: #368c04;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* Agent profile styles */
+.agentProfileContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 26px;
+}
+
+.inputImageContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.ImageContainer {
+  width: 200px;
+  height: 150px;
+  border-radius: 12px;
+  border: 3px solid #415261;
+  position: relative;
+}
+
+.profileImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9px;
+}
+
+.updateIcon {
+  position: absolute;
+  bottom: -15px;
+  right: -15px;
+  cursor: pointer;
+}
+
+.fileInput {
+  display: none;
+}
+
+.profileContainer {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.bioInfo {
+  margin-bottom: 30px;
+}
+
+.subTitle {
+  font-size: 25px;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.aboutMeLabel {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.bioContainer {
+  position: relative;
+  border: 2px solid #415261;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 790px;
+  min-height: auto;
+}
+
+.bioContainer:focus,
+.bioContainer:active {
+  outline: none;
+  border: 2px solid #13252e;
+}
+
+.storedText {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  color: #13252e;
+  background: #f7f7f7;
+  border: none;
+  border-radius: 10px;
+  width: 100%;
+  padding: 5px 10px 15px 10px;
+  font-size: 18px;
+  line-height: 1.2;
+  resize: none;
+  overflow: hidden;
+}
+
+.storedText:active,
+.storedText:focus {
+  outline: none;
+}
+
+.charCount {
+  position: absolute;
+  bottom: 2px;
+  right: 7px;
+  font-size: 16px;
+  line-height: 1;
+  color: #415261;
+}
+
+.profileDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 35px;
+}
+
+.subTitle2 {
+  font-size: 20px;
+}
+
+.profileBoxLabelAgent {
+  max-width: 710px;
+}
+
+.passwordContainerAgent {
+  width: 100%;
+  max-width: 710px;
+  margin-bottom: 20px;
+}
+
+.changePasswordTitleAgent {
+  margin-bottom: 12px;
+}
+
+.wholePasswordContainerAgent {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.buttonContainerAgent {
+  max-width: 710px;
+  margin-top: 0;
+}
+
+.cancelProfileButtonAgent {
+  line-height: 1;
+  padding: 7px 21px 5px 21px;
+}
+
+.updateProfileButtonAgent {
+  border-radius: 11px;
+}
+
+.updateButtonAgent {
+  padding: 8px 24px 6px 24px;
+}
+
+.deleteProfileButtonAgent {
+  border-radius: 11px;
+}
+
+.deleteButtonAgent {
+  padding: 8px 27px 6px 27px;
+}
+
+.errorContainerAgent,
+.successContainerAgent {
+  width: 100%;
+  max-width: 710px;
+  margin-bottom: 20px;
+}
+
+/* Media styles */
+
+@media (max-width: 1200px) {
+  .agentProfileContainer {
+    flex-direction: column;
+  }
+}
+
+/* Media styles for mobile */
+
+@media (max-width: 700px) {
+  .profileDetailTitle {
+    font-size: 30px;
+  }
+
+  .buttonContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 0px;
+  }
+
+  .formProfileButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex-grow: 0;
+    justify-content: none;
+    align-items: center;
+  }
+
+  .cancelProfileButton {
+    padding: 10px 65px 8px 65px;
+  }
+
+  .cancelProfileButtonAgent {
+    padding: 7px 55px 5px 55px;
+  }
+}
+
+@media (max-width: 550px) {
+  .profileInfoContainer {
+    padding-bottom: 30px;
+  }
+
+  .profileDetailTitle {
+    font-size: 25px;
+  }
+
+  .subTitle {
+    font-size: 20px;
+  }
+
+  .aboutMeLabel {
+    font-size: 16px;
+  }
+
+  .storedText {
+    font-size: 16px;
+    padding: 5px 10px 10px 10px;
+  }
+
+  .charCount {
+    font-size: 14px;
+  }
+
+  .subTitle2 {
+    font-size: 18px;
+  }
+
+  .changePasswordTitle {
+    font-size: 18px;
+  }
+
+  .profileInfos {
+    gap: 25px;
+  }
+
+  .profileInfosUser {
+    margin-bottom: 20px;
+  }
+
+  .profileLabel {
+    font-size: 16px;
+  }
+
+  .storedContent {
+    border: 1.5px solid #415261;
+    font-size: 16px;
+  }
+
+  .passwordInputContainer input {
+    border: 1.5px solid #415261;
+  }
+
+  .cancelProfileButton {
+    padding: 10px 60px 8px 60px;
+  }
+
+  .cancelProfileButtonAgent {
+    padding: 7px 50px 5px 50px;
+  }
+
+  .cancelProfileButton a,
+  .updateButton,
+  .deleteButton {
+    font-size: 16px;
+  }
+
+  .errorText {
+    font-size: 16px;
+    padding-left: 10px;
+    padding-top: 4px;
+  }
+
+  .errorContainer {
+    font-size: 16px;
+  }
+
+  .successContainer {
+    font-size: 16px;
+  }
+
+  .profileDetails {
+    gap: 5px;
+    margin-bottom: 25px;
+  }
+
+  .changePasswordTitleAgent {
+    margin-bottom: 9px;
+  }
+}
+
+@media (max-width: 400px) {
+  .profileDetailTitle {
+    font-size: 20px;
+  }
+
+  .profileInfoContainer {
+    padding-bottom: 20px;
+  }
+
+  .subTitle {
+    font-size: 18px;
+  }
+
+  .aboutMeLabel {
+    font-size: 14px;
+  }
+
+  .storedText {
+    font-size: 14px;
+  }
+
+  .subTitle2 {
+    font-size: 16px;
+  }
+
+  .changePasswordTitle {
+    font-size: 16px;
+  }
+
+  .profileInfos {
+    gap: 20px;
+  }
+
+  .profileInfosUser {
+    margin-bottom: 20px;
+  }
+
+  .profileLabel {
+    font-size: 14px;
+  }
+
+  .storedText {
+    font-size: 14px;
+    padding: 5px 10px;
+  }
+
+  .charCount {
+    font-size: 12px;
+  }
+
+  .cancelProfileButton {
+    padding: 10px 55px 8px 55px;
+  }
+
+  .cancelProfileButtonAgent {
+    padding: 7px 45px 5px 45px;
+  }
+
+  .cancelProfileButton a,
+  .updateButton,
+  .deleteButton {
+    font-size: 14px;
+  }
+
+  .errorText {
+    font-size: 14px;
+    padding-left: 10px;
+    padding-top: 4px;
+  }
+
+  .errorContainer {
+    font-size: 14px;
+  }
+
+  .successContainer {
+    font-size: 14px;
+  }
+
+  .profileDetails {
+    gap: 3px;
+    margin-bottom: 15px;
+  }
+
+  .changePasswordTitleAgent {
+    margin-bottom: 6px;
+  }
+}
