@@ -58,8 +58,10 @@ export const getProperties = async () => {
   return apiClient.get("/property-api/properties/");
 };
 
-export const createProperty = async (data) => {
-  //! needs fixing for image handling (ref updateUser)
+export const createProperty = async (data, isImage = false) => {
+  if (isImage) {
+    return apiClient.post("/property-api/properties/", data, {}, true);
+  }
   return apiClient.post("/property-api/properties/", data);
 };
 
@@ -67,8 +69,10 @@ export const getProperty = async (id) => {
   return apiClient.get(`/property-api/properties/${id}/`);
 };
 
-export const updateProperty = async (id, data) => {
-  //! needs fixing for image handling (ref updateUser)
+export const updateProperty = async (id, data, isImage = false) => {
+  if (isImage) {
+    return apiClient.patch(`/property-api/properties/${id}/`, data, {}, true);
+  }
   return apiClient.patch(`/property-api/properties/${id}/`, data);
 };
 
