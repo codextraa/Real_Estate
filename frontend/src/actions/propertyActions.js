@@ -54,7 +54,7 @@ const propertyError = (response) => {
     }
 
     if (response.error.image_url) {
-      errorMessages["property_image"] = //! check this
+      errorMessages["image_url"] =
         response.error.image_url[0][0].toUpperCase() +
         response.error.image_url[0].slice(1).toLowerCase();
     }
@@ -153,7 +153,6 @@ export const createPropertyAction = async (prevState, formData) => {
         beds,
         baths,
         area_sqft,
-        property_image,
       };
       response = await createProperty(data);
     }
@@ -169,7 +168,7 @@ export const createPropertyAction = async (prevState, formData) => {
     return {
       errors,
       success: response.success,
-      formPropertyData: response.data,
+      formPropertyData: newPropertyData,
     };
   } catch (error) {
     console.error(error);
@@ -232,7 +231,7 @@ export const updatePropertyAction = async (id, prevState, formData) => {
     errors.area_sqft = "Area is required.";
   }
   if (!newPropertyData.property_image) {
-    errors.property_image = "Image is required.";
+    errors.image_url = "Image is required.";
   }
 
   if (Object.keys(errors).length > 0) {
@@ -254,16 +253,24 @@ export const updatePropertyAction = async (id, prevState, formData) => {
       response = await updateProperty(id, formData, true);
     } else {
       const data = {
-        title,
-        description,
-        price,
-        property_type,
-        address,
-        beds,
-        baths,
-        area_sqft,
-        property_image,
+        ...(title && title !== prevState.formPropertyData.title && { title }),
+        ...(description &&
+          description !== prevState.formPropertyData.description && {
+            description,
+          }),
+        ...(price && price !== prevState.formPropertyData.price && { price }),
+        ...(property_type &&
+          property_type !== prevState.formPropertyData.property_type && {
+            property_type,
+          }),
+        ...(address &&
+          address !== prevState.formPropertyData.address && { address }),
+        ...(beds && beds !== prevState.formPropertyData.beds && { beds }),
+        ...(baths && baths !== prevState.formPropertyData.baths && { baths }),
+        ...(area_sqft &&
+          area_sqft !== prevState.formPropertyData.area_sqft && { area_sqft }),
       };
+
       response = await updateProperty(id, data);
     }
 
