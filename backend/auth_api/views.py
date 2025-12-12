@@ -707,7 +707,7 @@ class UserViewSet(ModelViewSet):
                 value={"success": "User created successfully."},
             ),
             OpenApiExample(
-                name="Creating Admin Error",
+                name="Creating Admin as a User Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You do not have permission to create an admin user."},
@@ -803,7 +803,7 @@ class UserViewSet(ModelViewSet):
             return response
 
         return Response(
-            {"success": "User created successfully."},
+            {"success": "User profile created successfully."},
             status=status.HTTP_201_CREATED,
         )
 
@@ -1044,7 +1044,7 @@ class UserViewSet(ModelViewSet):
         if response.status_code == status.HTTP_204_NO_CONTENT:
             return Response(
                 {"success": f"User {email} deleted successfully."},
-                status=status.HTTP_204_NO_CONTENT,
+                status=status.HTTP_200_OK,
             )
 
         return response
@@ -1179,7 +1179,7 @@ class AgentViewSet(ModelViewSet):
                 value={"success": "Agent created successfully"},
             ),
             OpenApiExample(
-                name="Creating Admin Error",
+                name="Creating Admin as a Agent Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You do not have permission to create an admin user."},
@@ -1308,7 +1308,7 @@ class AgentViewSet(ModelViewSet):
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
 
-        agent_request_data["user"] = user
+        agent_request_data["user"] = user.pk
         agent_serializer = self.get_serializer(data=agent_request_data)
         agent_serializer.is_valid(raise_exception=True)
         agent = agent_serializer.save()
@@ -1316,7 +1316,7 @@ class AgentViewSet(ModelViewSet):
         agent.save()
         return Response(
             {
-                "success": "Agent created successfully",
+                "success": "Agent profile created successfully",
             },
             status=status.HTTP_201_CREATED,
         )
@@ -1388,7 +1388,7 @@ class AgentViewSet(ModelViewSet):
 
         return Response(
             {
-                "success": "Agent updated successfully",
+                "success": "Profile updated successfully",
                 "data": response_serializer.data,
             },
             status=status.HTTP_200_OK,
@@ -1644,6 +1644,7 @@ class AgentViewSet(ModelViewSet):
 
         current_user = self.request.user
         agent_to_delete = self.get_object()
+        user_to_delete = agent_to_delete.user  # Get the User instance
 
         if not current_user.is_superuser and current_user.id != agent_to_delete.user.id:
             return Response(
@@ -1651,7 +1652,7 @@ class AgentViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        default_profile_image = "/profile_images/default_profile.jpg"
+        default_profile_image = "profile_images/default_profile.jpg"
         old_agent_image = None
 
         if (
@@ -1663,14 +1664,15 @@ class AgentViewSet(ModelViewSet):
             )
 
         response = super().destroy(request, *args, **kwargs)
+        user_to_delete.delete()
 
-        if os.path.exists(old_agent_image):
+        if old_agent_image and os.path.exists(old_agent_image):
             os.remove(old_agent_image)
 
         if response.status_code == status.HTTP_204_NO_CONTENT:
             return Response(
                 {"success": "Agent profile deleted successfully."},
-                status=status.HTTP_204_NO_CONTENT,
+                status=status.HTTP_200_OK,
             )
 
         return response

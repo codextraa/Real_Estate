@@ -37,3 +37,10 @@
 .profileCardContainerAgent {
   max-width: 1117px;
 }
+
+@media (max-width: 500px) {
+  .profileCardContainer {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+}
