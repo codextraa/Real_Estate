@@ -16,24 +16,24 @@ export default function Dropdown() {
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState({
-    address: searchParams.get("address") || "California",
-    price_min: searchParams.get("price_min") || "1000",
-    price_max: searchParams.get("price_max") || "10000",
-    area_sqft_min: searchParams.get("area_sqft_min") || "1000",
-    area_sqft_max: searchParams.get("area_sqft_max") || "2000",
-    baths: searchParams.get("baths") || "3",
-    beds: searchParams.get("beds") || "4",
+    address: searchParams.get("address") || "Default",
+    price_min: searchParams.get("price_min") || "Default",
+    price_max: searchParams.get("price_max") || "Default",
+    area_sqft_min: searchParams.get("area_sqft_min") || "Default",
+    area_sqft_max: searchParams.get("area_sqft_max") || "Default",
+    baths: searchParams.get("baths") || "Default",
+    beds: searchParams.get("beds") || "Default",
   });
 
   useEffect(() => {
     setFilters({
-      address: searchParams.get("address") || "California",
-      price_min: searchParams.get("price_min") || "1000",
-      price_max: searchParams.get("price_max") || "10000",
-      area_sqft_min: searchParams.get("area_sqft_min") || "1000",
-      area_sqft_max: searchParams.get("area_sqft_max") || "2000",
-      baths: searchParams.get("baths") || "3",
-      beds: searchParams.get("beds") || "4",
+      address: searchParams.get("address") || "Default",
+      price_min: searchParams.get("price_min") || "Default",
+      price_max: searchParams.get("price_max") || "Default",
+      area_sqft_min: searchParams.get("area_sqft_min") || "Default",
+      area_sqft_max: searchParams.get("area_sqft_max") || "Default",
+      baths: searchParams.get("baths") || "Default",
+      beds: searchParams.get("beds") || "Default",
     });
   }, [searchParams]);
 
@@ -47,6 +47,7 @@ export default function Dropdown() {
 
   const filterOptions = {
     address: [
+      "Default",
       "California",
       "New York",
       "Texas",
@@ -59,6 +60,7 @@ export default function Dropdown() {
       "Utah",
     ],
     price: [
+      "Default",
       "$1000 - $10000",
       "$10000 - $50000",
       "$50000 - $100000",
@@ -67,6 +69,7 @@ export default function Dropdown() {
       "$500000 - $1000000",
     ],
     area_sqft: [
+      "Default",
       "1000 sqft - 2000 sqft",
       "2000 sqft - 5000 sqft",
       "5000 sqft - 10000 sqft",
@@ -74,8 +77,8 @@ export default function Dropdown() {
       "20000 sqft - 50000 sqft",
       "50000 sqft - 100000 sqft",
     ],
-    baths: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-    beds: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+    baths: ["Default", "1", "2", "3", "4", "5", "6", "7", "8", "8+"],
+    beds: ["Default", "1", "2", "3", "4", "5", "6", "7", "8", "8+"],
   };
 
   const parseRangeValue = (rangeString) => {
@@ -104,17 +107,24 @@ export default function Dropdown() {
 
   const handleFilterChange = (filterType, value) => {
     let updatedFields = {};
+    const defaultVal = "Default";
 
     if (filterType === "price" || filterType === "area_sqft") {
-      const { min, max } = parseRangeValue(value);
-
-      updatedFields = {
-        [`${filterType}_min`]: min,
-        [`${filterType}_max`]: max,
-      };
+      if (value === defaultVal) {
+        updatedFields = {
+          [`${filterType}_min`]: "",
+          [`${filterType}_max`]: "",
+        };
+      } else {
+        const { min, max } = parseRangeValue(value);
+        updatedFields = {
+          [`${filterType}_min`]: min,
+          [`${filterType}_max`]: max,
+        };
+      }
     } else {
       updatedFields = {
-        [filterType]: value,
+        [filterType]: value === defaultVal ? "" : value,
       };
     }
 
@@ -123,11 +133,16 @@ export default function Dropdown() {
     setDropdownOpen((prev) => ({ ...prev, [filterType]: false }));
 
     const params = new URLSearchParams(searchParams.toString());
-
     params.set("page", "1");
 
     Object.keys(newFilters).forEach((key) => {
-      params.set(key, newFilters[key]);
+      const filterValue = newFilters[key];
+
+      if (filterValue !== "" && filterValue !== defaultVal) {
+        params.set(key, filterValue);
+      } else {
+        params.delete(key);
+      }
     });
 
     router.push(`?${params.toString()}`);
@@ -135,11 +150,20 @@ export default function Dropdown() {
 
   const getFilterDisplayValue = (filterType) => {
     if (filterType === "price") {
+      if (filters.price_min === "Default" && filters.price_max === "Default") {
+        return "Default";
+      }
       const min = filters.price_min;
       const max = filters.price_max;
       return `$${min} - $${max}`;
     }
     if (filterType === "area_sqft") {
+      if (
+        filters.area_sqft_min === "Default" &&
+        filters.area_sqft_max === "Default"
+      ) {
+        return "Default";
+      }
       const min = filters.area_sqft_min;
       const max = filters.area_sqft_max;
       return `${min} sqft - ${max} sqft`;
