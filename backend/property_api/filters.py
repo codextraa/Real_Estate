@@ -10,8 +10,12 @@ class PropertyFilter(django_filters.FilterSet):
     address = django_filters.CharFilter(lookup_expr="icontains")
     beds = django_filters.CharFilter(method="filter_beds_and_baths")
     baths = django_filters.CharFilter(method="filter_beds_and_baths")
-    price = django_filters.RangeFilter(method="filter_price_and_area_sqft")
-    area_sqft = django_filters.RangeFilter(method="filter_price_and_area_sqft")
+    price = django_filters.RangeFilter(
+        field_name="price", method="filter_price_and_area_sqft"
+    )
+    area_sqft = django_filters.RangeFilter(
+        field_name="area_sqft", method="filter_price_and_area_sqft"
+    )
 
     class Meta:
         model = Property
@@ -50,7 +54,14 @@ class PropertyFilter(django_filters.FilterSet):
         """
         Filter Property by price and area
         """
-        min_value, max_value = value
+        if not value:
+            return queryset
+
+        try:
+            min_value = value.start
+            max_value = value.stop
+        except AttributeError:
+            return queryset
 
         if min_value is None or min_value < 1:
             min_value = 1
