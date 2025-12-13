@@ -1,7 +1,6 @@
 {
     "editor.trimAutoWhitespace": true,
     "editor.formatOnSave": true,
-    
     // Python/Black configuration
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter",
@@ -13,11 +12,14 @@
         }
     },
     "black-formatter.args": [
-        "--line-length", "88",
-        "--target-version", "py38"
+        "--line-length",
+        "88",
+        "--target-version",
+        "py38"
     ],
-    "python.analysis.extraPaths": ["${workspaceFolder}/backend"],
-    
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/backend"
+    ],
     // Pylint for Django
     "pylint.args": [
         "--load-plugins=pylint_django",
@@ -28,13 +30,11 @@
         "--disable=no-member",
         "--disable=too-few-public-methods"
     ],
-    
     // JavaScript/Prettier configuration
     "prettier.semi": true,
     "prettier.singleQuote": true,
     "prettier.tabWidth": 2,
     "prettier.trailingComma": "es5",
-    
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true,
@@ -65,9 +65,10 @@
         "editor.tabSize": 2,
         "editor.insertSpaces": true
     },
-    
     // ESLint configuration
-    "eslint.workingDirectories": ["./frontend"],
+    "eslint.workingDirectories": [
+        "./frontend"
+    ],
     "eslint.validate": [
         "javascript",
         "javascriptreact",

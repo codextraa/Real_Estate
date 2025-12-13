@@ -7,6 +7,7 @@ class PropertyFilter(django_filters.FilterSet):
     """Property Filter"""
 
     search = django_filters.CharFilter(method="filter_search_set")
+    address = django_filters.CharFilter(lookup_expr="icontains")
     beds = django_filters.CharFilter(method="filter_beds_and_baths")
     baths = django_filters.CharFilter(method="filter_beds_and_baths")
     price = django_filters.RangeFilter(method="filter_price_and_area_sqft")
@@ -14,7 +15,7 @@ class PropertyFilter(django_filters.FilterSet):
 
     class Meta:
         model = Property
-        fields = ("search", "beds", "baths", "price", "area_sqft")
+        fields = ("search", "address", "beds", "baths", "price", "area_sqft")
 
     def filter_search_set(
         self, queryset, name, value

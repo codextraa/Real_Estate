@@ -54,8 +54,9 @@ export const deleteUser = async (id, userRole) => {
   return apiClient.delete(`/auth-api/${base_url}/${id}/`);
 };
 
-export const getProperties = async () => {
-  return apiClient.get("/property-api/properties/");
+export const getProperties = async (queryParams = {}) => {
+  const params = new URLSearchParams(queryParams);
+  return apiClient.get(`/property-api/properties/?${params.toString()}`);
 };
 
 export const createProperty = async (data, isImage = false) => {
