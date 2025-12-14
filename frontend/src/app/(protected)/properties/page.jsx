@@ -53,6 +53,10 @@ export default async function PropertiesPage({ searchParams }) {
             <div className={styles.errorContainer}>
               <div>{response.error}</div>
             </div>
+          ) : response.count === 0 ? (
+            <div className={styles.noResultsContainer}>
+              <div>No Properties Found</div>
+            </div>
           ) : (
             <div className={styles.propertyGridPagination}>
               <div className={styles.propertyGrid}>
