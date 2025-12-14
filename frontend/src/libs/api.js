@@ -1,5 +1,5 @@
 import { ApiClient } from "./apiClient";
-// import { getRefreshTokenFromSession } from './cookie';
+import { getRefreshTokenFromSession } from "./cookie";
 
 const HTTPS = process.env.HTTPS === "true";
 const API_URL = HTTPS
@@ -18,7 +18,11 @@ export const login = async (data) => {
 };
 
 export const logout = async () => {
-  return await apiClient.post("/auth-api/logout/");
+  const refreshToken = await getRefreshTokenFromSession();
+
+  if (refreshToken) {
+    await apiClient.post("/auth-api/logout/", { refresh: refreshToken });
+  }
 };
 
 export const getUser = async (id) => {

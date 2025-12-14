@@ -20,7 +20,7 @@ export const setSessionCookie = async (data) => {
     cookieStore.set("__Secure-session", encryptedSessionData, {
       httpOnly: true,
       secure: process.env.HTTPS === "true", // Secure in production
-      maxAge: 60 * 60 * 24, // One day in seconds
+      maxAge: 60 * 60 * 24 * 7, // One week in seconds
       path: "/", // Dynamic path
       sameSite: "lax", // Helps prevent CSRF attacks
     });

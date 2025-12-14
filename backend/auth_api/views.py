@@ -502,7 +502,7 @@ class RefreshTokenView(TokenRefreshView):
 
             response = super().post(request, *args, **kwargs)
             response.data["access_token_expiry"] = (
-                now() + timedelta(minutes=5)
+                now() + timedelta(hours=1)
             ).isoformat()
 
             # Extract the access token and refresh token
