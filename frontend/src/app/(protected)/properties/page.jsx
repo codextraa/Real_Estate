@@ -1,6 +1,7 @@
 import { getProperties } from "@/libs/api";
 import PropertyCard from "@/components/cards/PropertyCard";
 import Dropdown from "@/components/dropdowns/Dropdown";
+import Searchbar from "@/components/searchbar/Searchbar";
 import Pagination from "@/components/pagination/Pagination";
 import styles from "@/styles/PropertyPage.module.css";
 import Image from "next/image";
@@ -32,6 +33,9 @@ export default async function PropertiesPage({ searchParams }) {
         </div>
       </div>
       <div className={styles.propertiesContainer}>
+        <div className={styles.searchbar}>
+          <Searchbar />
+        </div>
         <div className={styles.propertyDropdowns}>
           <Dropdown />
         </div>
