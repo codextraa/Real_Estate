@@ -7,6 +7,7 @@ import { useEffect, useRef, useActionState, useState } from "react";
 import { FormButton } from "@/components/buttons/Buttons";
 import { EyeButton } from "@/components/buttons/Buttons";
 import { DeleteButton } from "@/components/buttons/Buttons";
+import UpdateAlert from "@/components/alerts/UpdateAlert";
 import DeleteModal from "@/components/modals/DeleteModal";
 import styles from "./ProfileForm.module.css";
 
@@ -208,20 +209,7 @@ export default function ProfileForm({
   return (
     <div className={styles.profileInfoContainer}>
       <div className={styles.profileDetailTitle}>Edit Profile Information</div>
-      {hasUnsavedChanges && (
-        <div className={styles.unsavedChangesAlert}>
-          <span role="img" aria-label="alert">
-            ⚠️
-          </span>{" "}
-          You have unsaved changes.
-          <button
-            onClick={() => setHasUnsavedChanges(false)}
-            className={styles.closeAlert}
-          >
-            &times;
-          </button>
-        </div>
-      )}
+      <UpdateAlert hasUnsavedChanges={hasUnsavedChanges} />
       {isDeleteModalOpen && (
         <DeleteModal
           title="Are you sure you want to delete your account?"

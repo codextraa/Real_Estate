@@ -1,5 +1,4 @@
 .navbar {
-  /* margin-bottom: -70px; */
   position: relative;
   height: auto;
   display: flex;
@@ -39,7 +38,7 @@
   }
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 550px) {
   .navbar {
     padding: 3px 5px 0px 5px;
   }
@@ -48,11 +47,5 @@
   }
   .navLinks {
     gap: 10px;
-  }
-}
-
-@media screen and (max-width: 375px) {
-  .logo {
-    font-size: 14px;
   }
 }

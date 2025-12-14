@@ -1,0 +1,95 @@
+/* Animation for entering (starts hidden slightly above the final position) */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Animation for exiting (ends hidden slightly below the initial position) */
+@keyframes slideOutToBottom {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
+}
+
+.unsavedChangesAlert {
+  position: fixed;
+  z-index: 600;
+  top: 25px;
+  left: 50%;
+  animation: slideInFromTop 0.5s ease-out forwards;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 7px;
+  gap: 10px;
+  height: 30px;
+  /* background: rgba(217, 119, 6, 0.16);
+  backdrop-filter: blur(10px); */
+  background: #f7f7f7;
+  border: 1px solid #d97706;
+  border-radius: 10px;
+}
+
+.unsavedChangesAlert span,
+.unsavedChangesAlert {
+  font-family: "Old Standard TT", serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 18px;
+  text-align: center;
+  color: #d97706;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.unsavedChangesAlert.exiting {
+  animation: slideOutToBottom 0.3s ease-in forwards;
+}
+
+.warningIcon {
+  width: 16px;
+  height: 15px;
+}
+
+@media (max-width: 1200px) {
+  .unsavedChangesAlert {
+    top: 40px;
+  }
+}
+
+@media (max-width: 550px) {
+  .unsavedChangesAlert {
+    top: 25px;
+    gap: 5px;
+    padding: 0px 5px;
+    height: 25px;
+    border-radius: 8px;
+  }
+
+  .unsavedChangesAlert span,
+  .unsavedChangesAlert {
+    font-size: 16px;
+  }
+
+  .warningIcon {
+    width: 14px;
+    height: 13px;
+  }
+}
+
+@media (max-width: 350px) {
+  .unsavedChangesAlert {
+    top: 35px;
+  }
+}
