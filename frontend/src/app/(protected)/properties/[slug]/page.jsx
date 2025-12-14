@@ -5,9 +5,9 @@ import PropertyImageCard from "@/components/cards/PropertyImageCard";
 import PropertyDetailCard from "@/components/cards/PropertyDetailCard";
 import styles from "@/styles/PropertyPage.module.css";
 
-export default async function ProfileCard({ params }) {
-  const urlParams = await params;
-  const propertyId = urlParams.slug;
+export default async function ProfileCard({ searchParams }) {
+  const urlSearchParams = await searchParams;
+  const propertyId = urlSearchParams.id;
   const response = await getProperty(propertyId);
   const recommendedProperties = await getProperties();
 
@@ -33,9 +33,9 @@ export default async function ProfileCard({ params }) {
         </div>
         <div className={styles.recommendationSection}>
           <h4>Recommendation</h4>
-          {recommendedProperties.results
-            .slice(0, 6)
-            .map((property) => PropertyCard({ property, key: property.id }))}
+          {recommendedProperties.results.slice(0, 6).map((property) => (
+            <PropertyCard key={property.id} property={property} />
+          ))}
         </div>
       </div>
     </div>

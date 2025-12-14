@@ -1,3 +1,4 @@
+//! this will be conditional redering in home page.jsx
 import { getProperties } from "@/libs/api";
 import PropertyCard from "@/components/cards/PropertyCard";
 import Dropdown from "@/components/dropdowns/Dropdown";
@@ -42,10 +43,11 @@ export default async function PropertiesPage({ searchParams }) {
         <div className={styles.propertiesContent}>
           <div className={styles.propertiesTitle}>Properties</div>
           <div className={styles.propertiesDescription}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ac
-            finibus mi, sit amet finibus dui. Vivamus vel nulla risus. Ut in
-            neque aliquet, lacinia est ac, efficitur ex. Proin tempor eros eget
-            nibh malesuada eleifend. Maecenas ac porttitor erat.
+            //! Replace with actual description Lorem ipsum dolor sit amet,
+            consectetur adipiscing elit. Proin ac finibus mi, sit amet finibus
+            dui. Vivamus vel nulla risus. Ut in neque aliquet, lacinia est ac,
+            efficitur ex. Proin tempor eros eget nibh malesuada eleifend.
+            Maecenas ac porttitor erat.
           </div>
         </div>
         <div className={styles.propertyCards}>

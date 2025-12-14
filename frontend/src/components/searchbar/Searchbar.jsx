@@ -46,7 +46,7 @@ export default function Searchbar() {
       </button>
       <input
         type="text"
-        placeholder="Search for an address, city, zip, or listing ID..."
+        placeholder="Search for property..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className={styles.searchInput}

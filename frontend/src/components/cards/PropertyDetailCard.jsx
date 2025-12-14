@@ -11,8 +11,8 @@ export default function PropertyDetailCard({ property }) {
         <Image
           src={locationIcon}
           alt="Location Icon"
-          width={20}
-          height={20}
+          width={100}
+          height={100}
           className={styles.locationIcon}
         />
         <div className={styles.locationText}>{property.address}</div>
@@ -35,17 +35,18 @@ export default function PropertyDetailCard({ property }) {
         </div>
       </div>
       <div className={styles.priceContainer}>
-        <div className={styles.price}>
-          <span className={styles.priceLabel}>Price </span>
+        <div className={styles.priceLabel}>Price </div>
+        <div className={styles.pricePayment}>
           <span className={styles.priceValue}>${property.price}</span>
-        </div>
-        <div className={styles.payment}>
-          <FormButton
-            text="Payment Options >"
-            onClick={() => {}}
-            type="button"
-            className={styles.paymentButton}
-          />
+          <div className={styles.button}>
+            //! make it normal button
+            <FormButton
+              text="Payment Options >"
+              onClick={() => {}}
+              type="button"
+              className={styles.paymentButton}
+            />
+          </div>
         </div>
       </div>
       <div className={styles.agentContainer}>
@@ -61,13 +62,14 @@ export default function PropertyDetailCard({ property }) {
             <Image
               src={property.agent.image_url}
               alt="Agent Picture"
-              width={60}
-              height={60}
+              width={100}
+              height={100}
               className={styles.agentImage}
             />
           </div>
         </div>
       </div>
+      //! update and delete button conditional rendering
     </div>
   );
 }

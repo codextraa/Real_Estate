@@ -4,7 +4,10 @@ import styles from "./PropertyCard.module.css";
 export default function PropertyCard({ property }) {
   return (
     <div className={styles.cardContainer}>
-      <Link href={`/properties/${property.id}`} className={styles.cardLink}>
+      <Link
+        href={`/properties/${property.slug}?id=${property.id}`}
+        className={styles.cardLink}
+      >
         <div className={styles.cardContainer}>
           <div className={styles.imageContainer}>
             <Image
