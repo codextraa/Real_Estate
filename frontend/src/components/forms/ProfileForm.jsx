@@ -46,8 +46,8 @@ export default function ProfileForm({
   const name =
     userRole === "Agent"
       ? state.formUserData.user.first_name +
-      " " +
-      state.formUserData.user.last_name
+        " " +
+        state.formUserData.user.last_name
       : null;
 
   const getInitialFormData = (data, role) => {
