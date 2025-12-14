@@ -4,9 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import styles from "./PropertyImageCard.module.css";
 
+const crossIcon = "/assets/cross-icon.svg";
 export default function PropertyImageCard({ image }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
@@ -28,9 +28,14 @@ export default function PropertyImageCard({ image }) {
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
           >
-            //! make it icon
             <button className={styles.closeButton} onClick={closeModal}>
-              &times;
+              <Image
+                src={crossIcon}
+                alt="Close Icon"
+                width={100}
+                height={100}
+                className={styles.crossIcon}
+              />
             </button>
             <Image
               src={image}
