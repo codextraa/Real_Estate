@@ -1,5 +1,5 @@
 import { ApiClient } from "./apiClient";
-import { getRefreshTokenFromSession } from './cookie';
+import { getRefreshTokenFromSession } from "./cookie";
 
 const HTTPS = process.env.HTTPS === "true";
 const API_URL = HTTPS

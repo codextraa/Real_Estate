@@ -30,6 +30,7 @@ export default function ProfileForm({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [displaySuccess, setDisplaySuccess] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -46,10 +47,81 @@ export default function ProfileForm({
         state.formUserData.user.last_name
       : null;
 
+  const getInitialFormData = (data, role) => {
+    if (role === "Agent") {
+      return {
+        first_name: data.user.first_name || "",
+        last_name: data.user.last_name || "",
+        username: data.user.username || "",
+        bio: data.bio || "",
+        company_name: data.company_name || "",
+      };
+    } else {
+      return {
+        first_name: data.first_name || "",
+        last_name: data.last_name || "",
+        username: data.username || "",
+      };
+    }
+  };
+
+  const initialFormData = getInitialFormData(state.formUserData, userRole);
+  const [formData, setFormData] = useState(initialFormData);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [bioContent, setBioContent] = useState(state.formUserData.bio || "");
   const [previewUrl, setPreviewUrl] = useState(state.formUserData.image_url);
   const textAreaRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const checkForChanges = (
+    currentData,
+    initialData,
+    currentBio,
+    initialBio,
+    currentImage,
+    initialImage,
+    currentPassword,
+    currentConfirmPassword,
+  ) => {
+    const fieldsChanged = Object.keys(currentData).some((key) => {
+      return currentData[key] !== initialData[key];
+    });
+
+    const passwordFieldsChanged =
+      currentPassword.length > 0 || currentConfirmPassword.length > 0;
+
+    if (userRole === "Agent") {
+      const bioChanged = currentBio !== initialBio;
+      const imageChanged = currentImage !== initialImage;
+
+      return (
+        fieldsChanged || passwordFieldsChanged || bioChanged || imageChanged
+      );
+    }
+
+    return fieldsChanged || passwordFieldsChanged;
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleBioChange = (e) => {
+    setBioContent(e.target.value);
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    setConfirmPassword(e.target.value);
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -82,6 +154,33 @@ export default function ProfileForm({
   }, [state.success]);
 
   useEffect(() => {
+    const initial = getInitialFormData(userData, userRole);
+    const initialBio = userData.bio || "";
+    const initialImage = userData.image_url;
+
+    const changes = checkForChanges(
+      formData,
+      initial,
+      bioContent,
+      initialBio,
+      previewUrl,
+      initialImage,
+      password,
+      confirmPassword,
+    );
+
+    setHasUnsavedChanges(changes);
+  }, [
+    formData,
+    bioContent,
+    previewUrl,
+    password,
+    confirmPassword,
+    userData,
+    userRole,
+  ]);
+
+  useEffect(() => {
     autoResize(textAreaRef.current);
   }, [bioContent]);
 
@@ -109,6 +208,20 @@ export default function ProfileForm({
   return (
     <div className={styles.profileInfoContainer}>
       <div className={styles.profileDetailTitle}>Edit Profile Information</div>
+      {hasUnsavedChanges && (
+        <div className={styles.unsavedChangesAlert}>
+          <span role="img" aria-label="alert">
+            ⚠️
+          </span>{" "}
+          You have unsaved changes.
+          <button
+            onClick={() => setHasUnsavedChanges(false)}
+            className={styles.closeAlert}
+          >
+            &times;
+          </button>
+        </div>
+      )}
       {isDeleteModalOpen && (
         <DeleteModal
           title="Are you sure you want to delete your account?"
@@ -168,7 +281,7 @@ export default function ProfileForm({
                     ref={textAreaRef}
                     disabled={isPending}
                     value={bioContent}
-                    onChange={(e) => setBioContent(e.target.value)}
+                    onChange={handleBioChange}
                     maxLength={150}
                     className={styles.storedText}
                   />
@@ -214,7 +327,8 @@ export default function ProfileForm({
                       id="first_name"
                       name="first_name"
                       disabled={isPending}
-                      defaultValue={state.formUserData.user.first_name || ""}
+                      value={formData.first_name}
+                      onChange={handleInputChange}
                       className={styles.storedContent}
                     />
                   </div>
@@ -229,7 +343,8 @@ export default function ProfileForm({
                       id="last_name"
                       name="last_name"
                       disabled={isPending}
-                      defaultValue={state.formUserData.user.last_name || ""}
+                      value={formData.last_name}
+                      onChange={handleInputChange}
                       className={styles.storedContent}
                     />
                   </div>
@@ -244,7 +359,8 @@ export default function ProfileForm({
                       id="username"
                       name="username"
                       disabled={isPending}
-                      defaultValue={state.formUserData.user.username || ""}
+                      value={formData.username}
+                      onChange={handleInputChange}
                       className={styles.storedContent}
                     />
                     {Object.keys(state.errors).length > 0 &&
@@ -269,7 +385,8 @@ export default function ProfileForm({
                     id="company_name"
                     name="company_name"
                     disabled={isPending}
-                    defaultValue={state.formUserData.company_name || ""}
+                    value={formData.company_name}
+                    onChange={handleInputChange}
                     className={styles.storedContent}
                   />
                   {Object.keys(state.errors).length > 0 &&
@@ -302,6 +419,8 @@ export default function ProfileForm({
                         type={showPassword ? "text" : "password"}
                         id="password"
                         name="password"
+                        value={password}
+                        onChange={handlePasswordChange}
                         disabled={isPending}
                         className={styles.storedContent}
                       />
@@ -329,6 +448,8 @@ export default function ProfileForm({
                         type={showConfirmPassword ? "text" : "password"}
                         id="c_password"
                         name="c_password"
+                        value={confirmPassword}
+                        onChange={handleConfirmPasswordChange}
                         disabled={isPending}
                         className={styles.storedContent}
                       />
@@ -423,7 +544,8 @@ export default function ProfileForm({
                 id="first_name"
                 name="first_name"
                 disabled={isPending}
-                defaultValue={state.formUserData.first_name || ""}
+                value={formData.first_name}
+                onChange={handleInputChange}
                 className={styles.storedContent}
               />
               {Object.keys(state.errors).length > 0 &&
@@ -442,7 +564,8 @@ export default function ProfileForm({
                 id="last_name"
                 name="last_name"
                 disabled={isPending}
-                defaultValue={state.formUserData.last_name || ""}
+                value={formData.last_name}
+                onChange={handleInputChange}
                 className={styles.storedContent}
               />
               {Object.keys(state.errors).length > 0 &&
@@ -461,7 +584,8 @@ export default function ProfileForm({
                 id="username"
                 name="username"
                 disabled={isPending}
-                defaultValue={state.formUserData.username || ""}
+                value={formData.username}
+                onChange={handleInputChange}
                 className={styles.storedContent}
               />
               {Object.keys(state.errors).length > 0 &&
@@ -483,6 +607,8 @@ export default function ProfileForm({
                       type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
+                      value={password}
+                      onChange={handlePasswordChange}
                       disabled={isPending}
                       className={styles.storedContent}
                     />
@@ -508,6 +634,8 @@ export default function ProfileForm({
                       type={showConfirmPassword ? "text" : "password"}
                       id="c_password"
                       name="c_password"
+                      value={confirmPassword}
+                      onChange={handleConfirmPasswordChange}
                       disabled={isPending}
                       className={styles.storedContent}
                     />
