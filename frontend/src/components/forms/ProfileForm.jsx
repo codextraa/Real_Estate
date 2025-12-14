@@ -4,9 +4,11 @@ import Form from "next/form";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useActionState, useState } from "react";
-import { FormButton } from "@/components/buttons/Buttons";
-import { EyeButton } from "@/components/buttons/Buttons";
-import { DeleteButton } from "@/components/buttons/Buttons";
+import {
+  FormButton,
+  EyeButton,
+  DeleteButton,
+} from "@/components/buttons/Buttons";
 import DeleteModal from "@/components/modals/DeleteModal";
 import styles from "./ProfileForm.module.css";
 

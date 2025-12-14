@@ -1,10 +1,43 @@
 "use client";
+import { useState, useEffect } from "react";
 import styles from "./PropertyImageCard.module.css";
 import Image from "next/image";
-import { FormButton } from "../buttons/Buttons";
+import { FormButton, DeleteButton } from "@/components/buttons/Buttons";
+import DeleteModal from "@/components/modals/DeleteModal";
+import { getUserIdAction } from "@/actions/authActions";
 
 const locationIcon = "/assets/location-icon.svg";
 export default function PropertyDetailCard({ property }) {
+  const [userId, setUserId] = useState(null);
+  const [isClient, setIsClient] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const openDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    document.body.style.overflow = "auto";
+  };
+
+  async function fetchUserId() {
+    try {
+      const id = await getUserIdAction();
+      setUserId(id);
+    } catch (error) {
+      console.error("Failed to fetch user ID:", error);
+      setUserId(null);
+    }
+  }
+
+  useEffect(() => {
+    setIsClient(true);
+    if (isClient) {
+      fetchUserId();
+    }
+  }, [isClient]);
   return (
     <div className={styles.propertyDetailCard}>
       <div className={styles.location}>
@@ -39,13 +72,9 @@ export default function PropertyDetailCard({ property }) {
         <div className={styles.pricePayment}>
           <span className={styles.priceValue}>${property.price}</span>
           <div className={styles.button}>
-            //! make it normal button
-            <FormButton
-              text="Payment Options >"
-              onClick={() => {}}
-              type="button"
-              className={styles.paymentButton}
-            />
+            <button className={styles.paymentButton}>
+              Payment Option &gt;
+            </button>
           </div>
         </div>
       </div>
@@ -69,7 +98,33 @@ export default function PropertyDetailCard({ property }) {
           </div>
         </div>
       </div>
-      //! update and delete button conditional rendering
+      {userId == property.agent.user_id && (
+        <div className={styles.formProfileButtons}>
+          <div className={styles.updateProfileButton}>
+            <FormButton
+              text="Update Profile"
+              pendingText="Updating..."
+              type="submit"
+              className={styles.updateButton}
+            />
+          </div>
+          <div className={styles.deleteProfileButton}>
+            <DeleteButton
+              text="Delete Profile"
+              type="button"
+              onClick={openDeleteModal}
+              className={styles.deleteButton}
+            />
+          </div>
+        </div>
+      )}
+      {isDeleteModalOpen && (
+        <DeleteModal
+          propertyId={property.id}
+          isOpen={isDeleteModalOpen}
+          onClose={closeDeleteModal}
+        />
+      )}
     </div>
   );
 }
