@@ -151,7 +151,23 @@ export default function ProfileForm({
       setDisplaySuccess(state.success);
       const timer = setTimeout(() => {
         setDisplaySuccess("");
+        state.success = "";
       }, 2000);
+
+      const newInitialFormData = getInitialFormData(
+        state.formUserData,
+        userRole,
+      );
+      setFormData(newInitialFormData);
+      setBioContent(state.formUserData.bio || "");
+      setPassword("");
+      setConfirmPassword("");
+      setPreviewUrl(state.formUserData.image_url);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
       return () => clearTimeout(timer);
     }
   }, [state.success]);
