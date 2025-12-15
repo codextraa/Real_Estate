@@ -38,7 +38,7 @@ export default function UpdateAlert({ hasUnsavedChanges }) {
             height={20}
             className={styles.warningIcon}
           />
-          You have unsaved changes.
+          <span>You have unsaved changes.</span>
         </div>
       )}
     </>

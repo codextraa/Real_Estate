@@ -18,6 +18,7 @@ export default function ProfileForm({
   userRole,
   updateProfileAction,
 }) {
+  // Initial state for useActionState, contains form data and error/success handling
   const initialState = {
     errors: {},
     success: "",
@@ -29,19 +30,12 @@ export default function ProfileForm({
     initialState,
   );
 
+  // Client-side state for UI/form management
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [displaySuccess, setDisplaySuccess] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleShowConfirmPassword = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
 
   const name =
     userRole === "Agent"
@@ -50,6 +44,7 @@ export default function ProfileForm({
         state.formUserData.user.last_name
       : null;
 
+  // Helper function to extract relevant form fields based on user role
   const getInitialFormData = (data, role) => {
     if (role === "Agent") {
       return {
@@ -68,15 +63,20 @@ export default function ProfileForm({
     }
   };
 
+  // Initialize client-side form states using the data from the useActionState's state
   const initialFormData = getInitialFormData(state.formUserData, userRole);
   const [formData, setFormData] = useState(initialFormData);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [bioContent, setBioContent] = useState(state.formUserData.bio || "");
+  // previewUrl holds the server image URL initially, or a client Blob URL after file selection
   const [previewUrl, setPreviewUrl] = useState(state.formUserData.image_url);
   const textAreaRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  /**
+   * Checks if any client-side form state differs from the initial server data.
+   */
   const checkForChanges = (
     currentData,
     initialData,
@@ -87,14 +87,17 @@ export default function ProfileForm({
     currentPassword,
     currentConfirmPassword,
   ) => {
+    // Check text/input fields
     const fieldsChanged = Object.keys(currentData).some((key) => {
       return currentData[key] !== initialData[key];
     });
 
+    // Check password fields
     const passwordFieldsChanged =
       currentPassword.length > 0 || currentConfirmPassword.length > 0;
 
     if (userRole === "Agent") {
+      // Check bio and image
       const bioChanged = currentBio !== initialBio;
       const imageChanged = currentImage !== initialImage;
 
@@ -106,6 +109,7 @@ export default function ProfileForm({
     return fieldsChanged || passwordFieldsChanged;
   };
 
+  // Input change handlers
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -126,6 +130,10 @@ export default function ProfileForm({
     setConfirmPassword(e.target.value);
   };
 
+  /**
+   * Handles file selection and creates a temporary Blob URL for immediate preview.
+   * This Blob URL is what triggers 'hasUnsavedChanges'.
+   */
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -139,6 +147,7 @@ export default function ProfileForm({
     }
   };
 
+  // Auto resize logic for textarea
   const autoResize = (element) => {
     if (element) {
       element.style.height = "auto";
@@ -154,6 +163,7 @@ export default function ProfileForm({
         state.success = "";
       }, 2000);
 
+      // RESET ALL CLIENT-SIDE FORM STATES to match the new, successful data.
       const newInitialFormData = getInitialFormData(
         state.formUserData,
         userRole,
@@ -162,6 +172,7 @@ export default function ProfileForm({
       setBioContent(state.formUserData.bio || "");
       setPassword("");
       setConfirmPassword("");
+      // Reset previewUrl from the temporary Blob URL back to the new permanent image URL
       setPreviewUrl(state.formUserData.image_url);
 
       if (fileInputRef.current) {
@@ -173,10 +184,13 @@ export default function ProfileForm({
   }, [state.success]);
 
   useEffect(() => {
+    // Get the original data from the props (which is re-fetched/re-rendered
+    // from the server via revalidatePath after a successful submission)
     const initial = getInitialFormData(userData, userRole);
     const initialBio = userData.bio || "";
     const initialImage = userData.image_url;
 
+    // Check for differences between current client state and initial server state
     const changes = checkForChanges(
       formData,
       initial,
@@ -199,6 +213,7 @@ export default function ProfileForm({
     userRole,
   ]);
 
+  // Textarea resize logic
   useEffect(() => {
     autoResize(textAreaRef.current);
   }, [bioContent]);
@@ -214,6 +229,16 @@ export default function ProfileForm({
     };
   }, []);
 
+  // Toggle password visibility
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  // Modal handler
   const openDeleteModal = () => {
     setIsDeleteModalOpen(true);
     document.body.style.overflow = "hidden";

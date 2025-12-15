@@ -34,9 +34,7 @@
   padding: 0 7px;
   gap: 10px;
   height: 30px;
-  /* background: rgba(217, 119, 6, 0.16);
-  backdrop-filter: blur(10px); */
-  background: #f7f7f7;
+  background: #ffeedb;
   border: 1px solid #d97706;
   border-radius: 10px;
 }
