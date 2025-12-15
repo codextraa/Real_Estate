@@ -13,13 +13,16 @@ import styles from "@/styles/PropertyPage.module.css";
 export default async function Page({ searchParams }) {
   const imageUrl = "/real-estate/real-estate.jpg";
   const userId = await getUserIdAction();
-  console.log("userId", userId);
-  const urlSearchParams = await searchParams;
-  const currentPage = urlSearchParams.page || 1;
-  const response = await getProperties({
-    page: currentPage,
-    ...urlSearchParams,
-  });
+  let currentPage, response;
+
+  if (userId) {
+    const urlSearchParams = await searchParams;
+    currentPage = urlSearchParams.page || 1;
+    response = await getProperties({
+      page: currentPage,
+      ...urlSearchParams,
+    });
+  }
 
   return !userId ? (
     <div className={stylesHome.image}>
