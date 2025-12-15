@@ -102,7 +102,7 @@ export default function PropertyDetailCard({ property }) {
         <div className={styles.formProfileButtons}>
           <div className={styles.updateProfileButton}>
             <FormButton
-              text="Update Profile"
+              text="Update"
               pendingText="Updating..."
               type="submit"
               className={styles.updateButton}
@@ -110,7 +110,7 @@ export default function PropertyDetailCard({ property }) {
           </div>
           <div className={styles.deleteProfileButton}>
             <DeleteButton
-              text="Delete Profile"
+              text="Delete"
               type="button"
               onClick={openDeleteModal}
               className={styles.deleteButton}
@@ -120,9 +120,11 @@ export default function PropertyDetailCard({ property }) {
       )}
       {isDeleteModalOpen && (
         <DeleteModal
-          propertyId={property.id}
-          isOpen={isDeleteModalOpen}
-          onClose={closeDeleteModal}
+          title="Are you sure you want to delete your property?"
+          userData={property}
+          userRole="Agent"
+          actionName="deleteProperty"
+          onCancel={closeDeleteModal}
         />
       )}
     </div>

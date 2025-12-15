@@ -3,6 +3,7 @@
 import styles from "./DeleteModal.module.css";
 import { useState } from "react";
 import { deleteUserAction } from "@/actions/userActions";
+import { deletePropertyAction } from "@/actions/propertyActions";
 import { logoutAction } from "@/actions/authActions";
 export default function DeleteModal({
   title,
@@ -35,6 +36,19 @@ export default function DeleteModal({
           setTimeout(async () => {
             await logoutAction(false);
           }, 2000);
+        }
+      } else if (actionName === "deleteProperty") {
+        const propertyId = userData.id;
+        const response = await deletePropertyAction(propertyId);
+        if (response && response.error) {
+          setDeletionError(
+            response.error ||
+              "Property deletion failed due to an unknown server error.",
+          );
+        } else if (response && response.success) {
+          setSuccessMessage(
+            response.success || "Property deleted successfully.",
+          );
         }
       }
     } catch (error) {
