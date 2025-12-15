@@ -1,5 +1,5 @@
 import { ApiClient } from "./apiClient";
-// import { getRefreshTokenFromSession } from './cookie';
+import { getRefreshTokenFromSession } from "./cookie";
 
 const HTTPS = process.env.HTTPS === "true";
 const API_URL = HTTPS
@@ -18,7 +18,11 @@ export const login = async (data) => {
 };
 
 export const logout = async () => {
-  return await apiClient.post("/auth-api/logout/");
+  const refreshToken = await getRefreshTokenFromSession();
+
+  if (refreshToken) {
+    await apiClient.post("/auth-api/logout/", { refresh: refreshToken });
+  }
 };
 
 export const getUser = async (id) => {
@@ -54,12 +58,15 @@ export const deleteUser = async (id, userRole) => {
   return apiClient.delete(`/auth-api/${base_url}/${id}/`);
 };
 
-export const getProperties = async () => {
-  return apiClient.get("/property-api/properties/");
+export const getProperties = async (queryParams = {}) => {
+  const params = new URLSearchParams(queryParams);
+  return apiClient.get(`/property-api/properties/?${params.toString()}`);
 };
 
-export const createProperty = async (data) => {
-  //! needs fixing for image handling (ref updateUser)
+export const createProperty = async (data, isImage = false) => {
+  if (isImage) {
+    return apiClient.post("/property-api/properties/", data, {}, true);
+  }
   return apiClient.post("/property-api/properties/", data);
 };
 
@@ -67,8 +74,10 @@ export const getProperty = async (id) => {
   return apiClient.get(`/property-api/properties/${id}/`);
 };
 
-export const updateProperty = async (id, data) => {
-  //! needs fixing for image handling (ref updateUser)
+export const updateProperty = async (id, data, isImage = false) => {
+  if (isImage) {
+    return apiClient.patch(`/property-api/properties/${id}/`, data, {}, true);
+  }
   return apiClient.patch(`/property-api/properties/${id}/`, data);
 };
 

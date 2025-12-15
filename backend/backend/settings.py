@@ -210,7 +210,7 @@ REST_USE_JWT = True
 SIMPLE_JWT = {
     # 10 second window for access_token_expiry setup
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1, seconds=15),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7, seconds=15),
     # Set the RS256 algorithm
     "ALGORITHM": "RS256",
     # Set the private key for signing the token

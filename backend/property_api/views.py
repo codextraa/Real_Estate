@@ -48,14 +48,14 @@ class PropertyViewSet(ModelViewSet):
         """Queryset for User View."""
         user = self.request.user
         base_queryset = Property.objects.select_related("agent", "agent__user")
+        queryset = Property.objects.none()
 
         if self.action in ("list", "retrieve") or user.is_staff:
-            return base_queryset.all()
+            queryset = base_queryset.all()
+        elif user.is_agent:
+            queryset = base_queryset.filter(agent__user=user)
 
-        if user.is_agent:
-            return base_queryset.filter(agent__user=user)
-
-        return Property.objects.none()
+        return queryset.order_by("-id")
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
@@ -523,7 +523,7 @@ class PropertyViewSet(ModelViewSet):
 
         response = super().destroy(request, *args, **kwargs)
 
-        if os.path.exists(old_property_image):
+        if old_property_image and os.path.exists(old_property_image):
             os.remove(old_property_image)
 
         if response.status_code == status.HTTP_204_NO_CONTENT:
