@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { getProperty, getProperties } from "@/libs/api";
 import PropertyCard from "@/components/cards/PropertyCard";
 import Dropdown from "@/components/dropdowns/Dropdown";
@@ -9,6 +10,10 @@ export default async function ProfileCard({ searchParams }) {
   const urlSearchParams = await searchParams;
   const propertyId = urlSearchParams.id;
   const response = await getProperty(propertyId);
+
+  if (response.error) {
+    return notFound();
+  }
   const recommendedProperties = await getProperties();
 
   return (

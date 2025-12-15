@@ -523,7 +523,7 @@ class PropertyViewSet(ModelViewSet):
 
         response = super().destroy(request, *args, **kwargs)
 
-        if os.path.exists(old_property_image):
+        if old_property_image and os.path.exists(old_property_image):
             os.remove(old_property_image)
 
         if response.status_code == status.HTTP_204_NO_CONTENT:

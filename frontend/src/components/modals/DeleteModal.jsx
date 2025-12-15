@@ -5,6 +5,7 @@ import { useState } from "react";
 import { deleteUserAction } from "@/actions/userActions";
 import { deletePropertyAction } from "@/actions/propertyActions";
 import { logoutAction } from "@/actions/authActions";
+import { redirect } from "next/navigation";
 export default function DeleteModal({
   title,
   userData,
@@ -34,6 +35,7 @@ export default function DeleteModal({
             response.success || "Account deleted successfully.",
           );
           setTimeout(async () => {
+            onCancel();
             await logoutAction(false);
           }, 2000);
         }
@@ -49,6 +51,10 @@ export default function DeleteModal({
           setSuccessMessage(
             response.success || "Property deleted successfully.",
           );
+          setTimeout(async () => {
+            onCancel();
+            redirect("/");
+          }, 2000);
         }
       }
     } catch (error) {
