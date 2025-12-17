@@ -1349,7 +1349,7 @@ class AgentViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Please confirm your password", response.data["error"])
 
-    def test_create_agent_user_duplicate_email(self):  # problem
+    def test_create_agent_user_duplicate_email(self):
         """Test serializer validation for duplicate email."""
         data = self.get_valid_create_data()
         data["email"] = self.normal_user.email
@@ -1360,7 +1360,7 @@ class AgentViewSetTests(APITestCase):
             {"errors": {"email": ["user with this email already exists."]}},
         )
 
-    def test_agent_cannot_create_superuser(self):  # problem
+    def test_agent_cannot_create_superuser(self):
         """Test prohibition of creating a superuser by setting is_superuser."""
         data = self.get_valid_create_data()
         data["is_superuser"] = True
