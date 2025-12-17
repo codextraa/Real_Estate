@@ -92,6 +92,7 @@ class PropertyAgentRetrieveSerializer(serializers.ModelSerializer):
     Includes profile image, first_name, and last_name.
     """
 
+    user_id = serializers.IntegerField(source="user.id", read_only=True)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
     image_url = serializers.ImageField(read_only=True)
@@ -100,6 +101,7 @@ class PropertyAgentRetrieveSerializer(serializers.ModelSerializer):
         model = Agent
         fields = [
             "id",
+            "user_id",
             "first_name",
             "last_name",
             "image_url",

@@ -1,0 +1,132 @@
+"use client";
+import { useState, useEffect } from "react";
+import styles from "./PropertyImageCard.module.css";
+import Image from "next/image";
+import { FormButton, DeleteButton } from "@/components/buttons/Buttons";
+import DeleteModal from "@/components/modals/DeleteModal";
+import { getUserIdAction } from "@/actions/authActions";
+
+const locationIcon = "/assets/location-icon.svg";
+export default function PropertyDetailCard({ property }) {
+  const [userId, setUserId] = useState(null);
+  const [isClient, setIsClient] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const openDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    document.body.style.overflow = "auto";
+  };
+
+  async function fetchUserId() {
+    try {
+      const id = await getUserIdAction();
+      setUserId(id);
+    } catch (error) {
+      console.error("Failed to fetch user ID:", error);
+      setUserId(null);
+    }
+  }
+
+  useEffect(() => {
+    setIsClient(true);
+    if (isClient) {
+      fetchUserId();
+    }
+  }, [isClient]);
+  return (
+    <div className={styles.propertyDetailCard}>
+      <div className={styles.location}>
+        <Image
+          src={locationIcon}
+          alt="Location Icon"
+          width={100}
+          height={100}
+          className={styles.locationIcon}
+        />
+        <div className={styles.locationText}>{property.address}</div>
+      </div>
+      <div className={styles.details}>
+        <div className={styles.detailText}>Details</div>
+        <div className={styles.detailItem}>
+          <div className={styles.detailItemContainer}>
+            <span className={styles.detailItemBed}>{property.beds}</span>
+            <span className={styles.detailItemLabel}>Beds</span>
+          </div>
+          <div className={styles.detailItemContainer}>
+            <span className={styles.detailItemBath}>{property.baths}</span>
+            <span className={styles.detailItemLabel}>Baths</span>
+          </div>
+          <div className={styles.detailItemContainer}>
+            <span className={styles.detailItemArea}>{property.area_sqft}</span>
+            <span className={styles.detailItemLabel}>Sqft</span>
+          </div>
+        </div>
+      </div>
+      <div className={styles.priceContainer}>
+        <div className={styles.priceLabel}>Price </div>
+        <div className={styles.pricePayment}>
+          <span className={styles.priceValue}>${property.price}</span>
+          <div className={styles.button}>
+            <button className={styles.paymentButton}>
+              Payment Option &gt;
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className={styles.agentContainer}>
+        <div className={styles.agentLabel}>Agent</div>
+        <div className={styles.agentInfo}>
+          <div className={styles.agentNameContainer}>
+            <div className={styles.agentName}>
+              {property.agent.first_name} {property.agent.last_name}
+            </div>
+            <div className={styles.agentContact}>Contact</div>
+          </div>
+          <div className={styles.agentImageContainer}>
+            <Image
+              src={property.agent.image_url}
+              alt="Agent Picture"
+              width={100}
+              height={100}
+              className={styles.agentImage}
+            />
+          </div>
+        </div>
+      </div>
+      {userId == property.agent.user_id && (
+        <div className={styles.formProfileButtons}>
+          <div className={styles.updateProfileButton}>
+            <FormButton
+              text="Update"
+              pendingText="Updating..."
+              type="submit"
+              className={styles.updateButton}
+            />
+          </div>
+          <div className={styles.deleteProfileButton}>
+            <DeleteButton
+              text="Delete"
+              type="button"
+              onClick={openDeleteModal}
+              className={styles.deleteButton}
+            />
+          </div>
+        </div>
+      )}
+      {isDeleteModalOpen && (
+        <DeleteModal
+          title="Are you sure you want to delete your property?"
+          userData={property}
+          userRole="Agent"
+          actionName="deleteProperty"
+          onCancel={closeDeleteModal}
+        />
+      )}
+    </div>
+  );
+}

@@ -219,6 +219,22 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       profile_image && profile_image instanceof File && profile_image.size > 0;
 
     if (isNewImageUploaded) {
+      const keys_to_delete = [];
+      for (const [key, value] of formData.entries()) {
+        if (
+          key.startsWith("$") ||
+          key === "" ||
+          (key === "password" && value === "") ||
+          (key === "c_password" && value === "")
+        ) {
+          keys_to_delete.push(key);
+        }
+      }
+
+      for (const key of keys_to_delete) {
+        formData.delete(key);
+      }
+
       response = await updateUser(id, formData, userRole, true);
     } else {
       const data = {

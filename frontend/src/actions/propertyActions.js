@@ -35,30 +35,26 @@ const propertyError = (response) => {
         response.error.address[0].slice(1).toLowerCase();
     }
 
-    if (response.error.city) {
-      //! check this
+    if (response.error.beds) {
       errorMessages["beds"] =
         response.error.beds[0][0].toUpperCase() +
         response.error.beds[0].slice(1).toLowerCase();
     }
 
-    if (response.error.state) {
-      //! check this
+    if (response.error.baths) {
       errorMessages["baths"] =
         response.error.baths[0][0].toUpperCase() +
         response.error.baths[0].slice(1).toLowerCase();
     }
 
-    if (response.error.zip_code) {
-      //! check this
+    if (response.error.area_sqft) {
       errorMessages["area_sqft"] =
         response.error.area_sqft[0][0].toUpperCase() +
         response.error.area_sqft[0].slice(1).toLowerCase();
     }
 
-    if (response.error.image) {
-      //! check this
-      errorMessages["property_image"] = //! check this
+    if (response.error.image_url) {
+      errorMessages["image_url"] =
         response.error.image_url[0][0].toUpperCase() +
         response.error.image_url[0].slice(1).toLowerCase();
     }
@@ -78,9 +74,19 @@ export const createPropertyAction = async (prevState, formData) => {
   const beds = formData.get("beds");
   const baths = formData.get("baths");
   const area_sqft = formData.get("area_sqft");
-  const image_url = formData.get("image_url"); //! check this
+  const property_image = formData.get("property_image");
 
-  // ! create newPropertyData like update method
+  const newPropertyData = {
+    title: title || prevState.formPropertyData.title,
+    description: description || prevState.formPropertyData.description,
+    price: price || prevState.formPropertyData.price,
+    property_type: property_type || prevState.formPropertyData.property_type,
+    address: address || prevState.formPropertyData.address,
+    beds: beds || prevState.formPropertyData.beds,
+    baths: baths || prevState.formPropertyData.baths,
+    area_sqft: area_sqft || prevState.formPropertyData.area_sqft,
+    property_image: property_image || prevState.formPropertyData.property_image,
+  };
 
   const errors = {};
 
@@ -101,23 +107,22 @@ export const createPropertyAction = async (prevState, formData) => {
   }
 
   if (!address) {
-    errors.address = "Please complete all required fields."; //! check this
+    errors.address = "Address is required.";
   }
 
   if (!beds) {
-    errors.beds = "Please complete all required fields."; //! check this
+    errors.beds = "Number of Beds is required.";
   }
 
   if (!baths) {
-    errors.baths = "Please complete all required fields."; //! check this
+    errors.baths = "Number of Baths is required.";
   }
 
   if (!area_sqft) {
-    errors.area_sqft = "Please complete all required fields."; //! check this
+    errors.area_sqft = "Area is required.";
   }
 
-  if (!image_url) {
-    //! check this
+  if (!property_image) {
     errors.image_url = "Image is required.";
   }
 
@@ -125,56 +130,45 @@ export const createPropertyAction = async (prevState, formData) => {
     return {
       errors,
       success: "",
-      //! create something like this formPropertyData: newPropertyFormData,
-      // ! rest of them goes away
-      formTitle: title || "",
-      formDescription: description || "",
-      formPrice: price || "",
-      formPropertyType: property_type || "",
-      formAddress: address || "",
-      formBeds: beds || "",
-      formBaths: baths || "",
-      formAreaSqft: area_sqft || "",
-      formImageUrl: image_url || "",
+      formPropertyData: newPropertyData,
     };
   }
 
   try {
-    //! check if the image is uploaded then send formData as it is
-    //! otherwise create the json data and send it (ref userAction update method)
-    const response = await createProperty(formData);
+    let response;
+    const isNewImageUploaded =
+      property_image &&
+      property_image instanceof File &&
+      property_image.size > 0;
+
+    if (isNewImageUploaded) {
+      response = await createProperty(formData, true);
+    } else {
+      const data = {
+        title,
+        description,
+        price,
+        property_type,
+        address,
+        beds,
+        baths,
+        area_sqft,
+      };
+      response = await createProperty(data);
+    }
 
     if (response.error) {
       return {
         errors: propertyError(response),
         success: "",
-        //! create something like this formPropertyData: newPropertyFormData,
-        // ! rest of them goes away
-        formTitle: title || "",
-        formDescription: description || "",
-        formPrice: price || "",
-        formPropertyType: property_type || "",
-        formAddress: address || "",
-        formBeds: beds || "",
-        formBaths: baths || "",
-        formAreaSqft: area_sqft || "",
-        formImageUrl: image_url || "",
+        formPropertyData: newPropertyData,
       };
     }
 
     return {
       errors,
       success: response.success,
-      //! create something like this formPropertyData: newPropertyFormData,
-      formTitle: "",
-      formDescription: "",
-      formPrice: "",
-      formPropertyType: "",
-      formAddress: "",
-      formBeds: "",
-      formBaths: "",
-      formAreaSqft: "",
-      formImageUrl: "",
+      formPropertyData: newPropertyData,
     };
   } catch (error) {
     console.error(error);
@@ -182,17 +176,7 @@ export const createPropertyAction = async (prevState, formData) => {
     return {
       errors,
       success: "",
-      //! create something like this formPropertyData: newPropertyFormData,
-      //! rest of them goes away
-      formTitle: title || "",
-      formDescription: description || "",
-      formPrice: price || "",
-      formPropertyType: property_type || "",
-      formAddress: address || "",
-      formBeds: beds || "",
-      formBaths: baths || "",
-      formAreaSqft: area_sqft || "",
-      formImageUrl: image_url || "",
+      formPropertyData: newPropertyData,
     };
   }
 };
@@ -206,7 +190,7 @@ export const updatePropertyAction = async (id, prevState, formData) => {
   const beds = formData.get("beds");
   const baths = formData.get("baths");
   const area_sqft = formData.get("area_sqft");
-  const image_url = formData.get("image_url"); //! check this
+  const property_image = formData.get("property_image");
 
   const newPropertyData = {
     title: title || prevState.formPropertyData.title,
@@ -217,12 +201,11 @@ export const updatePropertyAction = async (id, prevState, formData) => {
     beds: beds || prevState.formPropertyData.beds,
     baths: baths || prevState.formPropertyData.baths,
     area_sqft: area_sqft || prevState.formPropertyData.area_sqft,
-    image_url: prevState.formPropertyData.image_url, //! check this
+    property_image: prevState.formPropertyData.property_image,
   };
 
   const errors = {};
 
-  // ! full fix like create method
   if (!newPropertyData.title) {
     errors.title = "Title is required.";
   }
@@ -236,18 +219,18 @@ export const updatePropertyAction = async (id, prevState, formData) => {
     errors.property_type = "Property type is required.";
   }
   if (!newPropertyData.address) {
-    errors.address = "Please complete all required fields.";
+    errors.address = "Address is required.";
   }
   if (!newPropertyData.beds) {
-    errors.beds = "Please complete all required fields.";
+    errors.beds = "Number of Beds is required.";
   }
   if (!newPropertyData.baths) {
-    errors.baths = "Please complete all required fields.";
+    errors.baths = "Number of Baths is required.";
   }
   if (!newPropertyData.area_sqft) {
-    errors.area_sqft = "Please complete all required fields.";
+    errors.area_sqft = "Area is required.";
   }
-  if (!newPropertyData.image_url) {
+  if (!newPropertyData.property_image) {
     errors.image_url = "Image is required.";
   }
 
@@ -255,55 +238,53 @@ export const updatePropertyAction = async (id, prevState, formData) => {
     return {
       errors,
       success: "",
-      //! create something like this formPropertyData: newPropertyFormData,
-      // ! rest of them goes away
-      formTitle: title || "",
-      formDescription: description || "",
-      formPrice: price || "",
-      formPropertyType: property_type || "",
-      formAddress: address || "",
-      formBeds: beds || "",
-      formBaths: baths || "",
-      formAreaSqft: area_sqft || "",
-      formImageUrl: image_url || "",
+      formPropertyData: newPropertyData,
     };
   }
 
   try {
-    //! check if the image is uploaded then send formData as it is
-    //! otherwise create the json data and send it (ref userAction update method)
-    const response = await updateProperty(id, formData);
+    let response;
+    const isNewImageUploaded =
+      property_image &&
+      property_image instanceof File &&
+      property_image.size > 0;
+
+    if (isNewImageUploaded) {
+      response = await updateProperty(id, formData, true);
+    } else {
+      const data = {
+        ...(title && title !== prevState.formPropertyData.title && { title }),
+        ...(description &&
+          description !== prevState.formPropertyData.description && {
+            description,
+          }),
+        ...(price && price !== prevState.formPropertyData.price && { price }),
+        ...(property_type &&
+          property_type !== prevState.formPropertyData.property_type && {
+            property_type,
+          }),
+        ...(address &&
+          address !== prevState.formPropertyData.address && { address }),
+        ...(beds && beds !== prevState.formPropertyData.beds && { beds }),
+        ...(baths && baths !== prevState.formPropertyData.baths && { baths }),
+        ...(area_sqft &&
+          area_sqft !== prevState.formPropertyData.area_sqft && { area_sqft }),
+      };
+
+      response = await updateProperty(id, data);
+    }
 
     if (response.error) {
       return {
         errors: propertyError(response),
         success: "",
-        //! create something like this formPropertyData: newPropertyFormData,
-        // ! rest of them goes away
-        formTitle: title || "",
-        formDescription: description || "",
-        formPrice: price || "",
-        formPropertyType: property_type || "",
-        formAddress: address || "",
-        formBeds: beds || "",
-        formBaths: baths || "",
-        formAreaSqft: area_sqft || "",
-        formImageUrl: image_url || "",
+        formPropertyData: newPropertyData,
       };
     }
     return {
       errors,
       success: response.success,
-      //! create something like this formPropertyData: response.data,
-      formTitle: "",
-      formDescription: "",
-      formPrice: "",
-      formPropertyType: "",
-      formAddress: "",
-      formBeds: "",
-      formBaths: "",
-      formAreaSqft: "",
-      formImageUrl: "",
+      formPropertyData: response.data,
     };
   } catch (error) {
     console.error(error);
@@ -311,17 +292,7 @@ export const updatePropertyAction = async (id, prevState, formData) => {
     return {
       errors,
       success: "",
-      //! create something like this formPropertyData: newPropertyFormData,
-      // ! rest of them goes away
-      formTitle: title || "",
-      formDescription: description || "",
-      formPrice: price || "",
-      formPropertyType: property_type || "",
-      formAddress: address || "",
-      formBeds: beds || "",
-      formBaths: baths || "",
-      formAreaSqft: area_sqft || "",
-      formImageUrl: image_url || "",
+      formPropertyData: newPropertyData,
     };
   }
 };
