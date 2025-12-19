@@ -1,0 +1,13 @@
+.form {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 76px;
+}
+.background {
+  background: linear-gradient(
+    127.39deg,
+    #e0edf6 16.16%,
+    #b0c9d8 50.59%,
+    #13252e 105.96%
+  );
+}
