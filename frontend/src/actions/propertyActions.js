@@ -76,7 +76,6 @@ export const createPropertyAction = async (prevState, formData) => {
   const baths = formData.get("baths");
   const area_sqft = formData.get("area_sqft");
   const property_image = formData.get("property_image");
-  console.log("property_image", property_image);
 
   const newPropertyData = {
     title: title || prevState.formPropertyData.title,

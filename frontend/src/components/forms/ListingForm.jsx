@@ -351,6 +351,7 @@ export default function ListingForm() {
             )}
           </div>
           //! not conditional this will split the box in two like design
+          //! image should remain even if u get an error (fix that)
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Image</div>
             <div className={styles.imageUploadBox}>
