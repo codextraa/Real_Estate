@@ -2,7 +2,7 @@
   position: relative;
   width: 100%;
   min-height: 100vh;
-  background: #F7F7F7;
+  background: #f7f7f7;
 }
 
 .image {
@@ -39,13 +39,18 @@
 }
 
 .content {
-  font-family: 'Koh Santepheap', serif;
+  font-family: "Koh Santepheap", serif;
   font-weight: 400;
   font-size: 210px;
   line-height: 100%;
   letter-spacing: 0%;
   text-align: center;
-  background: linear-gradient(280.9deg, #14242C -29.02%, #324B59 40.91%, #648AA2 106.52%);
+  background: linear-gradient(
+    280.9deg,
+    #14242c -29.02%,
+    #324b59 40.91%,
+    #648aa2 106.52%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -65,7 +70,6 @@
   margin-bottom: 40px;
   position: relative;
   z-index: 5;
-  
 }
 
 .propertyDropdowns {
@@ -79,14 +83,12 @@
   flex-wrap: wrap;
   position: relative;
   z-index: 100;
-  
 }
 
 /* Ensure each dropdown can expand properly */
 .propertyDropdowns > * {
   position: relative;
   z-index: 100;
-
 }
 
 .propertiesContent {
@@ -98,22 +100,22 @@
 }
 
 .propertiesTitle {
-  font-family: 'Old Standard TT', serif;
+  font-family: "Old Standard TT", serif;
   font-weight: 700;
   font-size: 50px;
   line-height: 62px;
   letter-spacing: 0%;
-  color: #13252E;
+  color: #13252e;
   margin-bottom: 5px;
 }
 
 .propertiesDescription {
-  font-family: 'Old Standard TT', serif;
+  font-family: "Old Standard TT", serif;
   font-weight: 400;
   font-size: 20px;
   line-height: 25px;
   letter-spacing: 0%;
-  color: #13252E;
+  color: #13252e;
 }
 
 .propertyCards {
@@ -134,8 +136,8 @@
   border-radius: 93px;
   padding: 8px 22px;
   background: #980000;
-  color: #F7F7F7;
-  font-family: 'Old Standard TT', serif;
+  color: #f7f7f7;
+  font-family: "Old Standard TT", serif;
   font-weight: 700;
   font-size: 20px;
   line-height: 25px;
@@ -152,9 +154,9 @@
   gap: 10px;
   border-radius: 93px;
   padding: 8px 22px;
-  background: #13252E;
-  color: #F7F7F7;
-  font-family: 'Old Standard TT', serif;
+  background: #13252e;
+  color: #f7f7f7;
+  font-family: "Old Standard TT", serif;
   font-weight: 700;
   font-size: 20px;
   line-height: 25px;
@@ -177,7 +179,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #F7F7F7;
+  background: #f7f7f7;
 }
 
 /* Responsive Design */
