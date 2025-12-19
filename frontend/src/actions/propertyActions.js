@@ -69,17 +69,20 @@ export const createPropertyAction = async (prevState, formData) => {
   const title = formData.get("title");
   const description = formData.get("description");
   const price = formData.get("price");
+  //! property_type doesn't exist in backend documentation
   const property_type = formData.get("property_type");
   const address = formData.get("address");
   const beds = formData.get("beds");
   const baths = formData.get("baths");
   const area_sqft = formData.get("area_sqft");
   const property_image = formData.get("property_image");
+  console.log("property_image", property_image);
 
   const newPropertyData = {
     title: title || prevState.formPropertyData.title,
     description: description || prevState.formPropertyData.description,
     price: price || prevState.formPropertyData.price,
+    //! property_type doesn't exist in backend documentation
     property_type: property_type || prevState.formPropertyData.property_type,
     address: address || prevState.formPropertyData.address,
     beds: beds || prevState.formPropertyData.beds,
@@ -102,10 +105,14 @@ export const createPropertyAction = async (prevState, formData) => {
     errors.price = "Pricing is required.";
   }
 
+  //! property_type doesn't exist in backend documentation
   if (!property_type) {
     errors.property_type = "Property type is required.";
   }
 
+  //! instead of this handle each address property
+  //! format them to address to string then
+  //! "flatNo=2, houseNo=2, street=2, area=2, city=2, state=2, country=2";
   if (!address) {
     errors.address = "Address is required.";
   }
@@ -142,6 +149,21 @@ export const createPropertyAction = async (prevState, formData) => {
       property_image.size > 0;
 
     if (isNewImageUploaded) {
+      //! remove the $ sign fields before pushing
+      // const keys_to_delete = [];
+      // for (const [key, _] of formData.entries()) {
+      //   if (
+      //     key.startsWith("$") ||
+      //     key === ""
+      //   ) {
+      //     keys_to_delete.push(key);
+      //   }
+      // }
+
+      // for (const key of keys_to_delete) {
+      //   formData.delete(key);
+      // }
+
       response = await createProperty(formData, true);
     } else {
       const data = {
@@ -181,6 +203,7 @@ export const createPropertyAction = async (prevState, formData) => {
   }
 };
 
+//! property_type doesn't exist in backend documentation
 export const updatePropertyAction = async (id, prevState, formData) => {
   const title = formData.get("title");
   const description = formData.get("description");
@@ -218,6 +241,9 @@ export const updatePropertyAction = async (id, prevState, formData) => {
   if (!newPropertyData.property_type) {
     errors.property_type = "Property type is required.";
   }
+  //! instead of this handle each address property
+  //! format them to address to string then
+  //! "flatNo=2, houseNo=2, street=2, area=2, city=2, state=2, country=2";
   if (!newPropertyData.address) {
     errors.address = "Address is required.";
   }
@@ -249,6 +275,7 @@ export const updatePropertyAction = async (id, prevState, formData) => {
       property_image instanceof File &&
       property_image.size > 0;
 
+    //! remove the $ sign fields before pushing
     if (isNewImageUploaded) {
       response = await updateProperty(id, formData, true);
     } else {

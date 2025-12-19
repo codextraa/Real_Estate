@@ -15,6 +15,7 @@ const initialState = {
     title: "",
     description: "",
     price: "",
+    //! property_type doesn't exist in backend documentation
     property_type: "house",
     address: "",
     beds: "",
@@ -55,6 +56,7 @@ export default function ListingForm() {
     const file = e.target.files[0];
     if (file) {
       if (previewUrl) {
+        //! revoke this why?? what is this??
         URL.revokeObjectURL(previewUrl);
       }
       setPreviewUrl(URL.createObjectURL(file));
@@ -67,8 +69,10 @@ export default function ListingForm() {
       fileInputRef.current.click();
     }
   };
+
   const handleRemoveImage = () => {
     if (previewUrl) {
+      //! revoke this why?? what is this??
       URL.revokeObjectURL(previewUrl);
     }
     setPreviewUrl(null);
@@ -81,6 +85,7 @@ export default function ListingForm() {
 
   useEffect(() => {
     return () => {
+      //! revoke this why?? what is this??
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
@@ -90,6 +95,10 @@ export default function ListingForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  //! success state handling
+
+  //! address problem needs to be addressed
+  //! "flatNo=2, houseNo=2, street=2, area=2, city=2, state=2, country=2";
   const formattedAddress = [
     formData.flatNo,
     formData.houseNo,
@@ -154,8 +163,8 @@ export default function ListingForm() {
       <div className={styles.formContainer}>
         <Form action={formAction}>
           <input type="hidden" name="address" value={formattedAddress} />
+          //! property type doesn't exist in backend
           <input type="hidden" name="property_type" value="house" />
-
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Title</div>
             <input
@@ -170,7 +179,6 @@ export default function ListingForm() {
               <div className={styles.errorBox}>{state.errors.title}</div>
             )}
           </div>
-
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Description</div>
             <textarea
@@ -181,11 +189,13 @@ export default function ListingForm() {
               className={styles.input}
               maxLength={150}
             />
+            //! object error length add in all errors
             {state.errors?.description && (
               <div className={styles.errorBox}>{state.errors.description}</div>
             )}
           </div>
-
+          //! no grid three div here it needs to be handled differently //! no
+          name for these fields so that they don't go to actions
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Address</div>
             <div className={styles.gridThree}>
@@ -274,7 +284,7 @@ export default function ListingForm() {
               <div className={styles.errorBox}>{state.errors.address}</div>
             )}
           </div>
-
+          //! no grid three div here it needs to be handled differently
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Details</div>
             <div className={styles.gridThree}>
@@ -312,6 +322,7 @@ export default function ListingForm() {
                 />
               </div>
             </div>
+            //! each error will be inside of the divs
             {state.errors?.beds && (
               <div className={styles.errorBox}>{state.errors.beds}</div>
             )}
@@ -322,7 +333,7 @@ export default function ListingForm() {
               <div className={styles.errorBox}>{state.errors.area_sqft}</div>
             )}
           </div>
-
+          //! problem in styles $ not coming before text
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Pricing</div>
             <div className={styles.priceInputWrapper}>
@@ -339,10 +350,19 @@ export default function ListingForm() {
               <div className={styles.errorBox}>{state.errors.price}</div>
             )}
           </div>
-
+          //! not conditional this will split the box in two like design
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Image</div>
             <div className={styles.imageUploadBox}>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                name="property_image"
+                accept="image/*"
+                className={styles.imageInput}
+                disabled={isPending}
+              />
               {!previewUrl ? (
                 <div className={styles.uploadLabel}>
                   <Image
@@ -356,15 +376,6 @@ export default function ListingForm() {
                   <div className={styles.uploadText}>
                     Maximum Upload Size 2MB{" "}
                   </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageChange}
-                    name="property_image"
-                    accept="image/*"
-                    className={styles.imageInput}
-                    disabled={isPending}
-                  />
                 </div>
               ) : (
                 <div className={styles.imagePreviewContainer}>
@@ -389,11 +400,10 @@ export default function ListingForm() {
               <div className={styles.errorBox}>{state.errors.image_url}</div>
             )}
           </div>
-
           {state.success && (
             <div className={styles.successBox}>{state.success}</div>
           )}
-
+          //! where is the general error??
           <div className={styles.buttonGroup}>
             <div className={styles.cancelProfileButton}>
               <Link href={`/`}>Cancel</Link>
