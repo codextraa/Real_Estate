@@ -71,7 +71,6 @@ class PropertyFactory(factory.django.DjangoModelFactory):
     baths = FuzzyInteger(1, 10)
     price = FuzzyDecimal(10000.00, 50000.00, 2)
     area_sqft = FuzzyInteger(500, 5000)
-    slug = factory.LazyAttribute(lambda obj: slugify(obj.title))
     image_url = PROPERTY_IMAGE_PATH
 
     @factory.lazy_attribute
@@ -88,3 +87,10 @@ class PropertyFactory(factory.django.DjangoModelFactory):
             f"flat_no={flat}, house_no={house}, street={street}, "
             f"area={area}, city={city}, state={state}, country={country}"
         )
+
+    @factory.post_generation
+    def slug(self, create, extracted, **kwargs):  # pylint: disable=unused-argument
+        if create:
+            slug_val = f"{slugify(self.title)}-{self.id}"
+            setattr(self, "slug", slug_val)
+            self.save(update_fields=["slug"])
