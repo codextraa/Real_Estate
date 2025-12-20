@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useActionState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Form from "next/form";
 import Image from "next/image";
 import Link from "next/link";
 import { createPropertyAction } from "@/actions/propertyActions";
 import { FormButton } from "@/components/buttons/Buttons";
-import styles from "./ListingForm.module.css";
+import styles from "./CreateListingForm.module.css";
 
 const initialState = {
   errors: {},
@@ -15,8 +16,6 @@ const initialState = {
     title: "",
     description: "",
     price: "",
-    //! property_type doesn't exist in backend documentation
-    property_type: "house",
     address: "",
     beds: "",
     baths: "",
@@ -33,6 +32,7 @@ export default function ListingForm() {
     createPropertyAction,
     initialState,
   );
+  const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -95,7 +95,13 @@ export default function ListingForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  //! success state handling
+  useEffect(() => {
+    if (state.success) {
+      setTimeout(() => {
+        router.push("/");
+      }, 2000);
+    }
+  }, [state.success, router]);
 
   //! address problem needs to be addressed
   //! "flatNo=2, houseNo=2, street=2, area=2, city=2, state=2, country=2";
@@ -163,8 +169,6 @@ export default function ListingForm() {
       <div className={styles.formContainer}>
         <Form action={formAction}>
           <input type="hidden" name="address" value={formattedAddress} />
-          //! property type doesn't exist in backend
-          <input type="hidden" name="property_type" value="house" />
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Title</div>
             <input
@@ -175,7 +179,7 @@ export default function ListingForm() {
               onChange={handleInputChange}
               className={styles.input}
             />
-            {state.errors?.title && (
+            {Object.keys(state.errors).length > 0 && state.errors.title && (
               <div className={styles.errorBox}>{state.errors.title}</div>
             )}
           </div>
@@ -189,13 +193,13 @@ export default function ListingForm() {
               className={styles.input}
               maxLength={150}
             />
-            //! object error length add in all errors
-            {state.errors?.description && (
-              <div className={styles.errorBox}>{state.errors.description}</div>
-            )}
+            {Object.keys(state.errors).length > 0 &&
+              state.errors.description && (
+                <div className={styles.errorBox}>
+                  {state.errors.description}
+                </div>
+              )}
           </div>
-          //! no grid three div here it needs to be handled differently //! no
-          name for these fields so that they don't go to actions
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Address</div>
             <div className={styles.gridThree}>
@@ -280,7 +284,7 @@ export default function ListingForm() {
                 className={styles.input}
               />
             </div>
-            {state.errors?.address && (
+            {Object.keys(state.errors).length > 0 && state.errors.address && (
               <div className={styles.errorBox}>{state.errors.address}</div>
             )}
           </div>
@@ -298,6 +302,9 @@ export default function ListingForm() {
                   onChange={handleInputChange}
                   className={styles.input}
                 />
+                {Object.keys(state.errors).length > 0 && state.errors.beds && (
+                  <div className={styles.errorBox}>{state.errors.beds}</div>
+                )}
               </div>
               <div className={styles.inputContainer}>
                 <h1 className={styles.inputTitle}>Baths*</h1>
@@ -309,6 +316,9 @@ export default function ListingForm() {
                   onChange={handleInputChange}
                   className={styles.input}
                 />
+                {Object.keys(state.errors).length > 0 && state.errors.baths && (
+                  <div className={styles.errorBox}>{state.errors.baths}</div>
+                )}
               </div>
               <div className={styles.inputContainer}>
                 <h1 className={styles.inputTitle}>Sqft*</h1>
@@ -320,20 +330,15 @@ export default function ListingForm() {
                   onChange={handleInputChange}
                   className={styles.input}
                 />
+                {Object.keys(state.errors).length > 0 &&
+                  state.errors.area_sqft && (
+                    <div className={styles.errorBox}>
+                      {state.errors.area_sqft}
+                    </div>
+                  )}
               </div>
             </div>
-            //! each error will be inside of the divs
-            {state.errors?.beds && (
-              <div className={styles.errorBox}>{state.errors.beds}</div>
-            )}
-            {state.errors?.baths && (
-              <div className={styles.errorBox}>{state.errors.baths}</div>
-            )}
-            {state.errors?.area_sqft && (
-              <div className={styles.errorBox}>{state.errors.area_sqft}</div>
-            )}
           </div>
-          //! problem in styles $ not coming before text
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Pricing</div>
             <div className={styles.priceInputWrapper}>
@@ -341,17 +346,18 @@ export default function ListingForm() {
               <input
                 type="number"
                 name="price"
+                placeholder="0.00"
                 value={formData.price}
                 onChange={handleInputChange}
-                className={styles.input}
+                className={styles.priceInput}
               />
             </div>
-            {state.errors?.price && (
+            {Object.keys(state.errors).length > 0 && state.errors.price && (
               <div className={styles.errorBox}>{state.errors.price}</div>
             )}
           </div>
-          //! not conditional this will split the box in two like design
-          //! image should remain even if u get an error (fix that)
+          //! not conditional this will split the box in two like design //!
+          image should remain even if u get an error (fix that)
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Image</div>
             <div className={styles.imageUploadBox}>
@@ -396,15 +402,20 @@ export default function ListingForm() {
                   </button>
                 </div>
               )}
+              {Object.keys(state.errors).length > 0 &&
+                state.errors.image_url && (
+                  <div className={styles.errorBox}>
+                    {state.errors.image_url}
+                  </div>
+                )}
             </div>
-            {state.errors?.image_url && (
-              <div className={styles.errorBox}>{state.errors.image_url}</div>
-            )}
           </div>
           {state.success && (
             <div className={styles.successBox}>{state.success}</div>
           )}
-          //! where is the general error??
+          {Object.keys(state.errors).length > 0 && state.errors.general && (
+            <div className={styles.errorBox}>{state.errors.general}</div>
+          )}
           <div className={styles.buttonGroup}>
             <div className={styles.cancelProfileButton}>
               <Link href={`/`}>Cancel</Link>
