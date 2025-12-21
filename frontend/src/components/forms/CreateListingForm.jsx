@@ -15,11 +15,17 @@ const initialState = {
   formPropertyData: {
     title: "",
     description: "",
-    price: "",
-    address: "",
+    country: "",
+    state: "",
+    city: "",
+    area: "",
+    street: "",
+    houseNo: "",
+    flatNo: "",
     beds: "",
     baths: "",
     area_sqft: "",
+    price: "",
     property_image: null,
   },
 };
@@ -35,6 +41,7 @@ export default function ListingForm() {
   const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
+  const [localImageError, setLocalImageError] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -52,27 +59,42 @@ export default function ListingForm() {
     property_image: null,
   });
 
+  const resetImageInput = () => {
+    setPreviewUrl(state.formPropertyData.image_url);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setLocalImageError("");
+      const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+      const isInvalidType = !validTypes.includes(file.type);
+      const isTooLarge = file.size > 2 * 1024 * 1024;
+
+      if (isInvalidType || isTooLarge) {
+        const msg = isInvalidType
+          ? "Only JPG, JPEG and PNG images are allowed."
+          : "Image size should not exceed 2MB.";
+
+        setLocalImageError(msg);
+        resetImageInput();
+        return;
+      }
+
       if (previewUrl) {
-        //! revoke this why?? what is this??
         URL.revokeObjectURL(previewUrl);
       }
+
       setPreviewUrl(URL.createObjectURL(file));
       setFormData((prev) => ({ ...prev, property_image: file }));
     }
   };
 
-  const handleIconClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
   const handleRemoveImage = () => {
     if (previewUrl) {
-      //! revoke this why?? what is this??
       URL.revokeObjectURL(previewUrl);
     }
     setPreviewUrl(null);
@@ -83,12 +105,11 @@ export default function ListingForm() {
     }
   };
 
-  useEffect(() => {
-    return () => {
-      //! revoke this why?? what is this??
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
+  const handleIconClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -96,26 +117,25 @@ export default function ListingForm() {
   };
 
   useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  useEffect(() => {
+    if (state.errors && state.errors.image_url) {
+      resetImageInput();
+    }
+  }, [state.errors]);
+
+  useEffect(() => {
     if (state.success) {
       setTimeout(() => {
         router.push("/");
       }, 2000);
+      setLocalImageError("");
     }
   }, [state.success, router]);
-
-  //! address problem needs to be addressed
-  //! "flatNo=2, houseNo=2, street=2, area=2, city=2, state=2, country=2";
-  const formattedAddress = [
-    formData.flatNo,
-    formData.houseNo,
-    formData.street,
-    formData.area,
-    formData.city,
-    formData.state,
-    formData.country,
-  ]
-    .filter((val) => val && val.trim() !== "")
-    .join(", ");
 
   const isTitleComplete = formData.title.trim() !== "";
   const isDescriptionComplete = formData.description.trim() !== "";
@@ -137,38 +157,42 @@ export default function ListingForm() {
     <div className={styles.container}>
       <div className={styles.sidebar}>
         <div className={styles.sidebarContent}>
-          <div className={styles.sidebarTitle}>Create a listing</div>
-          <div className={styles.sidebarSubtitle}>
-            Input property information
-          </div>
-          <div className={styles.checklist}>
-            {[
-              { label: "Title", check: isTitleComplete },
-              { label: "Description", check: isDescriptionComplete },
-              { label: "Address", check: isAddressComplete },
-              { label: "Details", check: isDetailsComplete },
-              { label: "Pricing", check: isPricingComplete },
-              { label: "Image", check: isImageComplete },
-            ].map((item, idx) => (
-              <div key={idx} className={styles.checkItem}>
-                <div className={styles.iconContainer}>
-                  <Image
-                    src={item.check ? doneIcon : notDoneIcon}
-                    alt="status"
-                    width={24}
-                    height={24}
-                  />
-                </div>
-                <div className={styles.label}>{item.label}</div>
+          <div className={styles.sidebarResponsiveWrapper}>
+            <div className={styles.sidebarHeader}>
+              <div className={styles.sidebarTitle}>Create a listing</div>
+              <div className={styles.sidebarSubtitle}>
+                Input property information
               </div>
-            ))}
+            </div>
+
+            <div className={styles.checklist}>
+              {[
+                { label: "Title", check: isTitleComplete },
+                { label: "Description", check: isDescriptionComplete },
+                { label: "Address", check: isAddressComplete },
+                { label: "Details", check: isDetailsComplete },
+                { label: "Pricing", check: isPricingComplete },
+                { label: "Image", check: isImageComplete },
+              ].map((item, idx) => (
+                <div key={idx} className={styles.checkItem}>
+                  <div className={styles.iconContainer}>
+                    <Image
+                      src={item.check ? doneIcon : notDoneIcon}
+                      alt="status"
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                  <div className={styles.label}>{item.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       <div className={styles.formContainer}>
         <Form action={formAction}>
-          <input type="hidden" name="address" value={formattedAddress} />
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Title</div>
             <input
@@ -288,7 +312,6 @@ export default function ListingForm() {
               <div className={styles.errorBox}>{state.errors.address}</div>
             )}
           </div>
-          //! no grid three div here it needs to be handled differently
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Details</div>
             <div className={styles.gridThree}>
@@ -356,59 +379,72 @@ export default function ListingForm() {
               <div className={styles.errorBox}>{state.errors.price}</div>
             )}
           </div>
-          //! not conditional this will split the box in two like design //!
-          image should remain even if u get an error (fix that)
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Image</div>
             <div className={styles.imageUploadBox}>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageChange}
-                name="property_image"
-                accept="image/*"
-                className={styles.imageInput}
-                disabled={isPending}
-              />
-              {!previewUrl ? (
-                <div className={styles.uploadLabel}>
-                  <Image
-                    src={uploadIcon}
-                    onClick={handleIconClick}
-                    alt="Upload"
-                    width={50}
-                    height={50}
-                  />
-                  <div className={styles.uploadText}>Choose File to Upload</div>
-                  <div className={styles.uploadText}>
-                    Maximum Upload Size 2MB{" "}
-                  </div>
-                </div>
-              ) : (
-                <div className={styles.imagePreviewContainer}>
-                  <Image
-                    src={previewUrl}
-                    alt="Preview"
-                    width={300}
-                    height={300}
-                    className={styles.imagePreview}
-                  />
-                  <button
-                    type="button"
-                    className={styles.deleteImageBtn}
-                    onClick={handleRemoveImage}
-                  >
-                    X
-                  </button>
-                </div>
-              )}
-              {Object.keys(state.errors).length > 0 &&
-                state.errors.image_url && (
-                  <div className={styles.errorBox}>
-                    {state.errors.image_url}
+              <div className={styles.imagePreviewContainer}>
+                {previewUrl ? (
+                  <>
+                    <Image
+                      src={previewUrl}
+                      alt="Preview"
+                      width={400}
+                      height={300}
+                      className={styles.imagePreview}
+                    />
+                    <button
+                      type="button"
+                      className={styles.deleteImageBtn}
+                      onClick={handleRemoveImage}
+                    >
+                      X
+                    </button>
+                  </>
+                ) : (
+                  <div className={styles.imagePlaceholder}>
+                    <Image
+                      src="/assets/placeholder.png"
+                      alt="Placeholder"
+                      width={400}
+                      height={300}
+                      className={styles.imagePlaceholder}
+                    />
                   </div>
                 )}
+              </div>
+
+              <div className={styles.uploadControlSide}>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  name="property_image"
+                  accept="image/*"
+                  className={styles.imageInput}
+                  disabled={isPending}
+                />
+                <div className={styles.uploadLabel} onClick={handleIconClick}>
+                  <div className={styles.uploadIconCircle}>
+                    <Image
+                      src={uploadIcon}
+                      alt="Upload"
+                      width={30}
+                      height={30}
+                    />
+                  </div>
+                  <div className={styles.uploadText}>Choose File to Upload</div>
+                  <div className={styles.uploadSubtext}>
+                    Maximum Upload Size 2MB
+                  </div>
+                </div>
+              </div>
             </div>
+            {localImageError ? (
+              <span className={styles.errorBox}>{localImageError}</span>
+            ) : Object.keys(state.errors).length > 0 &&
+              state.errors.image_url ? (
+              <span className={styles.errorText}>{state.errors.image_url}</span>
+            ) : null}
           </div>
           {state.success && (
             <div className={styles.successBox}>{state.success}</div>

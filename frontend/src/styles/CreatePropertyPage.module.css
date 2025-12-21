@@ -11,3 +11,17 @@
     #13252e 105.96%
   );
 }
+
+@media (max-width: 1000px) {
+  .form {
+    padding-left: 50px;
+    padding-right: 50px;
+  }
+}
+
+@media (max-width: 500px) {
+  .form {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
