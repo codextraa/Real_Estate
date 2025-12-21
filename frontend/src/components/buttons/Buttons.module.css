@@ -197,6 +197,21 @@
   }
 }
 
+@media screen and (max-width: 320px) {
+  .NavSignUpButton {
+    font-size: 12px;
+  }
+
+  .NavLogInButton {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+}
+/* 
+/* @media screen and (max-width: 400px) {
+  .NavSignUpButton {
+    font-size: 12px;
+  } */
 /* @media screen and (max-width: 375px) {
   .NavSignUpButton {
     font-size: 12px;

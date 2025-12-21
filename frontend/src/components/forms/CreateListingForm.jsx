@@ -261,8 +261,6 @@ export default function ListingForm() {
                   className={styles.input}
                 />
               </div>
-            </div>
-            <div className={styles.gridThree}>
               <div className={styles.inputContainer}>
                 <h1 className={styles.inputTitle}>Area*</h1>
                 <input

@@ -476,9 +476,9 @@
     font-size: 12px;
   }
 
-  .gridThree {
+  /* .gridThree {
     grid-template-columns: repeat(2, 1fr);
-  }
+  } */
 }
 
 @media (max-width: 800px) {
@@ -513,13 +513,13 @@
   .checklist {
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 1rem;
+    justify-content: space-evenly;
     align-items: flex-start;
+    gap: 1rem;
   }
 
   .gridThree {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
