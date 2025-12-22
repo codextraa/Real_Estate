@@ -151,24 +151,23 @@ class PropertyViewSetTests(APITestCase):
 
     ### ---- Create -----
 
-    # def test_create_property_as_agent_success(self):
-    #     """Test that an agent can create a property listing."""
-    #     self._authenticate(self.agent_user)
-    #     payload = self.get_valid_property_data()
+    def test_create_property_as_agent_success(self):
+        """Test that an agent can create a property listing."""
+        self._authenticate(self.agent_user)
+        payload = self.get_valid_property_data()
 
-    #     response = self.client.post(PROPERTY_LIST_URL, payload)
+        response = self.client.post(PROPERTY_LIST_URL, payload)
 
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    #     # Check if Title Case validator worked
-    #     self.assertEqual(Property.objects.get(id=response.data.get('id', 0)).title, "Luxury Apartment")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Property.objects.get(id=response.data.get('id', 0)).title, "Luxury Apartment")
 
-    # def test_create_property_forbidden_for_normal_user(self):
-    #     """Test that a user with is_agent=False cannot create a property."""
-    #     self._authenticate(self.normal_user)
-    #     payload = self.get_valid_property_data()
+    def test_create_property_forbidden_for_normal_user(self):
+        """Test that a user with is_agent=False cannot create a property."""
+        self._authenticate(self.normal_user)
+        payload = self.get_valid_property_data()
 
-    #     response = self.client.post(PROPERTY_LIST_URL, payload)
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        response = self.client.post(PROPERTY_LIST_URL, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     # def test_agent_can_update_own_property(self):
     #     """Test that an agent can patch their own property."""
