@@ -1176,14 +1176,6 @@ class UserViewSetTests(APITestCase):
         response = self.client.patch(url3, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def normal_user_cannot_update_agent(self):
-        """Test a normal user cannot update an agent's profile."""
-        self._authenticate(self.normal_user)
-        url = AGENT_DETAIL_URL(self.agent_user.pk)
-        new_data = {"first_name": "Attempted Hack"}
-        response = self.client.patch(url, new_data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
     # # # ------DELETE TESTS------
 
     def test_delete_user_self_success(self):
@@ -1439,7 +1431,6 @@ class AgentViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["id"], self.agent_user_1.pk)
 
-
     #     #     # ------------------ CREATE (POST) TESTS ------------------
 
     def test_create_agent_by_superuser_success(self):
@@ -1679,9 +1670,6 @@ class AgentViewSetTests(APITestCase):
             str(response_data["errors"]["username"]),
         )
 
-
-
-
     ###---------------UPDATE (PATCH) TESTS
 
     def test_update_agent_self_success(self):
@@ -1884,28 +1872,13 @@ class AgentViewSetTests(APITestCase):
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
-
-    # def test_update_user_unauthorized_to_update_agent(self):
-    #     """
-    #     Normal user is unauthorized to update an Agent user's profile.
-    #     This is typically enforced via object-level permissions or custom logic.
-    #     """
-    #     self._authenticate(self.normal_user)
-
-    #     url = USER_DETAIL_URL(self.agent_user.pk)
-
-    #     new_data = {"first_name": "Agent Hack Attempt"}
-
-    #     response = self.client.patch(url, new_data, format="json")
-    #     data = response.json()
-
-    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    #     self.assertIn("No User matches the given query", data["errors"])
-
-    #     self.agent_user.refresh_from_db()
-    #     self.assertNotEqual(self.agent_user.first_name, new_data["first_name"])
+    def normal_user_cannot_update_agent(self):
+        """Test a normal user cannot update an agent's profile."""
+        self._authenticate(self.normal_user)
+        url = AGENT_DETAIL_URL(self.agent_user.pk)
+        new_data = {"first_name": "Attempted Hack"}
+        response = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_agent_update_bio_length_exceeding_error(self):
         """Test agent update bio length exceeding error."""
@@ -1926,7 +1899,6 @@ class AgentViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         error_list = response.json()["errors"]["company_name"]
         self.assertIn("Company name must not exceed 255 characters.", error_list)
-
 
     # #     #     ###-----------DELETE TESTS---------
 
@@ -1983,7 +1955,6 @@ class AgentViewSetTests(APITestCase):
         response = self.client.patch(url, update_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
     def test_agent_cannot_delete_another_agent(self):
         """Test agent cannot delete another agent or any other user."""
         self._authenticate(self.agent_user_1.user)
@@ -1998,6 +1969,13 @@ class AgentViewSetTests(APITestCase):
         url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def normal_user_cannot_delete_an_agent(self):
+        self._authenticate(self.normal_user)
+        url = AGENT_DETAIL_URL(self.agent_user.pk)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(User.objects.filter(pk=self.agent_user.pk).exists())
 
 
 #! Agent Image Update Testcases (all of them including errors)
