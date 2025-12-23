@@ -1,13 +1,16 @@
+import io
+import os
 import jwt
+from PIL import Image
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITestCase
 from rest_framework.test import APIClient
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from core_db.models import Agent
-
 
 from freezegun import freeze_time
 from datetime import timedelta, datetime
@@ -1347,6 +1350,17 @@ class AgentViewSetTests(APITestCase):
             "company_name": "Test Agency Inc.",
         }
 
+    def tearDown(self):
+        """Clean up uploaded test files from the filesystem."""
+        if hasattr(self, 'image_path') and os.path.exists(self.image_path):
+            os.remove(self.image_path)
+        # Check if agent has an image and it's not the default
+        self.agent_user_1.refresh_from_db()
+        if self.agent_user_1.image_url:
+            path = os.path.join(settings.MEDIA_ROOT, self.agent_user_1.image_url.name)
+            if os.path.exists(path) and "default_profile.jpg" not in path:
+                os.remove(path)
+
     #     #     # ------------------ List TESTS ------------------
 
     def test_list_agents_normal_user_denied(self):
@@ -1496,9 +1510,9 @@ class AgentViewSetTests(APITestCase):
 
         self.assertIn("company_name", response.data)
         self.assertIn(
-            "Ensure this field has no more than 255 characters.",
-            response.data["company_name"],
-        )
+                "Ensure this field has no more than 255 characters.", # Standard DRF message
+                response.data["company_name"]
+    )
 
     def test_create_agent_password_complexity(self):
         """Test password creation validation: verifies all complexity requirements (length, uppercase, digit, special char) during registration."""
@@ -1569,6 +1583,7 @@ class AgentViewSetTests(APITestCase):
             "email": "test_valid@example.com",
             "password": valid_password,
             "c_password": valid_password,
+            "company_name": "Test Company",
         }
         response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -1650,7 +1665,7 @@ class AgentViewSetTests(APITestCase):
     def test_agent_username_exists(self):
         """Test that a username must be unique."""
         data = self.get_valid_create_data()
-        data["username"] = self.agent_user_1.username
+        data["username"] = self.agent_user_1.user.username
         response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
@@ -1689,7 +1704,7 @@ class AgentViewSetTests(APITestCase):
         new_data = {"first_name": "SuperUpdate"}
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["data"]["first_name"], "Superupdate")
+        self.assertEqual(response.data["data"]["user"]["first_name"], "Superupdate")
 
     def test_one_agent_cannot_update_another_agent_profile(self):
         """Agent cannot update another Agent's profile."""
@@ -1813,8 +1828,8 @@ class AgentViewSetTests(APITestCase):
 
     def test_update_user_password_complexity(self):
         """Test password change validation: verifies all complexity requirements (length, uppercase, digit, special char)."""
-        self._authenticate(self.normal_user)
-        url = AGENT_DETAIL_URL(self.normal_user.pk)
+        self._authenticate(self.agent_user_1.user)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
 
         short_password = "Short1!"
         data = {"password": short_password, "c_password": short_password}
@@ -1888,7 +1903,7 @@ class AgentViewSetTests(APITestCase):
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         error_list = response.json()["errors"]["bio"]
-        self.assertIn("Bio must not exceed 150 characters.", error_list)
+        self.assertIn("Ensure this field has no more than 150 characters.", error_list)
 
     def test_agent_update_company_name_length_exceed_error(self):
         """Test agent update company name length exceed error."""
@@ -1898,7 +1913,7 @@ class AgentViewSetTests(APITestCase):
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         error_list = response.json()["errors"]["company_name"]
-        self.assertIn("Company name must not exceed 255 characters.", error_list)
+        self.assertIn("Ensure this field has no more than 255 characters.", error_list)
 
     # #     #     ###-----------DELETE TESTS---------
 
@@ -1978,4 +1993,130 @@ class AgentViewSetTests(APITestCase):
         self.assertTrue(User.objects.filter(pk=self.agent_user.pk).exists())
 
 
+    ## Image Test Cases
+
+    def test_upload_valid_image(self):
+        """Test successfully updating an agent profile with a valid image."""
+        self._authenticate(self.agent_user_1.user)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+        image = self.generate_image(name='profile.png', format='PNG')
+        data = {
+            'company_name': 'Updated Agency',
+            'profile_image': image
+        }
+
+        # Use multipart format for file uploads
+        response = self.client.patch(url, data, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.agent_user_1.refresh_from_db()
+        self.assertIn('profile.png', self.agent_user_1.image_url.name)
+
+    def test_image_size_limit_fail(self):
+        """Test that images larger than 2MB are rejected."""
+        self._authenticate(self.agent_user_1.user)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+        # Create a file slightly larger than 2MB
+        large_content = b'0' * (2 * 1024 * 1024 + 1024)
+        large_image = SimpleUploadedFile('too_big.jpg', large_content, content_type='image/jpeg')
+
+        data = {'profile_image': large_image}
+        response = self.client.patch(url, data, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Check for the nested error structure in your AgentImageSerializer
+        self.assertIn('Image size should not exceed 2MB.', str(response.data))
+
+    def test_invalid_image_type(self):
+        """Test that non-image files are rejected."""
+        self._authenticate(self.agent_user_1.user)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+        fake_image = SimpleUploadedFile('doc.pdf', b'not-image-data', content_type='application/pdf')
+
+        data = {'profile_image': fake_image}
+        response = self.client.patch(url, data, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Image type should be JPEG, PNG', str(response.data))
+
+
 #! Agent Image Update Testcases (all of them including errors)
+
+
+
+    # def test_upload_agent_profile_image_success(self):
+    #     """Test successfully uploading a profile image via the ViewSet."""
+    #     self._authenticate(self.agent_user_1.user)
+    #     url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+    #     # Create a 10x10 black image
+    #     black_image = Image.new("RGB", (10, 10), "black")
+    #     image_bytes = io.BytesIO()
+    #     black_image.save(image_bytes, format="JPEG")
+    #     image_bytes.seek(0)
+
+    #     image_file = SimpleUploadedFile(
+    #         name="test_image.jpg",
+    #         content=image_bytes.read(),
+    #         content_type="image/jpeg",
+    #     )
+
+    #     data = {
+    #         "company_name": "Updated Agency",
+    #         "profile_image": image_file  # Key used in your ViewSet logic
+    #     }
+
+    #     # format="multipart" is essential for file uploads
+    #     response = self.client.patch(url, data, format="multipart")
+
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    #     self.agent_user_1.refresh_from_db()
+    #     self.image_path = os.path.join(settings.MEDIA_ROOT, self.agent_user_1.image_url.name)
+
+    #     # Assertions
+    #     self.assertTrue(self.agent_user_1.image_url)
+    #     # Verify it saved in the 'profile_images' directory as per Agent model
+    #     self.assertIn("profile_images/", self.agent_user_1.image_url.name)
+    #     self.assertTrue(os.path.exists(self.image_path))
+
+    # def test_image_type_validation_error(self):
+    #     """Test that only JPEG and PNG are allowed via AgentImageSerializer."""
+    #     self._authenticate(self.agent_user_1.user)
+    #     url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+    #     # Create a fake text file disguised as an image
+    #     fake_image = SimpleUploadedFile(
+    #         name="test.gif",
+    #         content=b"not-an-image-content",
+    #         content_type="image/gif"
+    #     )
+
+    #     data = {"profile_image": fake_image}
+    #     response = self.client.patch(url, data, format="multipart")
+
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     # Your Serializer returns errors['type'] = "Image type should be JPEG, PNG"
+    #     self.assertIn("Image type should be JPEG, PNG", str(response.data))
+
+    # def test_image_size_validation_error(self):
+    #     """Test that images exceeding 2MB are rejected."""
+    #     self._authenticate(self.agent_user_1.user)
+    #     url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+    #     # Generate 3MB of dummy data
+    #     large_content = b"0" * (3 * 1024 * 1024)
+    #     large_image = SimpleUploadedFile(
+    #         name="huge.jpg",
+    #         content=large_content,
+    #         content_type="image/jpeg"
+    #     )
+
+    #     data = {"profile_image": large_image}
+    #     response = self.client.patch(url, data, format="multipart")
+
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     self.assertIn("Image size should not exceed 2MB.", str(response.data))

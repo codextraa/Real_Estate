@@ -169,6 +169,20 @@ class PropertyViewSetTests(APITestCase):
         response = self.client.post(PROPERTY_LIST_URL, payload)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_forbidden_field_cannot_be_update_while_creating(self):
+        """Test that 'slug' and 'agent' fields cannot be changed."""
+        self._authenticate(self.agent_user)
+        payload = self.get_valid_property_data()
+        payload["slug"] = "custom-slug"
+        payload["agent"] = self.other_agent_user.id
+
+        response = self.client.post(PROPERTY_LIST_URL, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("Forbidden fields cannot be updated.", response.data["error"])
+
+
+    #### ----update-----
+
     # def test_agent_can_update_own_property(self):
     #     """Test that an agent can patch their own property."""
     #     self._authenticate(self.agent_user)
