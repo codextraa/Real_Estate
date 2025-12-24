@@ -17,7 +17,7 @@ export default async function Page({ searchParams }) {
 
   if (userId) {
     const urlSearchParams = await searchParams;
-    currentPage = urlSearchParams.page || 1;
+    currentPage = parseInt(urlSearchParams.page) || 1;
     response = await getProperties({
       page: currentPage,
       ...urlSearchParams,

@@ -148,7 +148,7 @@ class AgentImageSerializer(serializers.ModelSerializer):
 
         errors = {}
         max_size = 2 * 1024 * 1024  # 2MB
-        valid_file_types = ["image/jpeg", "image/png"]  # valid image types
+        valid_file_types = ["image/jpeg", "image/jpg", "image/png"]  # valid image types
 
         if value.size > max_size:
             errors["size"] = "Image size should not exceed 2MB."

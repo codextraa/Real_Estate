@@ -1,13 +1,16 @@
+import io
+import os
 import jwt
+from PIL import Image
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITestCase
 from rest_framework.test import APIClient
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from core_db.models import Agent
-
 
 from freezegun import freeze_time
 from datetime import timedelta, datetime
@@ -441,6 +444,13 @@ class UserViewSetTests(APITestCase):
             first_name="Super",
             last_name="Admin",
         )
+        self.another_superuser = User.objects.create_superuser(
+            email="anothersuper@test.com",
+            username="anothersuperadmin",
+            password=self.password,
+            first_name="Another Super",
+            last_name="Admin",
+        )
 
         self.staff_user = User.objects.create_user(
             email="staff@test.com",
@@ -573,11 +583,39 @@ class UserViewSetTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_retrieve_user_not_found(self):
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(9999)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # ------POST TESTS------
 
     def test_create_user_success(self):
         """Test successful user registration (AllowAny permission)."""
         data = self.get_valid_create_data()
+        response = self.client.post(USER_LIST_URL, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.data.get("success"), "User profile created successfully."
+        )
+        self.assertTrue(User.objects.filter(email=data["email"]).exists())
+
+    def test_staff_user_creates_normal_user_success(self):
+        """Test successful user creation by staff user."""
+        data = self.get_valid_create_data()
+        self._authenticate(self.staff_user)
+        response = self.client.post(USER_LIST_URL, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.data.get("success"), "User profile created successfully."
+        )
+        self.assertTrue(User.objects.filter(email=data["email"]).exists())
+
+    def test_superuser_creates_normal_user_success(self):
+        """Test successful user creation by superuser."""
+        data = self.get_valid_create_data()
+        self._authenticate(self.superuser)
         response = self.client.post(USER_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(
@@ -733,6 +771,30 @@ class UserViewSetTests(APITestCase):
             {"errors": {"email": ["user with this email already exists."]}},
         )
 
+    def test_create_user_username_too_short(self):
+        """Test serializer validation for username too short."""
+        data = self.get_valid_create_data()
+        data["username"] = "abc"
+        response = self.client.post(USER_LIST_URL, data, format="json")
+        response_data = response.json()
+        self.assertIn("username", response_data["errors"])
+        self.assertIn(
+            "Username must be at least 6 characters long.",
+            str(response_data["errors"]["username"]),
+        )
+
+    def test_create_user_username_already_exists(self):
+        """Test serializer validation for username already exists."""
+        data = self.get_valid_create_data()
+        data["username"] = self.normal_user.username
+        response = self.client.post(USER_LIST_URL, data, format="json")
+        response_data = response.json()
+        self.assertIn("username", response_data["errors"])
+        self.assertIn(
+            "user with this username already exists.",
+            str(response_data["errors"]["username"]),
+        )
+
     def test_create_user_normal_user_cannot_create_staff(self):
         """
         Tests that a normal user, when creating a new user, cannot set the 'is_staff'
@@ -754,6 +816,114 @@ class UserViewSetTests(APITestCase):
         self.assertFalse(User.objects.filter(username="staffwannabe").exists())
         self.assertIn("you do not have permission", data["errors"].lower())
 
+    def test_create_user_normal_user_cannot_create_superuser(self):
+        """
+        Tests that a normal user, when creating a new user, cannot set the 'is_superuser'
+        field to True, resulting in an HTTP 403 or 400 error.
+        """
+        self._authenticate(self.normal_user)
+
+        new_user_data = self.get_valid_create_data()
+
+        new_user_data["username"] = "superuserwannabe"
+        new_user_data["email"] = "superuserwannabe@test.com"
+        new_user_data["is_staff"] = True
+        new_user_data["is_superuser"] = True
+
+        response = self.client.post(USER_LIST_URL, new_user_data, format="json")
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.assertFalse(User.objects.filter(username="superuserwannabe").exists())
+        self.assertIn("you do not have permission", data["errors"].lower())
+
+    def test_create_user_agent_user_cannot_create_staff(self):
+        """
+        Tests that an agent user, when creating a new user, cannot set the 'is_staff'
+        field to True, resulting in an HTTP 403 or 400 error.
+        """
+        self._authenticate(self.agent_user)
+
+        new_user_data = self.get_valid_create_data()
+
+        new_user_data["username"] = "staffwannabe"
+        new_user_data["email"] = "staffwannabe@test.com"
+        new_user_data["is_staff"] = True
+
+        response = self.client.post(USER_LIST_URL, new_user_data, format="json")
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.assertFalse(User.objects.filter(username="staffwannabe").exists())
+        self.assertIn("you do not have permission", data["errors"].lower())
+
+    def test_create_user_agent_user_cannot_create_superuser(self):
+        """
+        Tests that an agent user, when creating a new user, cannot set the 'is_superuser'
+        field to True, resulting in an HTTP 403 or 400 error.
+        """
+        self._authenticate(self.agent_user)
+
+        new_user_data = self.get_valid_create_data()
+
+        new_user_data["username"] = "superuserwannabe"
+        new_user_data["email"] = "superuserwannabe@test.com"
+        new_user_data["is_staff"] = True
+        new_user_data["is_superuser"] = True
+
+        response = self.client.post(USER_LIST_URL, new_user_data, format="json")
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.assertFalse(User.objects.filter(username="superuserwannabe").exists())
+        self.assertIn("you do not have permission", data["errors"].lower())
+
+    def test_create_user_staff_user_cannot_create_staff(self):
+        """
+        Tests that a staff user, when creating a new user, cannot set the 'is_staff'
+        field to True, resulting in an HTTP 403 or 400 error.
+        """
+        self._authenticate(self.staff_user)
+
+        new_user_data = self.get_valid_create_data()
+
+        new_user_data["username"] = "staffwannabe"
+        new_user_data["email"] = "staffwannabe@test.com"
+        new_user_data["is_staff"] = True
+
+        response = self.client.post(USER_LIST_URL, new_user_data, format="json")
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.assertFalse(User.objects.filter(username="staffwannabe").exists())
+        self.assertIn("you do not have permission", data["errors"].lower())
+
+    def test_create_user_staff_user_cannot_create_superuser(self):
+        """
+        Tests that a staff user, when creating a new user, cannot set the 'is_superuser'
+        field to True, resulting in an HTTP 403 or 400 error.
+        """
+        self._authenticate(self.staff_user)
+
+        new_user_data = self.get_valid_create_data()
+
+        new_user_data["username"] = "superuserwannabe"
+        new_user_data["email"] = "superuserwannabe@test.com"
+        new_user_data["is_staff"] = True
+        new_user_data["is_superuser"] = True
+
+        response = self.client.post(USER_LIST_URL, new_user_data, format="json")
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.assertFalse(User.objects.filter(username="superuserwannabe").exists())
+        self.assertIn("you do not have permission", data["errors"].lower())
+
     # # # ------PATCH TESTS------
 
     def test_update_user_self_success(self):
@@ -765,10 +935,19 @@ class UserViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["data"]["first_name"], "Newname")
 
-    def test_update_user_superuser_success(self):
+    def test_update_user_superuser_update_user_success(self):
         """Superuser can update another user's profile."""
         self._authenticate(self.superuser)
         url = USER_DETAIL_URL(self.normal_user.pk)
+        new_data = {"first_name": "SuperUpdate"}
+        response = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["data"]["first_name"], "Superupdate")
+
+    def test_update_user_superuser_update_staff_success(self):
+        """Superuser can update another staff's profile."""
+        self._authenticate(self.superuser)
+        url = USER_DETAIL_URL(self.staff_user.pk)
         new_data = {"first_name": "SuperUpdate"}
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -947,34 +1126,25 @@ class UserViewSetTests(APITestCase):
             "Password must contain at least one special character.", error_list
         )
 
-    def test_update_user_unauthorized_to_update_agent(self):
-        """
-        Normal user is unauthorized to update an Agent user's profile.
-        This is typically enforced via object-level permissions or custom logic.
-        """
-        self._authenticate(self.normal_user)
-
-        url = USER_DETAIL_URL(self.agent_user.pk)
-
-        new_data = {"first_name": "Agent Hack Attempt"}
-
-        response = self.client.patch(url, new_data, format="json")
-        data = response.json()
-
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-        self.assertIn("No User matches the given query", data["errors"])
-
-        self.agent_user.refresh_from_db()
-        self.assertNotEqual(self.agent_user.first_name, new_data["first_name"])
-
     def test_user_cannot_update_themselves_without_login(self):
         url = USER_DETAIL_URL(self.normal_user.pk)
         new_data = {"first_name": "Agent Hack Attempt"}
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_staff_cannot_update_another_user(self):
+    def test_user_cannot_update_another_staff_or_superuser(self):
+        self._authenticate(self.normal_user)
+        url1 = USER_DETAIL_URL(self.another_staff_user.pk)
+        new_data = {"first_name": "Hack Attempt"}
+        response = self.client.patch(url1, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        url2 = USER_DETAIL_URL(self.superuser.pk)
+        new_data = {"first_name": "Hack Attempt"}
+        response = self.client.patch(url2, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_staff_cannot_update_another_user_or_staff_or_superuser(self):
         """Staff user cannot update another staff and normal user's profile."""
         self._authenticate(self.staff_user)
         url1 = USER_DETAIL_URL(self.normal_user.pk)
@@ -985,6 +1155,28 @@ class UserViewSetTests(APITestCase):
         url2 = USER_DETAIL_URL(self.another_staff_user.pk)
         new_data = {"first_name": "Hack Attempt"}
         response = self.client.patch(url2, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        url3 = USER_DETAIL_URL(self.superuser.pk)
+        new_data = {"first_name": "Hack Attempt"}
+        response = self.client.patch(url3, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_agent_cannot_update_another_user_or_staff_or_superuser(self):
+        self._authenticate(self.agent_user)
+        url1 = USER_DETAIL_URL(self.normal_user.pk)
+        new_data = {"first_name": "Hack Attempt"}
+        response = self.client.patch(url1, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        url2 = USER_DETAIL_URL(self.another_staff_user.pk)
+        new_data = {"first_name": "Hack Attempt"}
+        response = self.client.patch(url2, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        url3 = USER_DETAIL_URL(self.superuser.pk)
+        new_data = {"first_name": "Hack Attempt"}
+        response = self.client.patch(url3, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # # # ------DELETE TESTS------
@@ -1016,14 +1208,20 @@ class UserViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(User.objects.filter(pk=user_to_delete_pk).exists())
 
-    def test_delete_user_cannot_delete_superuser(self):
+    def test_delete_user_superuser_cannot_delete_themselves_or_another_superuser(self):
         """Any user (including superuser) cannot delete a superuser."""
         self._authenticate(self.superuser)
-        url = USER_DETAIL_URL(self.superuser.pk)
-        response = self.client.delete(url)
+        url1 = USER_DETAIL_URL(self.superuser.pk)
+        response = self.client.delete(url1)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("You cannot delete superusers", response.data["error"])
         self.assertTrue(User.objects.filter(pk=self.superuser.pk).exists())
+
+        url2 = USER_DETAIL_URL(self.another_superuser.pk)
+        response = self.client.delete(url2)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("You cannot delete superusers", response.data["error"])
+        self.assertTrue(User.objects.filter(pk=self.another_superuser.pk).exists())
 
     def test_delete_user_not_found(self):
         """
@@ -1046,8 +1244,19 @@ class UserViewSetTests(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def staff_cannot_delete_another_user(self):
-        """Staff user cannot delete another staff and normal user."""
+    def user_cannot_delete_staff_or_superuser(self):
+        """User cannot delete another staff or superuser."""
+        self._authenticate(self.normal_user)
+        url1 = USER_DETAIL_URL(self.another_staff_user.pk)
+        response = self.client.delete(url1)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        url2 = USER_DETAIL_URL(self.superuser.pk)
+        response = self.client.delete(url2)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def staff_cannot_delete_another_user_or_staff_or_superuser(self):
+        """Staff user cannot delete another staff and normal user and superuser."""
         self._authenticate(self.staff_user)
         url1 = USER_DETAIL_URL(self.normal_user.pk)
         response = self.client.delete(url1)
@@ -1056,6 +1265,32 @@ class UserViewSetTests(APITestCase):
         url2 = USER_DETAIL_URL(self.another_staff_user.pk)
         response = self.client.delete(url2)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        url3 = USER_DETAIL_URL(self.superuser.pk)
+        response = self.client.delete(url3)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def agent_cannot_delete_another_user_or_staff_or_superuser(self):
+        """Agent user cannot delete another staff and normal user and superuser."""
+        self._authenticate(self.agent_user)
+        url1 = USER_DETAIL_URL(self.normal_user.pk)
+        response = self.client.delete(url1)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        url2 = USER_DETAIL_URL(self.another_staff_user.pk)
+        response = self.client.delete(url2)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        url3 = USER_DETAIL_URL(self.superuser.pk)
+        response = self.client.delete(url3)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def normal_user_cannot_delete_an_agent(self):
+        self._authenticate(self.normal_user)
+        url = USER_DETAIL_URL(self.agent_user.pk)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(User.objects.filter(pk=self.agent_user.pk).exists())
 
 
 class AgentViewSetTests(APITestCase):
@@ -1114,6 +1349,17 @@ class AgentViewSetTests(APITestCase):
             "is_agent": True,
             "company_name": "Test Agency Inc.",
         }
+
+    def tearDown(self):
+        """Clean up uploaded test files from the filesystem."""
+        if hasattr(self, 'image_path') and os.path.exists(self.image_path):
+            os.remove(self.image_path)
+        # Check if agent has an image and it's not the default
+        self.agent_user_1.refresh_from_db()
+        if self.agent_user_1.image_url:
+            path = os.path.join(settings.MEDIA_ROOT, self.agent_user_1.image_url.name)
+            if os.path.exists(path) and "default_profile.jpg" not in path:
+                os.remove(path)
 
     #     #     # ------------------ List TESTS ------------------
 
@@ -1191,6 +1437,14 @@ class AgentViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["id"], self.agent_user_1.pk)
 
+    def test_superuser_can_retrieve_agent(self):
+        """Superuser can retrieve an Agent's profile."""
+        self._authenticate(self.superuser)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.agent_user_1.pk)
+
     #     #     # ------------------ CREATE (POST) TESTS ------------------
 
     def test_create_agent_by_superuser_success(self):
@@ -1225,7 +1479,7 @@ class AgentViewSetTests(APITestCase):
             User.objects.filter(email=data["email"], is_agent=True).exists()
         )
 
-    def test_bio_length_exceed_error_on_register(self):
+    def test_bio_length_exceed_error_on_agent_register(self):
         """Test bio length exceed error during agent registration."""
 
         data = self.get_valid_create_data()
@@ -1256,9 +1510,9 @@ class AgentViewSetTests(APITestCase):
 
         self.assertIn("company_name", response.data)
         self.assertIn(
-            "Ensure this field has no more than 255 characters.",
-            response.data["company_name"],
-        )
+                "Ensure this field has no more than 255 characters.", # Standard DRF message
+                response.data["company_name"]
+    )
 
     def test_create_agent_password_complexity(self):
         """Test password creation validation: verifies all complexity requirements (length, uppercase, digit, special char) during registration."""
@@ -1269,7 +1523,7 @@ class AgentViewSetTests(APITestCase):
             "password": short_password,
             "c_password": short_password,
         }
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         error_list = response.json()["errors"]["password"]
         self.assertIn("Password must be at least 8 characters.", error_list)
@@ -1280,7 +1534,7 @@ class AgentViewSetTests(APITestCase):
             "password": no_uppercase,
             "c_password": no_uppercase,
         }
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         error_list = response.json()["errors"]["password"]
         self.assertIn(
@@ -1293,7 +1547,7 @@ class AgentViewSetTests(APITestCase):
             "password": no_lowercase,
             "c_password": no_lowercase,
         }
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         error_list = response.json()["errors"]["password"]
         self.assertIn(
@@ -1306,7 +1560,7 @@ class AgentViewSetTests(APITestCase):
             "password": no_digit,
             "c_password": no_digit,
         }
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         error_list = response.json()["errors"]["password"]
         self.assertIn("Password must contain at least one number.", error_list)
@@ -1317,7 +1571,7 @@ class AgentViewSetTests(APITestCase):
             "password": no_special,
             "c_password": no_special,
         }
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         error_list = response.json()["errors"]["password"]
         self.assertIn(
@@ -1329,15 +1583,16 @@ class AgentViewSetTests(APITestCase):
             "email": "test_valid@example.com",
             "password": valid_password,
             "c_password": valid_password,
+            "company_name": "Test Company",
         }
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_agent_mismatched_passwords(self):
         """Test password mismatch validation in check_create_request_data."""
         data = self.get_valid_create_data()
         data["c_password"] = "WrongP@ss123"
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Passwords do not match", response.data["error"])
 
@@ -1345,27 +1600,27 @@ class AgentViewSetTests(APITestCase):
         """Test missing confirmation password in check_create_request_data."""
         data = self.get_valid_create_data()
         del data["c_password"]
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Please confirm your password", response.data["error"])
 
-    def test_create_agent_user_duplicate_email(self):  # problem
+    def test_create_agent_user_duplicate_email(self):
         """Test serializer validation for duplicate email."""
         data = self.get_valid_create_data()
         data["email"] = self.normal_user.email
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json(),
             {"errors": {"email": ["user with this email already exists."]}},
         )
 
-    def test_agent_cannot_create_superuser(self):  # problem
+    def test_agent_cannot_create_superuser(self):
         """Test prohibition of creating a superuser by setting is_superuser."""
         data = self.get_valid_create_data()
         data["is_superuser"] = True
         self._authenticate(self.agent_user_1.user)
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn(
             "You do not have permission to create a superuser. Contact Developer.",
@@ -1385,7 +1640,7 @@ class AgentViewSetTests(APITestCase):
         new_user_data["email"] = "staffwannabe@test.com"
         new_user_data["is_staff"] = True
 
-        response = self.client.post(USER_LIST_URL, new_user_data, format="json")
+        response = self.client.post(AGENT_LIST_URL, new_user_data, format="json")
         data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -1397,28 +1652,40 @@ class AgentViewSetTests(APITestCase):
         """Test prohibition of setting slug field."""
         data = self.get_valid_create_data()
         data["slug"] = "custom-slug"
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("Forbidden fields cannot be updated.", response.data["error"])
 
         del data["slug"]
         data["is_active"] = False
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("Forbidden fields cannot be updated.", response.data["error"])
 
-    def test_create_agent_duplicate_email(self):
-        """Test serializer validation for duplicate email."""
+    def test_agent_username_exists(self):
+        """Test that a username must be unique."""
         data = self.get_valid_create_data()
-        data["email"] = self.normal_user.email
-        response = self.client.post(USER_LIST_URL, data, format="json")
+        data["username"] = self.agent_user_1.user.username
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.json(),
-            {"errors": {"email": ["user with this email already exists."]}},
+            {"errors": {"username": ["user with this username already exists."]}},
         )
 
-    # #     #     ###---------------UPDATE (PATCH) TESTS
+    def test_agent_username_too_short(self):
+        """Test serializer validation for username too short."""
+        data = self.get_valid_create_data()
+        data["username"] = "abc"
+        response = self.client.post(AGENT_LIST_URL, data, format="json")
+        response_data = response.json()
+        self.assertIn("username", response_data["errors"])
+        self.assertIn(
+            "Username must be at least 6 characters long.",
+            str(response_data["errors"]["username"]),
+        )
+
+    ###---------------UPDATE (PATCH) TESTS
 
     def test_update_agent_self_success(self):
         """Agent can successfully update their own profile."""
@@ -1433,29 +1700,24 @@ class AgentViewSetTests(APITestCase):
     def test_superuser_can_update_agent_profile(self):
         """Superuser can update an agent's profile."""
         self._authenticate(self.superuser)
-        url = USER_DETAIL_URL(self.agent_user_1.user.pk)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
         new_data = {"first_name": "SuperUpdate"}
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["data"]["first_name"], "Superupdate")
+        self.assertEqual(response.data["data"]["user"]["first_name"], "Superupdate")
 
-    def test_one_agent_cannot_update_another_agent_or_another_user_profile(self):
-        """Agent cannot update another Agent's or another user's profile."""
+    def test_one_agent_cannot_update_another_agent_profile(self):
+        """Agent cannot update another Agent's profile."""
         self._authenticate(self.agent_user_1.user)
         url1 = AGENT_DETAIL_URL(self.agent_user_2.user.pk)
         new_data = {"first_name": "ForbiddenUpdate"}
         response = self.client.patch(url1, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-        url2 = AGENT_DETAIL_URL(self.normal_user.pk)
-        new_data = {"first_name": "ForbiddenUpdate"}
-        response = self.client.patch(url2, new_data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
     def test_update_agent_forbidden_email_field(self):
         """Cannot update the email field (check_update_request_data)."""
         self._authenticate(self.agent_user_1.user)
-        url = USER_DETAIL_URL(self.agent_user_1.user.pk)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
         new_data = {"email": "new_email@test.com"}
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -1464,7 +1726,7 @@ class AgentViewSetTests(APITestCase):
     def test_update_agent_forbidden_internal_fields(self):
         """Cannot update status fields like is_staff (check_update_request_data)."""
         self._authenticate(self.agent_user_1.user)
-        url = USER_DETAIL_URL(self.agent_user_1.user.pk)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
         new_data1 = {"is_staff": True}
         response1 = self.client.patch(url, new_data1, format="json")
         self.assertEqual(response1.status_code, status.HTTP_403_FORBIDDEN)
@@ -1488,7 +1750,7 @@ class AgentViewSetTests(APITestCase):
     def test_update_agent_password_mismatch(self):
         """Test password change validation (check_update_request_data)."""
         self._authenticate(self.agent_user_1.user)
-        url = USER_DETAIL_URL(self.agent_user_1.user.pk)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
         new_data = {"password": "NewP@ss123", "c_password": "Mismatch"}
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -1497,7 +1759,7 @@ class AgentViewSetTests(APITestCase):
     def test_update_user_password_missing_confirm(self):
         """Test password change validation (check_update_request_data)."""
         self._authenticate(self.agent_user_1.user)
-        url = USER_DETAIL_URL(self.agent_user_1.user.pk)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
         new_data = {"password": "NewP@ss123"}
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -1530,7 +1792,7 @@ class AgentViewSetTests(APITestCase):
     def test_update_user_username_too_short(self):
         """Test username change validation: too short (less than 6 characters)."""
         self._authenticate(self.agent_user_1.user)
-        url = USER_DETAIL_URL(self.agent_user_1.user.pk)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
 
         new_data = {"username": "tiny"}
 
@@ -1548,7 +1810,7 @@ class AgentViewSetTests(APITestCase):
     def test_update_user_username_already_exists(self):
         """Test username change validation: prevents updating to an existing username."""
         self._authenticate(self.agent_user_1.user)
-        url = USER_DETAIL_URL(self.agent_user_1.user.pk)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
 
         existing_username = self.agent_user_2.user.username
 
@@ -1566,8 +1828,8 @@ class AgentViewSetTests(APITestCase):
 
     def test_update_user_password_complexity(self):
         """Test password change validation: verifies all complexity requirements (length, uppercase, digit, special char)."""
-        self._authenticate(self.normal_user)
-        url = USER_DETAIL_URL(self.normal_user.pk)
+        self._authenticate(self.agent_user_1.user)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
 
         short_password = "Short1!"
         data = {"password": short_password, "c_password": short_password}
@@ -1625,6 +1887,34 @@ class AgentViewSetTests(APITestCase):
         response = self.client.patch(url, new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def normal_user_cannot_update_agent(self):
+        """Test a normal user cannot update an agent's profile."""
+        self._authenticate(self.normal_user)
+        url = AGENT_DETAIL_URL(self.agent_user.pk)
+        new_data = {"first_name": "Attempted Hack"}
+        response = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_agent_update_bio_length_exceeding_error(self):
+        """Test agent update bio length exceeding error."""
+        self._authenticate(self.agent_user_1.user)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+        new_data = {"bio": "a" * 151}
+        response = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error_list = response.json()["errors"]["bio"]
+        self.assertIn("Ensure this field has no more than 150 characters.", error_list)
+
+    def test_agent_update_company_name_length_exceed_error(self):
+        """Test agent update company name length exceed error."""
+        self._authenticate(self.agent_user_1.user)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+        new_data = {"company_name": "a" * 256}
+        response = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error_list = response.json()["errors"]["company_name"]
+        self.assertIn("Ensure this field has no more than 255 characters.", error_list)
+
     # #     #     ###-----------DELETE TESTS---------
 
     def test_delete_agent_self_allowed(self):
@@ -1680,7 +1970,7 @@ class AgentViewSetTests(APITestCase):
         response = self.client.patch(url, update_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_agent_cannot_delete_another_user_or_another_agent(self):
+    def test_agent_cannot_delete_another_agent(self):
         """Test agent cannot delete another agent or any other user."""
         self._authenticate(self.agent_user_1.user)
         user_pk1 = self.agent_user_2.user.pk
@@ -1689,14 +1979,144 @@ class AgentViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(User.objects.filter(pk=user_pk1).exists())
 
-        user_pk2 = self.normal_user.pk
-        url = AGENT_DETAIL_URL(user_pk2)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertTrue(User.objects.filter(pk=user_pk2).exists())
-
     def test_agent_cannot_delete_themselves_without_login(self):
         """Test agent cannot delete themselves without login."""
         url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def normal_user_cannot_delete_an_agent(self):
+        self._authenticate(self.normal_user)
+        url = AGENT_DETAIL_URL(self.agent_user.pk)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(User.objects.filter(pk=self.agent_user.pk).exists())
+
+
+    ## Image Test Cases
+
+    def test_upload_valid_image(self):
+        """Test successfully updating an agent profile with a valid image."""
+        self._authenticate(self.agent_user_1.user)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+        image = self.generate_image(name='profile.png', format='PNG')
+        data = {
+            'company_name': 'Updated Agency',
+            'profile_image': image
+        }
+
+        # Use multipart format for file uploads
+        response = self.client.patch(url, data, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.agent_user_1.refresh_from_db()
+        self.assertIn('profile.png', self.agent_user_1.image_url.name)
+
+    def test_image_size_limit_fail(self):
+        """Test that images larger than 2MB are rejected."""
+        self._authenticate(self.agent_user_1.user)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+        # Create a file slightly larger than 2MB
+        large_content = b'0' * (2 * 1024 * 1024 + 1024)
+        large_image = SimpleUploadedFile('too_big.jpg', large_content, content_type='image/jpeg')
+
+        data = {'profile_image': large_image}
+        response = self.client.patch(url, data, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Check for the nested error structure in your AgentImageSerializer
+        self.assertIn('Image size should not exceed 2MB.', str(response.data))
+
+    def test_invalid_image_type(self):
+        """Test that non-image files are rejected."""
+        self._authenticate(self.agent_user_1.user)
+        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+        fake_image = SimpleUploadedFile('doc.pdf', b'not-image-data', content_type='application/pdf')
+
+        data = {'profile_image': fake_image}
+        response = self.client.patch(url, data, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Image type should be JPEG, PNG', str(response.data))
+
+
+#! Agent Image Update Testcases (all of them including errors)
+
+
+
+    # def test_upload_agent_profile_image_success(self):
+    #     """Test successfully uploading a profile image via the ViewSet."""
+    #     self._authenticate(self.agent_user_1.user)
+    #     url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+    #     # Create a 10x10 black image
+    #     black_image = Image.new("RGB", (10, 10), "black")
+    #     image_bytes = io.BytesIO()
+    #     black_image.save(image_bytes, format="JPEG")
+    #     image_bytes.seek(0)
+
+    #     image_file = SimpleUploadedFile(
+    #         name="test_image.jpg",
+    #         content=image_bytes.read(),
+    #         content_type="image/jpeg",
+    #     )
+
+    #     data = {
+    #         "company_name": "Updated Agency",
+    #         "profile_image": image_file  # Key used in your ViewSet logic
+    #     }
+
+    #     # format="multipart" is essential for file uploads
+    #     response = self.client.patch(url, data, format="multipart")
+
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    #     self.agent_user_1.refresh_from_db()
+    #     self.image_path = os.path.join(settings.MEDIA_ROOT, self.agent_user_1.image_url.name)
+
+    #     # Assertions
+    #     self.assertTrue(self.agent_user_1.image_url)
+    #     # Verify it saved in the 'profile_images' directory as per Agent model
+    #     self.assertIn("profile_images/", self.agent_user_1.image_url.name)
+    #     self.assertTrue(os.path.exists(self.image_path))
+
+    # def test_image_type_validation_error(self):
+    #     """Test that only JPEG and PNG are allowed via AgentImageSerializer."""
+    #     self._authenticate(self.agent_user_1.user)
+    #     url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+    #     # Create a fake text file disguised as an image
+    #     fake_image = SimpleUploadedFile(
+    #         name="test.gif",
+    #         content=b"not-an-image-content",
+    #         content_type="image/gif"
+    #     )
+
+    #     data = {"profile_image": fake_image}
+    #     response = self.client.patch(url, data, format="multipart")
+
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     # Your Serializer returns errors['type'] = "Image type should be JPEG, PNG"
+    #     self.assertIn("Image type should be JPEG, PNG", str(response.data))
+
+    # def test_image_size_validation_error(self):
+    #     """Test that images exceeding 2MB are rejected."""
+    #     self._authenticate(self.agent_user_1.user)
+    #     url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
+
+    #     # Generate 3MB of dummy data
+    #     large_content = b"0" * (3 * 1024 * 1024)
+    #     large_image = SimpleUploadedFile(
+    #         name="huge.jpg",
+    #         content=large_content,
+    #         content_type="image/jpeg"
+    #     )
+
+    #     data = {"profile_image": large_image}
+    #     response = self.client.patch(url, data, format="multipart")
+
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     self.assertIn("Image size should not exceed 2MB.", str(response.data))

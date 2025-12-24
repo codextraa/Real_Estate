@@ -36,7 +36,7 @@
     "prettier.tabWidth": 2,
     "prettier.trailingComma": "es5",
     "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.defaultFormatter": "vscode.typescript-language-features",
         "editor.formatOnSave": true,
         "editor.tabSize": 2,
         "editor.insertSpaces": true
@@ -60,7 +60,7 @@
         "editor.insertSpaces": true
     },
     "[css]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.defaultFormatter": "vscode.css-language-features",
         "editor.formatOnSave": true,
         "editor.tabSize": 2,
         "editor.insertSpaces": true

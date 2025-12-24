@@ -48,8 +48,9 @@ def set_user_default_group(
 def save_property_slug(
     sender, instance, created, **kwargs
 ):  # pylint: disable=unused-argument
-    if created or (slugify(instance.title) != instance.slug):
-        instance.slug = slugify(instance.title)
+    property_slug = f"{slugify(instance.title)}-{instance.id}"
+    if created or (property_slug != instance.slug):
+        instance.slug = property_slug
         instance.save()
 
 
@@ -62,3 +63,6 @@ def set_is_agent_true_for_agent(
         if not user_instance.is_agent:
             user_instance.is_agent = True
             user_instance.save()
+
+
+# future changes can include stopping the loop of saving in post save without using created

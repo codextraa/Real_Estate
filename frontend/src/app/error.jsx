@@ -20,7 +20,6 @@ export default function Error({ error, reset }) {
           src="/real-estate/real-estate.jpg"
           alt="Modern city buildings representing real estate"
           fill
-          priority
         />
       </div>
       <div className={styles.container}>

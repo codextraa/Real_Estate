@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
-from core_db.models import Property
+from core_db.models import Property, Agent
 from backend.mixins import http_method_mixin
 from backend.renderers import ViewRenderer
 from backend.schema_serializers import (
@@ -125,12 +125,11 @@ class PropertyViewSet(ModelViewSet):
                 "properties": {
                     "title": {"type": "string"},
                     "description": {"type": "string"},
-                    "price": {"type": "number", "format": "double"},
-                    "property_type": {"type": "string"},
-                    "address": {"type": "string"},
                     "beds": {"type": "integer"},
                     "baths": {"type": "integer"},
+                    "price": {"type": "number", "format": "double"},
                     "area_sqft": {"type": "integer"},
+                    "address": {"type": "string"},
                     "property_image": {"type": "string", "format": "binary"},
                 },
             },
@@ -223,14 +222,16 @@ class PropertyViewSet(ModelViewSet):
             )
 
         request_data = request.data.copy()
-        property_image = request_data.pop("property_image", None)
+        # this was done because data was not looped and split
+        property_image = request_data.get("property_image")
+        request_data.pop("property_image", None)
         default_property_image = "property_images/default_image.jpg"
 
-        request_data["agent"] = current_user
+        agent = Agent.objects.filter(user=current_user).first()
+        request_data["agent"] = agent.id
         serializer = self.get_serializer(data=request_data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-
         property_obj = serializer.instance
 
         if property_image:

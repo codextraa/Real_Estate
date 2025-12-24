@@ -109,28 +109,24 @@ class PropertyCreateRequestSerializer(serializers.Serializer):  # pylint: disabl
     description = serializers.CharField(
         required=True, help_text="Detailed description of the property."
     )
-    price = serializers.DecimalField(
-        required=True,
-        max_digits=10,
-        decimal_places=2,
-        help_text="The price of the property.",
-    )
-    property_type = serializers.CharField(
-        required=True, help_text="e.g., House, Apartment, Land."
-    )
-    address = serializers.CharField(
-        required=True, help_text="The address of the property."
-    )
     beds = serializers.IntegerField(
         required=False, min_value=0, help_text="Number of bedrooms."
     )
     baths = serializers.IntegerField(
         required=False, min_value=0, help_text="Number of bathrooms."
     )
+    price = serializers.DecimalField(
+        required=True,
+        max_digits=10,
+        decimal_places=2,
+        help_text="The price of the property.",
+    )
+    address = serializers.CharField(
+        required=True, help_text="The address of the property."
+    )
     area_sqft = serializers.IntegerField(
         required=False, min_value=0, help_text="Area in square feet."
     )
-
     property_image = serializers.FileField(
         required=False,
         write_only=True,

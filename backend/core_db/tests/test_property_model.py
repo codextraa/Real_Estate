@@ -164,8 +164,8 @@ class PropertyModelTest(TestCase):
         """Test creating slug from title"""
 
         property = Property.objects.create(**self.property_info)
-
-        self.assertEqual(property.slug, "valid-test-listing")
+        property_id = property.id
+        self.assertEqual(property.slug, f"valid-test-listing-{property_id}")
 
     def test_slug_is_updated(self):
         """Test slug is updated"""
@@ -174,16 +174,18 @@ class PropertyModelTest(TestCase):
         title = "Exquisite Renovated Victorian Estate"
         property.title = title
         property.save()
-
-        self.assertEqual(property.slug, "exquisite-renovated-victorian-estate")
+        property_id = property.id
+        self.assertEqual(
+            property.slug, f"exquisite-renovated-victorian-estate-{property_id}"
+        )
 
     def test_check_slug_field_is_not_overridden(self):
         """Test creating slug from the given slug"""
 
         slug = "abcestate"
         property = Property.objects.create(**self.property_info, slug=slug)
-
-        self.assertEqual(property.slug, "valid-test-listing")
+        property_id = property.id
+        self.assertEqual(property.slug, f"valid-test-listing-{property_id}")
 
 
 class PropertyModelImageTests(TestCase):
