@@ -71,6 +71,7 @@ export default function ProfileForm({
   const [bioContent, setBioContent] = useState(state.formUserData.bio || "");
   // previewUrl holds the server image URL initially, or a client Blob URL after file selection
   const [previewUrl, setPreviewUrl] = useState(state.formUserData.image_url);
+  const [localImageError, setLocalImageError] = useState("");
   const textAreaRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -130,15 +131,46 @@ export default function ProfileForm({
     setConfirmPassword(e.target.value);
   };
 
+  // Reset previewUrl back to server image and file input to empty
+  const resetImageInput = () => {
+    setPreviewUrl(state.formUserData.image_url);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   /**
    * Handles file selection and creates a temporary Blob URL for immediate preview.
    * This Blob URL is what triggers 'hasUnsavedChanges'.
    */
-  const handleFileChange = (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setPreviewUrl(URL.createObjectURL(file));
+
+    if (!file) {
+      return;
     }
+
+    setLocalImageError("");
+    const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+    const isInvalidType = !validTypes.includes(file.type);
+    const isTooLarge = file.size > 2 * 1024 * 1024;
+
+    if (isInvalidType || isTooLarge) {
+      const msg = isInvalidType
+        ? "Only JPG, JPEG and PNG images are allowed."
+        : "Image size should not exceed 2MB.";
+
+      setLocalImageError(msg);
+      resetImageInput();
+      return;
+    }
+
+    // Clean up the old memory-stored URL before creating a new one
+    if (previewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const handleIconClick = () => {
@@ -154,6 +186,20 @@ export default function ProfileForm({
       element.style.height = element.scrollHeight + "px";
     }
   };
+
+  // Reset local image error in submission
+  useEffect(() => {
+    if (isPending) {
+      setLocalImageError("");
+    }
+  }, [isPending]);
+
+  // If the server returns an image error, reset the local preview and file input
+  useEffect(() => {
+    if (state.errors && state.errors.image_url) {
+      resetImageInput();
+    }
+  }, [state.errors]);
 
   useEffect(() => {
     if (state.success) {
@@ -172,12 +218,8 @@ export default function ProfileForm({
       setBioContent(state.formUserData.bio || "");
       setPassword("");
       setConfirmPassword("");
-      // Reset previewUrl from the temporary Blob URL back to the new permanent image URL
-      setPreviewUrl(state.formUserData.image_url);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      setLocalImageError("");
+      resetImageInput();
 
       return () => clearTimeout(timer);
     }
@@ -285,19 +327,21 @@ export default function ProfileForm({
                 <input
                   type="file"
                   ref={fileInputRef}
-                  onChange={handleFileChange}
+                  onChange={handleImageChange}
                   name="profile_image"
                   accept="image/*"
                   className={styles.fileInput}
                   disabled={isPending}
                 />
               </div>
-              {Object.keys(state.errors).length > 0 &&
-                state.errors.image_url && (
-                  <span className={styles.errorText}>
-                    {state.errors.image_url}
-                  </span>
-                )}
+              {localImageError ? (
+                <span className={styles.errorText}>{localImageError}</span>
+              ) : Object.keys(state.errors).length > 0 &&
+                state.errors.image_url ? (
+                <span className={styles.errorText}>
+                  {state.errors.image_url}
+                </span>
+              ) : null}
             </div>
             <div className={styles.profileContainer}>
               <div className={styles.bioInfo}>

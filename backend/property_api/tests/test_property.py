@@ -1,8 +1,9 @@
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from core_db.models import Property, Agent
+from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
+from core_db.models import Agent, Property
 
 User = get_user_model()
 
@@ -10,266 +11,227 @@ PROPERTY_LIST_URL = reverse("property-list")
 PROPERTY_DETAIL_URL = lambda pk: reverse("property-detail", kwargs={"pk": pk})
 
 
-# class PropertyViewSetTests(APITestCase):
-#     """Tests for the PropertyViewSet covering CRUD actions and permission control."""
+class PropertyViewSetTests(APITestCase):
+    """Tests for the PropertyViewSet covering CRUD and permission logic."""
 
-#     def setUp(self):
-#         self.password = "StrongP@ss123"
-#         self.client = APIClient()
+    def setUp(self):
+        self.password = "StrongP@ss123"
 
-#         # 1. Test Users
-#         # ... (Superuser, Staff User, Normal User creation remains the same) ...
+        # 1. Setup Users
+        self.superuser = User.objects.create_superuser(
+            email="super@test.com", username="admin", password=self.password
+        )
 
-#         self.agent_owner_user = User.objects.create_user(
-#             email="owner@test.com",
-#             username="agentowner",
-#             password=self.password,
-#             is_agent=True,  # Optional flag, but the Agent profile is required
-#         )
+        self.staff_user = User.objects.create_user(
+            email="staff@test.com",
+            username="staffuser",
+            password=self.password,
+            is_staff=True,
+        )
 
-#         self.agent_other_user = User.objects.create_user(
-#             email="other@test.com",
-#             username="agentother",
-#             password=self.password,
-#             is_agent=True,
-#         )
-#         self.normal_user = User.objects.create_user(
-#             email="normal@test.com", username="normaluser", password=self.password
-#         )
+        # Agent User and its Profile
+        self.agent_user = User.objects.create_user(
+            email="agent@test.com",
+            username="agentuser",
+            password=self.password,
+            is_agent=True,
+        )
+        self.agent_profile = Agent.objects.create(
+            user=self.agent_user, company_name="Test Realty Group"
+        )
 
-#         self.agent_owner = Agent.objects.create(
-#             user=self.agent_owner_user,
-#             company_name="Owner Real Estate Co.",
-#             # Add any other required Agent fields here
-#         )
-#         self.agent_other = Agent.objects.create(
-#             user=self.agent_other_user,
-#             company_name="Other Agent Listings",
-#         )
+        # Another Agent (for cross-edit testing)
+        self.other_agent_user = User.objects.create_user(
+            email="otheragent@test.com",
+            username="otheragent",
+            password=self.password,
+            is_agent=True,
+        )
+        self.other_agent_profile = Agent.objects.create(
+            user=self.other_agent_user, company_name="Other Agent Co"
+        )
 
-#         # 2. Test Properties
-#         self.published_property = Property.objects.create(
-#             title="Published House",
-#             price=300000,
-#             agent=self.agent_owner,  # <-- Now we pass the Agent instance!
-#         )
+        # Normal User (should not be able to create properties)
+        self.normal_user = User.objects.create_user(
+            email="normal@test.com", username="normal", password=self.password
+        )
 
-#         self.draft_property = Property.objects.create(
-#             title="Draft Apartment",
-#             price=150000,
-#             agent=self.agent_owner,  # <-- Pass the Agent instance
-#         )
+        # 2. Setup initial Property owned by self.agent_profile
+        self.property = Property.objects.create(
+            agent=self.agent_profile,
+            title="Initial Property",
+            description="Initial Description",
+            beds=2,
+            baths=1,
+            price=250000.00,
+            area_sqft=1200,
+            address="456 Property Lane",
+            slug="initial-property",
+        )
 
-#         self.other_agent_property = Property.objects.create(
-#             title="Other Agent Listing",
-#             price=500000,
-#             agent=self.agent_other,  # <-- Pass the Agent instance
-#         )
+        self.client = APIClient()
 
-#     def _authenticate(self, user):
-#         """Helper to set authentication header for the client."""
-#         # Note: You still authenticate with the User object, e.g., self.agent_owner_user
-#         self.client.force_authenticate(user=user)
+    def _authenticate(self, user):
+        self.client.force_authenticate(user=user)
 
-#     # --- LIST & RETRIEVE TESTS (GET) ---
-#     # Testing visibility rules (published vs. draft, all vs. self-owned)
-#     # ------------------------------------
+    def get_valid_property_data(self):
+        """Standard valid data for creating/updating properties."""
+        return {
+            "title": "luxury apartment",
+            "description": "A grand view of the city.",
+            "beds": 3,
+            "baths": 2,
+            "price": 500000.00,
+            "area_sqft": 2000,
+            "address": "123 Sky Tower",
+        }
 
-#     # def test_list_properties_unauthenticated_only_published(self):
-#     #     """Unauthenticated users should only see published properties."""
-#     #     response = self.client.get(PROPERTY_LIST_URL)
-#     #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-#     #     # Expect 2 properties: self.published_property, self.other_agent_property
-#     #     self.assertEqual(len(response.data), 2)
-#     #     titles = [p["title"] for p in response.data]
-#     #     self.assertIn("Published House", titles)
-#     #     self.assertIn("Other Agent Listing", titles)
-#     #     self.assertNotIn("Draft Apartment", titles)
+    #### --- List -----------
 
-#     #     def test_list_properties_normal_user_only_published(self):
-#     #         """Normal authenticated users should only see published properties."""
-#     #         self._authenticate(self.normal_user)
-#     #         response = self.client.get(PROPERTY_LIST_URL)
-#     #         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#     #         self.assertEqual(len(response.data), 2)
+    def test_list_properties_authenticated_user_allowed(self):
+        """Test that any authenticated user can view the property list."""
+        self._authenticate(self.normal_user)
+        response = self.client.get(PROPERTY_LIST_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("results", response.data)
 
-#     def test_list_properties_agent_owner_sees_all(self):
-#         """Agent should see all properties (published/draft) they own and all other published properties."""
-#         self._authenticate(self.agent_owner)
-#         response = self.client.get(PROPERTY_LIST_URL)
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.assertEqual(len(response.data), 3)
+        self._authenticate(self.superuser)
+        response = self.client.get(PROPERTY_LIST_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("results", response.data)
+
+        self._authenticate(self.staff_user)
+        response = self.client.get(PROPERTY_LIST_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("results", response.data)
+
+        self._authenticate(self.agent_user)
+        response = self.client.get(PROPERTY_LIST_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("results", response.data)
+
+    def test_unauthorized_users_cannot_list_properties(self):
+        """Test that an unauthenticated user cannot view the property list."""
+        response = self.client.get(PROPERTY_LIST_URL)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    ###  ---retrieve ----
+
+    def test_retrieve_authenticated_user_allowed(self):
+        """Test that any authenticated user can retrieve a property."""
+        self._authenticate(self.normal_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.property.id)
+
+        self._authenticate(self.agent_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.property.id)
+
+        self._authenticate(self.superuser)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.property.id)
+
+        self._authenticate(self.staff_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.property.id)
+
+    def test_retrieve_unauthorized_user_not_allowed(self):
+        """Test that an unauthenticated user cannot retrieve a property."""
+        url = PROPERTY_DETAIL_URL(self.property.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    ### ---- Create -----
+
+    def test_create_property_as_agent_success(self):
+        """Test that an agent can create a property listing."""
+        self._authenticate(self.agent_user)
+        payload = self.get_valid_property_data()
+
+        response = self.client.post(PROPERTY_LIST_URL, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Property.objects.get(id=response.data.get('id', 0)).title, "Luxury Apartment")
+
+    def test_create_property_forbidden_for_normal_user(self):
+        """Test that a user with is_agent=False cannot create a property."""
+        self._authenticate(self.normal_user)
+        payload = self.get_valid_property_data()
+
+        response = self.client.post(PROPERTY_LIST_URL, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_forbidden_field_cannot_be_update_while_creating(self):
+        """Test that 'slug' and 'agent' fields cannot be changed."""
+        self._authenticate(self.agent_user)
+        payload = self.get_valid_property_data()
+        payload["slug"] = "custom-slug"
+        payload["agent"] = self.other_agent_user.id
+
+        response = self.client.post(PROPERTY_LIST_URL, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("Forbidden fields cannot be updated.", response.data["error"])
 
 
-#     def test_list_properties_superuser_sees_all(self):
-#         """Superuser should see all properties (published/draft/all owners)."""
-#         self._authenticate(self.superuser)
-#         response = self.client.get(PROPERTY_LIST_URL)
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         # Expect 3 properties in total
-#         self.assertEqual(len(response.data), 3)
+    #### ----update-----
 
-#     def test_retrieve_published_property_unauthenticated(self):
-#         """Unauthenticated user can retrieve a published property."""
-#         url = PROPERTY_DETAIL_URL(self.published_property.pk)
-#         response = self.client.get(url)
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.assertEqual(response.data["title"], "Published House")
+    # def test_agent_can_update_own_property(self):
+    #     """Test that an agent can patch their own property."""
+    #     self._authenticate(self.agent_user)
+    #     url = PROPERTY_DETAIL_URL(self.property.id)
+    #     payload = {"title": "Updated Title"}
 
-#     def test_retrieve_draft_property_unauthenticated_denied(self):
-#         """Unauthenticated user cannot retrieve a draft property."""
-#         url = PROPERTY_DETAIL_URL(self.draft_property.pk)
-#         response = self.client.get(url)
-#         self.assertEqual(
-#             response.status_code, status.HTTP_404_NOT_FOUND
-#         )  # Filtered out by get_queryset
+    #     response = self.client.patch(url, payload)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #     self.property.refresh_from_db()
+    #     self.assertEqual(self.property.title, "Updated Title")
 
-#     def test_retrieve_draft_property_by_owner_allowed(self):
-#         """Agent owner can retrieve their own draft property."""
-#         self._authenticate(self.agent_owner)
-#         url = PROPERTY_DETAIL_URL(self.draft_property.pk)
-#         response = self.client.get(url)
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.assertEqual(response.data["title"], "Draft Apartment")
+    # def test_agent_cannot_update_others_property(self):
+    #     """Test that an agent cannot modify properties they don't own."""
+    #     self._authenticate(self.other_agent_user)
+    #     url = PROPERTY_DETAIL_URL(self.property.id)
 
-#     # --- CREATE TESTS (POST) ---
-#     # Testing required authentication and required fields.
-#     # ---------------------------
+    #     response = self.client.patch(url, {"title": "Hacked Title"})
+    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-#     def test_create_property_unauthenticated_denied(self):
-#         """Unauthenticated user cannot create a property."""
-#         data = self.get_valid_create_data()
-#         response = self.client.post(PROPERTY_LIST_URL, data, format="json")
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-#         self.assertEqual(Property.objects.count(), 3)  # No new property created
+    # def test_forbidden_fields_ignored_on_update(self):
+    #     """Test that 'slug' and 'agent' fields cannot be changed via API."""
+    #     self._authenticate(self.agent_user)
+    #     url = PROPERTY_DETAIL_URL(self.property.id)
+    #     payload = {"slug": "changed-slug", "title": "New Title"}
 
-#     def test_create_property_normal_user_denied(self):
-#         """Normal user cannot create a property."""
-#         self._authenticate(self.normal_user)
-#         data = self.get_valid_create_data()
-#         response = self.client.post(PROPERTY_LIST_URL, data, format="json")
-#         # Assuming permissions are set to allow POST only for Staff/Agent
-#         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-#         self.assertEqual(Property.objects.count(), 3)
+    #     response = self.client.patch(url, payload)
+    #     # Your view explicitly checks for 'slug' in request.data and returns 403
+    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-#     def test_create_property_agent_success(self):
-#         """Agent can successfully create a property listing."""
-#         self._authenticate(self.agent_owner)
-#         data = self.get_valid_create_data()
-#         response = self.client.post(PROPERTY_LIST_URL, data, format="json")
+    # def test_delete_property_as_owner(self):
+    #     """Test agent can delete their own property."""
+    #     self._authenticate(self.agent_user)
+    #     url = PROPERTY_DETAIL_URL(self.property.id)
 
-#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#         self.assertEqual(Property.objects.count(), 4)
-#         new_property = Property.objects.get(pk=response.data["id"])
-#         self.assertEqual(new_property.title, data["title"])
-#         # Check that the agent field is automatically set/validated correctly
-#         self.assertEqual(new_property.agent.pk, self.agent_owner.pk)
+    #     response = self.client.delete(url)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK) # Your view returns 200 on success
+    #     self.assertFalse(Property.objects.filter(id=self.property.id).exists())
 
-#     def test_create_property_missing_required_field(self):
-#         """Test serializer validation for a missing required field (e.g., price)."""
-#         self._authenticate(self.agent_owner)
-#         data = self.get_valid_create_data()
-#         del data["price"]  # Remove a required field
-#         response = self.client.post(PROPERTY_LIST_URL, data, format="json")
+    # def test_image_upload_validation_size(self):
+    #     """Test that images over 2MB are rejected."""
+    #     self._authenticate(self.agent_user)
+    #     # Create a 3MB file
+    #     large_img = SimpleUploadedFile("big.jpg", b"0" * 3 * 1024 * 1024, content_type="image/jpeg")
 
-#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-#         # Check for specific serializer error message
-#         self.assertIn("price", response.data)
-#         self.assertIn("This field is required.", response.data["price"])
-#         self.assertEqual(Property.objects.count(), 3)
+    #     payload = self.get_valid_property_data()
+    #     payload['property_image'] = large_img
 
-#     # --- UPDATE TESTS (PATCH) ---
-#     # Testing who can update and what fields are allowed/required.
-#     # ----------------------------
+    #     # Use format='multipart' for file uploads
+    #     response = self.client.post(PROPERTY_LIST_URL, payload, format='multipart')
 
-#     def test_update_property_owner_agent_success(self):
-#         """Agent owner can successfully update their own property (e.g., change price)."""
-#         self._authenticate(self.agent_owner)
-#         url = PROPERTY_DETAIL_URL(self.published_property.pk)
-#         new_price = 350000.00
-#         patch_data = {"price": new_price}
-#         response = self.client.patch(url, patch_data, format="json")
-
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.published_property.refresh_from_db()
-#         self.assertEqual(self.published_property.price, new_price)
-
-#     def test_update_property_other_agent_denied(self):
-#         """Agent cannot update a property owned by another agent."""
-#         self._authenticate(
-#             self.agent_owner
-#         )  # Agent trying to update other agent's property
-#         url = PROPERTY_DETAIL_URL(self.other_agent_property.pk)
-#         old_price = self.other_agent_property.price
-#         patch_data = {"price": 10.00}
-#         response = self.client.patch(url, patch_data, format="json")
-
-#         # Should be denied because of permission check on the object
-#         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-#         self.other_agent_property.refresh_from_db()
-#         self.assertEqual(
-#             self.other_agent_property.price, old_price
-#         )  # Price should be unchanged
-
-#     def test_update_property_superuser_can_update_any_property(self):
-#         """Superuser can update any property, regardless of owner."""
-#         self._authenticate(self.superuser)
-#         url = PROPERTY_DETAIL_URL(self.other_agent_property.pk)
-#         new_title = "Superuser Updated Title"
-#         patch_data = {"title": new_title}
-#         response = self.client.patch(url, patch_data, format="json")
-
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.other_agent_property.refresh_from_db()
-#         self.assertEqual(self.other_agent_property.title, new_title)
-
-#     def test_update_property_with_invalid_data_type(self):
-#         """Test serializer validation for invalid data (e.g., non-numeric price)."""
-#         self._authenticate(self.agent_owner)
-#         url = PROPERTY_DETAIL_URL(self.published_property.pk)
-#         patch_data = {"price": "not_a_number"}
-#         response = self.client.patch(url, patch_data, format="json")
-
-#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-#         self.assertIn("price", response.data)
-#         self.assertIn("A valid number is required", str(response.data["price"]))
-
-#     # --- DELETE TESTS (DELETE) ---
-#     # Testing who can delete.
-#     # ---------------------------
-
-#     def test_delete_property_owner_agent_success(self):
-#         """Agent owner can delete their own property."""
-#         self._authenticate(self.agent_owner)
-#         url = PROPERTY_DETAIL_URL(self.published_property.pk)
-#         response = self.client.delete(url)
-
-#         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-#         self.assertEqual(Property.objects.count(), 2)
-#         self.assertFalse(
-#             Property.objects.filter(pk=self.published_property.pk).exists()
-#         )
-
-#     def test_delete_property_other_agent_denied(self):
-#         """Agent cannot delete another agent's property."""
-#         self._authenticate(
-#             self.agent_owner
-#         )  # Agent owner trying to delete OTHER agent's property
-#         url = PROPERTY_DETAIL_URL(self.other_agent_property.pk)
-#         response = self.client.delete(url)
-
-#         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-#         self.assertEqual(Property.objects.count(), 3)
-#         self.assertTrue(
-#             Property.objects.filter(pk=self.other_agent_property.pk).exists()
-#         )
-
-#     def test_delete_property_normal_user_denied(self):
-#         """Normal user cannot delete any property."""
-#         self._authenticate(self.normal_user)
-#         url = PROPERTY_DETAIL_URL(self.published_property.pk)
-#         response = self.client.delete(url)
-
-#         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-#         self.assertEqual(Property.objects.count(), 3)
-#         self.assertTrue(Property.objects.filter(pk=self.published_property.pk).exists())
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     self.assertIn("Property image size should not exceed 2MB.", str(response.data))

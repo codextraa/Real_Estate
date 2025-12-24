@@ -44,9 +44,26 @@ const userError = (response) => {
     }
 
     if (response.error.image_url) {
-      errorMessages["image_url"] =
-        response.error.image_url[0][0].toUpperCase() +
-        response.error.image_url[0].slice(1).toLowerCase();
+      if (Array.isArray(response.error.image_url)) {
+        errorMessages["image_url"] = response.error.image_url;
+      } else if (typeof response.error.image_url === "object") {
+        const image_error = response.error.image_url;
+        let image_errors = [];
+
+        if (image_error.size) {
+          image_errors.push(image_error.size);
+        }
+
+        if (image_error.type) {
+          image_errors.push(image_error.type);
+        }
+
+        errorMessages["image_url"] = image_errors.join(" ");
+      } else {
+        errorMessages["image_url"] =
+          response.error.image_url[0][0].toUpperCase() +
+          response.error.image_url[0].slice(1).toLowerCase();
+      }
     }
 
     // Check for each possible attribute and append its messages
