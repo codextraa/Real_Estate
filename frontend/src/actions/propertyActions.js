@@ -215,10 +215,24 @@ export const createPropertyAction = async (prevState, formData) => {
 };
 
 export const updatePropertyAction = async (id, prevState, formData) => {
+  const addressParts = {
+    flatNo: formData.get("flatNo") || "",
+    houseNo: formData.get("houseNo") || "",
+    street: formData.get("street") || "",
+    area: formData.get("area") || "",
+    city: formData.get("city") || "",
+    state: formData.get("state") || "",
+    country: formData.get("country") || "",
+  };
+
+  const addressString = Object.entries(addressParts)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(", ");
+
   const title = formData.get("title");
   const description = formData.get("description");
   const price = formData.get("price");
-  const address = formData.get("address");
+  formData.set("address", addressString);
   const beds = formData.get("beds");
   const baths = formData.get("baths");
   const area_sqft = formData.get("area_sqft");
@@ -228,11 +242,11 @@ export const updatePropertyAction = async (id, prevState, formData) => {
     title: title || prevState.formPropertyData.title,
     description: description || prevState.formPropertyData.description,
     price: price || prevState.formPropertyData.price,
-    address: address || prevState.formPropertyData.address,
     beds: beds || prevState.formPropertyData.beds,
     baths: baths || prevState.formPropertyData.baths,
     area_sqft: area_sqft || prevState.formPropertyData.area_sqft,
     property_image: prevState.formPropertyData.property_image,
+    ...addressParts,
   };
 
   const errors = {};
@@ -246,11 +260,22 @@ export const updatePropertyAction = async (id, prevState, formData) => {
   if (!newPropertyData.price) {
     errors.price = "Pricing is required.";
   }
-  //! instead of this handle each address property
-  //! format them to address to string then
-  //! "flatNo=2, houseNo=2, street=2, area=2, city=2, state=2, country=2";
-  if (!newPropertyData.address) {
-    errors.address = "Address is required.";
+
+  const requiredAddressFields = [
+    "houseNo",
+    "street",
+    "area",
+    "city",
+    "state",
+    "country",
+  ];
+  const missing = requiredAddressFields.filter(
+    (field) => !addressParts[field].trim(),
+  );
+
+  if (missing.length > 0) {
+    errors.address =
+      "Please provide full address: House No, Street, Area, City, State, and Country are required.";
   }
   if (!newPropertyData.beds) {
     errors.beds = "Number of Beds is required.";
@@ -280,7 +305,6 @@ export const updatePropertyAction = async (id, prevState, formData) => {
       property_image instanceof File &&
       property_image.size > 0;
 
-    //! remove the $ sign fields before pushing
     if (isNewImageUploaded) {
       response = await updateProperty(id, formData, true);
     } else {
@@ -291,8 +315,10 @@ export const updatePropertyAction = async (id, prevState, formData) => {
             description,
           }),
         ...(price && price !== prevState.formPropertyData.price && { price }),
-        ...(address &&
-          address !== prevState.formPropertyData.address && { address }),
+        ...(addressString &&
+          addressString !== prevState.formPropertyData.address && {
+            address: addressString,
+          }),
         ...(beds && beds !== prevState.formPropertyData.beds && { beds }),
         ...(baths && baths !== prevState.formPropertyData.baths && { baths }),
         ...(area_sqft &&

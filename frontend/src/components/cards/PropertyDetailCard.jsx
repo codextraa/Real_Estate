@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import styles from "./PropertyImageCard.module.css";
 import Image from "next/image";
-import { FormButton, DeleteButton } from "@/components/buttons/Buttons";
+import { DeleteButton } from "@/components/buttons/Buttons";
 import DeleteModal from "@/components/modals/DeleteModal";
 import { getUserIdAction } from "@/actions/authActions";
 
@@ -100,13 +101,13 @@ export default function PropertyDetailCard({ property }) {
       </div>
       {userId == property.agent.user_id && (
         <div className={styles.formProfileButtons}>
-          <div className={styles.updateProfileButton}>
-            <FormButton
-              text="Update"
-              pendingText="Updating..."
-              type="submit"
-              className={styles.updateButton}
-            />
+          <div className={styles.profileDetailButtonContainer}>
+            <Link
+              href={`/properties/${property.slug}/edit`}
+              className={styles.editProfileButton}
+            >
+              Edit Property
+            </Link>
           </div>
           <div className={styles.deleteProfileButton}>
             <DeleteButton
