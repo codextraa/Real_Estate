@@ -1,19 +1,23 @@
 import os
+
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
-from core_db.models import Property, Agent
+
 from backend.mixins import http_method_mixin
 from backend.renderers import ViewRenderer
 from backend.schema_serializers import (
+    ErrorResponseSerializer,
     PropertyCreateRequestSerializer,
     PropertyUpdateRequestSerializer,
-    ErrorResponseSerializer,
 )
+
+from core_db.models import Agent, Property
 from .filters import PropertyFilter
 from .paginations import PropertyPagination
 from .serializers import (
@@ -38,7 +42,7 @@ class PropertyViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         """Assign serializer based on action."""
-        if self.action == "list":
+        if self.action == ("list", "my_listings"):
             return PropertyListSerializer
         if self.action == "retrieve":
             return PropertyRetrieveSerializer
@@ -47,15 +51,17 @@ class PropertyViewSet(ModelViewSet):
     def get_queryset(self):
         """Queryset for User View."""
         user = self.request.user
-        base_queryset = Property.objects.select_related("agent", "agent__user")
-        queryset = Property.objects.none()
+        queryset = Property.objects.select_related("agent", "agent__user").order_by(
+            "-id"
+        )
 
         if self.action in ("list", "retrieve") or user.is_staff:
-            queryset = base_queryset.all()
-        elif user.is_agent:
-            queryset = base_queryset.filter(agent__user=user)
+            return queryset
 
-        return queryset.order_by("-id")
+        if user.is_agent:
+            return queryset.filter(agent__user=user)
+
+        return Property.objects.none()
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         return http_method_mixin(request, *args, **kwargs)
@@ -66,7 +72,7 @@ class PropertyViewSet(ModelViewSet):
         tags=["Property Management"],
         request=None,
         responses={
-            status.HTTP_200_OK: PropertyListSerializer,
+            status.HTTP_200_OK: PropertyListSerializer(many=True),
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
         },
         examples=[
@@ -81,6 +87,57 @@ class PropertyViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         """List all properties."""
         return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="List All Properties of an Agent",
+        description=("Returns a paginated list of all Properties of an Agent."),
+        tags=["Property Management"],
+        request=None,
+        responses={
+            status.HTTP_200_OK: PropertyListSerializer(many=True),
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. User is not an Agent.",
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Forbidden Field Error",
+                response_only=True,
+                status_codes=["403"],
+                value={
+                    "error": "Only users with an agent profile can access this endpoint."
+                },
+            ),
+        ],
+    )
+    @action(detail=False, methods=["GET"], url_path="my-listings")
+    def my_listings(self, request, *args, **kwargs):
+        """List all properties of an agent"""
+        user = request.user
+
+        if not user.is_agent:
+            return Response(
+                {"error": "Only users with an agent profile can access this endpoint."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        queryset = self.get_queryset()
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @extend_schema(
         summary="Retrieve Single Property Details",

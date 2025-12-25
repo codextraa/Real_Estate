@@ -159,7 +159,10 @@ class PropertyViewSetTests(APITestCase):
         response = self.client.post(PROPERTY_LIST_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Property.objects.get(id=response.data.get('id', 0)).title, "Luxury Apartment")
+        self.assertEqual(
+            Property.objects.get(id=response.data.get("id", 0)).title,
+            "Luxury Apartment",
+        )
 
     def test_create_property_forbidden_for_normal_user(self):
         """Test that a user with is_agent=False cannot create a property."""
@@ -179,7 +182,6 @@ class PropertyViewSetTests(APITestCase):
         response = self.client.post(PROPERTY_LIST_URL, payload)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("Forbidden fields cannot be updated.", response.data["error"])
-
 
     #### ----update-----
 
