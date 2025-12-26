@@ -1,11 +1,93 @@
 .searchbarForm {
+  /* Layout and Sizing */
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #fff;
+  max-width: 986px;
+  height: 43px;
+  margin: 2rem auto; /* Centers the bar horizontally */
+  padding: 0 15px;
+
+  /* Visual Styles from Reference */
+  box-sizing: border-box;
+  background: rgba(100, 138, 162, 0.41);
+  /* Combining the opacity and background for the exact look */
+  border: 2px solid #13252e;
+  border-radius: 15px;
+}
+
+.searchButton {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.searchButton:hover {
+  transform: scale(1.1);
+}
+
+.searchIcon {
+  /* Using filter to ensure the icon matches the #13252E color 
+     if the SVG isn't already that color */
+  display: block;
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  height: 100%;
+
+  /* Text Styles from Reference */
+  font-family: var(--font-old-standard-tt);
+  font-style: bold;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #13252e;
+}
+
+.searchInput::placeholder {
+  color: #13252e;
+  opacity: 0.8; /* Slight fade for the placeholder text */
+}
+
+/* Responsive adjustment for mobile */
+@media (max-width: 1024px) {
+  .searchbarForm {
+    width: 90%;
+    max-width: none;
+  }
+}
+
+/* Responsive adjustment for smaller screens */
+@media (max-width: 768px) {
+  .searchbarForm {
+    width: 90%;
+    max-width: none;
+  }
+
+  .searchInput {
+    font-size: 16px;
+  }
+}
+
+/* Responsive adjustment for even smaller screens */
+@media (max-width: 480px) {
+  .searchbarForm {
+    width: 90%;
+    max-width: none;
+  }
+
+  .searchInput {
+    font-size: 14px;
+  }
 }
