@@ -33,6 +33,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   const [previewUrl, setPreviewUrl] = useState(initialData?.image_url || null);
   const [localImageError, setLocalImageError] = useState("");
   const fileInputRef = useRef(null);
+  const textAreaRef = useRef(null);
 
   const router = useRouter();
 
@@ -85,11 +86,12 @@ export default function UpdateListingClient({ propertyId, initialData }) {
     previewUrl !== null && previewUrl !== initialData?.image_url;
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const { type, name, value } = e.target;
+    let newValue = value;
+    if (type === "number") {
+      newValue = Math.max(0, parseFloat(value)).toString();
+    }
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
   const handleImageChange = (e) => {
@@ -119,19 +121,28 @@ export default function UpdateListingClient({ propertyId, initialData }) {
     }
   };
 
-  const handleRemoveImage = () => {
-    setPreviewUrl(initialData?.image_url || null);
-    setLocalImageError("");
-    if (fileInputRef?.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
   const handleIconClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
+
+  const autoResize = (element) => {
+    if (element) {
+      element.style.height = "auto";
+      element.style.height = element.scrollHeight + "px";
+    }
+  };
+
+  useEffect(() => {
+    autoResize(textAreaRef.current);
+  }, [formData.description]);
+
+  useEffect(() => {
+    const handleResize = () => autoResize(textAreaRef.current);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -149,7 +160,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
     if (state.success) {
       setTimeout(() => {
         router.push("/");
-      }, 2000);
+      }, 1000);
       setLocalImageError("");
     }
   }, [state.success, router]);
@@ -211,14 +222,20 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Description</div>
-            <textarea
-              name="description"
-              placeholder="Description"
-              value={formData.description}
-              onChange={handleInputChange}
-              className={styles.input}
-              maxLength={150}
-            />
+            <div className={styles.bioContainer}>
+              <textarea
+                name="description"
+                ref={textAreaRef}
+                placeholder="Description"
+                value={formData.description}
+                onChange={handleInputChange}
+                className={styles.storedText}
+                maxLength={150}
+              />
+              <div className={styles.charCount}>
+                {formData.description.length} / 150
+              </div>
+            </div>
             {Object.keys(state.errors).length > 0 &&
               state.errors.description && (
                 <div className={styles.errorBox}>
@@ -392,38 +409,24 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Image</div>
-            <div className={styles.imageUploadBox}>
-              <div className={styles.imagePreviewContainer}>
-                {previewUrl ? (
-                  <>
-                    <Image
-                      src={previewUrl}
-                      alt="Preview"
-                      width={400}
-                      height={300}
-                      className={styles.imagePreview}
-                    />
-                    <button
-                      type="button"
-                      className={styles.deleteImageBtn}
-                      onClick={handleRemoveImage}
-                    >
-                      X
-                    </button>
-                  </>
-                ) : (
-                  <div className={styles.imagePlaceholder}>
-                    <Image
-                      src="/assets/placeholder.png"
-                      alt="Placeholder"
-                      width={400}
-                      height={300}
-                      className={styles.imagePlaceholder}
-                    />
-                  </div>
-                  // <></>
-                )}
-              </div>
+            <div
+              className={
+                previewUrl
+                  ? styles.imageUploadBox
+                  : styles.singleUploadContainer
+              }
+            >
+              {previewUrl && (
+                <div className={styles.imagePreviewContainer}>
+                  <Image
+                    src={previewUrl}
+                    alt="Preview"
+                    width={400}
+                    height={300}
+                    className={styles.imagePreview}
+                  />
+                </div>
+              )}
 
               <div className={styles.uploadControlSide}>
                 <input
@@ -433,6 +436,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
                   name="property_image"
                   accept="image/*"
                   className={styles.imageInput}
+                  style={{ display: "none" }}
                   disabled={isPending}
                 />
                 <div className={styles.uploadLabel}>
@@ -466,7 +470,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
             <div className={styles.successBox}>{state.success}</div>
           )}
           {Object.keys(state.errors).length > 0 && state.errors.general && (
-            <div className={styles.errorBox}>{state.errors.general}</div>
+            <div className={styles.errorBox2}>{state.errors.general}</div>
           )}
 
           <div className={styles.buttonGroup}>

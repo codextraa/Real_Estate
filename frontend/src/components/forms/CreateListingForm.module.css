@@ -115,7 +115,7 @@
 
 .input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 10px;
   border: 1px solid #415261;
   background-color: #f7f7f7;
   border-radius: 5px;
@@ -127,6 +127,47 @@
 .input:focus {
   outline: none;
   border-color: #9ca3af;
+}
+
+.bioContainer {
+  position: relative;
+  border: 1px solid #415261;
+  border-radius: 5px;
+  width: 100%;
+}
+
+.bioContainer:focus {
+  outline: none;
+  border-color: #9ca3af;
+}
+
+.storedText {
+  font-family: inherit;
+  font-size: 1rem;
+  color: #13252e;
+  background: #f7f7f7;
+  border: none;
+  border-radius: 10px;
+  width: 100%;
+  padding: 5px 10px 15px 10px;
+  font-size: 18px;
+  line-height: 1.2;
+  resize: none;
+  overflow: hidden;
+}
+
+.storedText:focus {
+  outline: none;
+  border-color: #9ca3af;
+}
+
+.charCount {
+  position: absolute;
+  bottom: 2px;
+  right: 7px;
+  font-size: 16px;
+  line-height: 1;
+  color: #415261;
 }
 
 /* Textarea Styles */
@@ -172,19 +213,20 @@
 
 .dollarSign {
   position: absolute;
-  left: 1rem;
-  top: 0.75rem;
+  padding: 10px;
   color: #13252e;
   font-family: inherit;
   font-size: 18px;
   font-weight: 400;
   line-height: 100%;
   font-style: regular;
+  /* $ */
 }
 
 .priceInput {
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2rem;
+  padding: 10px;
+  padding-left: 25px;
   border: 1px solid #415261;
   background-color: #f7f7f7;
   border-radius: 5px;
@@ -210,6 +252,14 @@
   /* Keeps image corners rounded */
   min-height: 250px;
   background-color: #f7f7f7;
+}
+
+.singleUploadContainer {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+  border: 1px solid #415261;
+  border-radius: 10px;
 }
 
 .uploadControlSide {
@@ -335,6 +385,17 @@
   display: block;
   padding-left: 10px;
   padding-top: 5px;
+}
+
+.errorBox2 {
+  font-family: var(--font-old-standard-tt);
+  color: #b70000;
+  font-size: 20px;
+  font-style: bold;
+  font-weight: 700;
+  line-height: 100%;
+  display: block;
+  text-align: center;
 }
 
 /* Success Box */
@@ -531,10 +592,28 @@
   .gridThree {
     grid-template-columns: 1fr;
   }
+
+  .storedText {
+    font-size: 16px;
+    padding: 5px 10px 10px 10px;
+  }
+
+  .charCount {
+    font-size: 14px;
+  }
 }
 
 @media (max-width: 400px) {
   .buttonGroup {
     flex-direction: column;
+  }
+
+  .storedText {
+    font-size: 14px;
+    padding: 5px 10px;
+  }
+
+  .charCount {
+    font-size: 12px;
   }
 }

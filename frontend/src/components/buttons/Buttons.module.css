@@ -197,7 +197,7 @@
   }
 }
 
-@media screen and (max-width: 320px) {
+@media screen and (max-width: 360px) {
   .NavSignUpButton {
     font-size: 12px;
   }

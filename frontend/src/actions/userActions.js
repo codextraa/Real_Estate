@@ -255,13 +255,25 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       response = await updateUser(id, formData, userRole, true);
     } else {
       const data = {
-        ...((first_name || first_name === "") && { first_name }),
-        ...((last_name || last_name === "") && { last_name }),
-        ...(username && { username }),
-        ...(password && { password }),
-        ...(c_password && { c_password }),
-        ...((bio || bio === "") && { bio }),
-        ...(company_name && { company_name }),
+        ...(first_name &&
+          prevState.formUserData.user.first_name !== first_name && {
+            first_name,
+          }),
+        ...(last_name &&
+          prevState.formUserData.user.last_name !== last_name && { last_name }),
+        ...(username &&
+          prevState.formUserData.user.username !== username && { username }),
+        ...(password &&
+          prevState.formUserData.user.password !== password && { password }),
+        ...(c_password &&
+          prevState.formUserData.user.c_password !== c_password && {
+            c_password,
+          }),
+        ...(bio && prevState.formUserData.bio !== bio && { bio }),
+        ...(company_name &&
+          prevState.formUserData.company_name !== company_name && {
+            company_name,
+          }),
       };
       response = await updateUser(id, data, userRole);
     }

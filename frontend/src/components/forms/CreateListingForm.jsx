@@ -41,6 +41,7 @@ export default function ListingForm() {
   const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
+  const textAreaRef = useRef(null);
   const [localImageError, setLocalImageError] = useState("");
   const [formData, setFormData] = useState({
     title: "",
@@ -93,18 +94,6 @@ export default function ListingForm() {
     }
   };
 
-  const handleRemoveImage = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    setPreviewUrl(null);
-    setFormData((prev) => ({ ...prev, property_image: null }));
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
   const handleIconClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -112,9 +101,30 @@ export default function ListingForm() {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { type, name, value } = e.target;
+    let newValue = value;
+    if (type === "number") {
+      newValue = Math.max(0, parseFloat(value)).toString();
+    }
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
+
+  const autoResize = (element) => {
+    if (element) {
+      element.style.height = "auto";
+      element.style.height = element.scrollHeight + "px";
+    }
+  };
+
+  useEffect(() => {
+    autoResize(textAreaRef.current);
+  }, [formData.description]);
+
+  useEffect(() => {
+    const handleResize = () => autoResize(textAreaRef.current);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -209,14 +219,20 @@ export default function ListingForm() {
           </div>
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Description</div>
-            <textarea
-              name="description"
-              placeholder="Description"
-              value={formData.description}
-              onChange={handleInputChange}
-              className={styles.input}
-              maxLength={150}
-            />
+            <div className={styles.bioContainer}>
+              <textarea
+                name="description"
+                ref={textAreaRef}
+                placeholder="Description"
+                value={formData.description}
+                onChange={handleInputChange}
+                className={styles.storedText}
+                maxLength={150}
+              />
+              <div className={styles.charCount}>
+                {formData.description.length} / 150
+              </div>
+            </div>
             {Object.keys(state.errors).length > 0 &&
               state.errors.description && (
                 <div className={styles.errorBox}>
@@ -379,37 +395,24 @@ export default function ListingForm() {
           </div>
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Image</div>
-            <div className={styles.imageUploadBox}>
-              <div className={styles.imagePreviewContainer}>
-                {previewUrl ? (
-                  <>
-                    <Image
-                      src={previewUrl}
-                      alt="Preview"
-                      width={400}
-                      height={300}
-                      className={styles.imagePreview}
-                    />
-                    <button
-                      type="button"
-                      className={styles.deleteImageBtn}
-                      onClick={handleRemoveImage}
-                    >
-                      X
-                    </button>
-                  </>
-                ) : (
-                  <div className={styles.imagePlaceholder}>
-                    <Image
-                      src="/assets/placeholder.png"
-                      alt="Placeholder"
-                      width={400}
-                      height={300}
-                      className={styles.imagePlaceholder}
-                    />
-                  </div>
-                )}
-              </div>
+            <div
+              className={
+                previewUrl
+                  ? styles.imageUploadBox
+                  : styles.singleUploadContainer
+              }
+            >
+              {previewUrl && (
+                <div className={styles.imagePreviewContainer}>
+                  <Image
+                    src={previewUrl}
+                    alt="Preview"
+                    width={400}
+                    height={300}
+                    className={styles.imagePreview}
+                  />
+                </div>
+              )}
 
               <div className={styles.uploadControlSide}>
                 <input
@@ -419,6 +422,7 @@ export default function ListingForm() {
                   name="property_image"
                   accept="image/*"
                   className={styles.imageInput}
+                  style={{ display: "none" }} // Hidden input, triggered by icon click
                   disabled={isPending}
                 />
                 <div className={styles.uploadLabel}>
@@ -440,6 +444,8 @@ export default function ListingForm() {
                 </div>
               </div>
             </div>
+
+            {/* Error Handling */}
             {localImageError ? (
               <span className={styles.errorBox}>{localImageError}</span>
             ) : Object.keys(state.errors).length > 0 &&
@@ -451,7 +457,7 @@ export default function ListingForm() {
             <div className={styles.successBox}>{state.success}</div>
           )}
           {Object.keys(state.errors).length > 0 && state.errors.general && (
-            <div className={styles.errorBox}>{state.errors.general}</div>
+            <div className={styles.errorBox2}>{state.errors.general}</div>
           )}
           <div className={styles.buttonGroup}>
             <div className={styles.cancelProfileButton}>

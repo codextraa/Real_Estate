@@ -73,9 +73,7 @@ export default function PropertyDetailCard({ property }) {
         <div className={styles.pricePayment}>
           <span className={styles.priceValue}>${property.price}</span>
           <div className={styles.button}>
-            <button className={styles.paymentButton}>
-              Payment Option &gt;
-            </button>
+            <button className={styles.paymentButton}>Analyze &gt;</button>
           </div>
         </div>
       </div>
