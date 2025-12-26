@@ -422,7 +422,10 @@ export default function ListingForm() {
                   disabled={isPending}
                 />
                 <div className={styles.uploadLabel}>
-                  <div className={styles.uploadIconCircle} onClick={handleIconClick}>
+                  <div
+                    className={styles.uploadIconCircle}
+                    onClick={handleIconClick}
+                  >
                     <Image
                       src={uploadIcon}
                       alt="Upload"

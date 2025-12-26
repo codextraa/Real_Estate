@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useActionState } from "react";
+import { useState, useEffect, useActionState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,7 +32,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
   const [previewUrl, setPreviewUrl] = useState(initialData?.image_url || null);
   const [localImageError, setLocalImageError] = useState("");
-  const fileInputRef = useState(null);
+  const fileInputRef = useRef(null);
 
   const router = useRouter();
 
@@ -81,7 +81,8 @@ export default function UpdateListingClient({ propertyId, initialData }) {
       formData.area_sqft !== initialData?.area_sqft);
   const isPricingComplete =
     formData.price !== "" && formData.price !== initialData?.price;
-  const isImageComplete = previewUrl !== null && previewUrl !== initialData?.image_url;
+  const isImageComplete =
+    previewUrl !== null && previewUrl !== initialData?.image_url;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -92,20 +93,30 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files[0];
+    if (file) {
+      setLocalImageError("");
+      const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+      const isInvalidType = !validTypes.includes(file.type);
+      const isTooLarge = file.size > 2 * 1024 * 1024;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setLocalImageError("File size exceeds 2MB");
-      return;
+      if (isInvalidType || isTooLarge) {
+        const msg = isInvalidType
+          ? "Only JPG, JPEG and PNG images are allowed."
+          : "Image size should not exceed 2MB.";
+
+        setLocalImageError(msg);
+        resetImageInput();
+        return;
+      }
+
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
+      setPreviewUrl(URL.createObjectURL(file));
+      setFormData((prev) => ({ ...prev, property_image: file }));
     }
-
-    setLocalImageError("");
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setPreviewUrl(event.target.result);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleRemoveImage = () => {
@@ -425,7 +436,10 @@ export default function UpdateListingClient({ propertyId, initialData }) {
                   disabled={isPending}
                 />
                 <div className={styles.uploadLabel}>
-                  <div className={styles.uploadIconCircle} onClick={handleIconClick}>
+                  <div
+                    className={styles.uploadIconCircle}
+                    onClick={handleIconClick}
+                  >
                     <Image
                       src={uploadIcon}
                       alt="Upload"

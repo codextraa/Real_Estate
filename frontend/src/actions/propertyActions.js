@@ -286,9 +286,6 @@ export const updatePropertyAction = async (id, prevState, formData) => {
   if (!newPropertyData.area_sqft) {
     errors.area_sqft = "Area is required.";
   }
-  if (!newPropertyData.property_image) {
-    errors.image_url = "Image is required.";
-  }
 
   if (Object.keys(errors).length > 0) {
     return {
@@ -312,13 +309,13 @@ export const updatePropertyAction = async (id, prevState, formData) => {
         ...(title && title !== prevState.formPropertyData.title && { title }),
         ...(description &&
           description !== prevState.formPropertyData.description && {
-          description,
-        }),
+            description,
+          }),
         ...(price && price !== prevState.formPropertyData.price && { price }),
         ...(addressString &&
           addressString !== prevState.formPropertyData.address && {
-          address: addressString,
-        }),
+            address: addressString,
+          }),
         ...(beds && beds !== prevState.formPropertyData.beds && { beds }),
         ...(baths && baths !== prevState.formPropertyData.baths && { baths }),
         ...(area_sqft &&

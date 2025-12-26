@@ -330,7 +330,9 @@ class PropertyViewSet(ModelViewSet):
             )
 
         request_data = request.data.copy()
-        property_image = request_data.pop("property_image", None)
+        # this was done because data was not looped and split
+        property_image = request_data.get("property_image")
+        request_data.pop("property_image", None)
         old_image_path = None
         default_property_image = "property_images/default_image.jpg"
 
@@ -349,7 +351,7 @@ class PropertyViewSet(ModelViewSet):
             property_image_serializer.is_valid(raise_exception=True)
             property_image_serializer.save()
 
-            if os.path.exists(old_image_path):
+            if old_image_path and os.path.exists(old_image_path):
                 os.remove(old_image_path)
 
         partial = kwargs.pop("partial", False)
