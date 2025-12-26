@@ -78,8 +78,8 @@ const propertyError = (response) => {
 
 export const createPropertyAction = async (prevState, formData) => {
   const addressParts = {
-    flatNo: formData.get("flatNo") || "",
-    houseNo: formData.get("houseNo") || "",
+    flat_no: formData.get("flat_no") || "",
+    house_no: formData.get("house_no") || "",
     street: formData.get("street") || "",
     area: formData.get("area") || "",
     city: formData.get("city") || "",
@@ -128,7 +128,7 @@ export const createPropertyAction = async (prevState, formData) => {
   }
 
   const requiredAddressFields = [
-    "houseNo",
+    "house_no",
     "street",
     "area",
     "city",
@@ -216,8 +216,8 @@ export const createPropertyAction = async (prevState, formData) => {
 
 export const updatePropertyAction = async (id, prevState, formData) => {
   const addressParts = {
-    flatNo: formData.get("flatNo") || "",
-    houseNo: formData.get("houseNo") || "",
+    flat_no: formData.get("flat_no") || "",
+    house_no: formData.get("house_no") || "",
     street: formData.get("street") || "",
     area: formData.get("area") || "",
     city: formData.get("city") || "",
@@ -262,7 +262,7 @@ export const updatePropertyAction = async (id, prevState, formData) => {
   }
 
   const requiredAddressFields = [
-    "houseNo",
+    "house_no",
     "street",
     "area",
     "city",
@@ -312,13 +312,13 @@ export const updatePropertyAction = async (id, prevState, formData) => {
         ...(title && title !== prevState.formPropertyData.title && { title }),
         ...(description &&
           description !== prevState.formPropertyData.description && {
-            description,
-          }),
+          description,
+        }),
         ...(price && price !== prevState.formPropertyData.price && { price }),
         ...(addressString &&
           addressString !== prevState.formPropertyData.address && {
-            address: addressString,
-          }),
+          address: addressString,
+        }),
         ...(beds && beds !== prevState.formPropertyData.beds && { beds }),
         ...(baths && baths !== prevState.formPropertyData.baths && { baths }),
         ...(area_sqft &&

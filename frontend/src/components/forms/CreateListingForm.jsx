@@ -20,8 +20,8 @@ const initialState = {
     city: "",
     area: "",
     street: "",
-    houseNo: "",
-    flatNo: "",
+    houser_no: "",
+    flat_no: "",
     beds: "",
     baths: "",
     area_sqft: "",
@@ -50,8 +50,8 @@ export default function ListingForm() {
     city: "",
     area: "",
     street: "",
-    houseNo: "",
-    flatNo: "",
+    houser_no: "",
+    flat_no: "",
     beds: "",
     baths: "",
     area_sqft: "",
@@ -145,7 +145,7 @@ export default function ListingForm() {
     formData.city.trim() !== "" &&
     formData.area.trim() !== "" &&
     formData.street.trim() !== "" &&
-    formData.houseNo.trim() !== "";
+    formData.houser_no.trim() !== "";
   const isDetailsComplete =
     formData.beds.trim() !== "" &&
     formData.baths.trim() !== "" &&
@@ -288,8 +288,8 @@ export default function ListingForm() {
                 <input
                   type="text"
                   placeholder="House No."
-                  name="houseNo"
-                  value={formData.houseNo}
+                  name="houser_no"
+                  value={formData.houser_no}
                   onChange={handleInputChange}
                   className={styles.input}
                 />
@@ -300,8 +300,8 @@ export default function ListingForm() {
               <input
                 type="text"
                 placeholder="Flat No."
-                name="flatNo"
-                value={formData.flatNo}
+                name="flat_no"
+                value={formData.flat_no}
                 onChange={handleInputChange}
                 className={styles.input}
               />
@@ -421,8 +421,8 @@ export default function ListingForm() {
                   className={styles.imageInput}
                   disabled={isPending}
                 />
-                <div className={styles.uploadLabel} onClick={handleIconClick}>
-                  <div className={styles.uploadIconCircle}>
+                <div className={styles.uploadLabel}>
+                  <div className={styles.uploadIconCircle} onClick={handleIconClick}>
                     <Image
                       src={uploadIcon}
                       alt="Upload"

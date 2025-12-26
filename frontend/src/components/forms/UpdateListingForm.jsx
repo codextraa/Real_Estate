@@ -22,8 +22,8 @@ export default function UpdateListingClient({ propertyId, initialData }) {
     city: initialData?.address?.city || "",
     area: initialData?.address?.area || "",
     street: initialData?.address?.street || "",
-    houseNo: initialData?.address?.houseNo || "",
-    flatNo: initialData?.address?.flatNo || "",
+    house_no: initialData?.address?.house_no || "",
+    flat_no: initialData?.address?.flat_no || "",
     beds: initialData?.beds || "",
     baths: initialData?.baths || "",
     area_sqft: initialData?.area_sqft || "",
@@ -32,7 +32,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
   const [previewUrl, setPreviewUrl] = useState(initialData?.image_url || null);
   const [localImageError, setLocalImageError] = useState("");
-  const fileInputRef = useState(null)[1];
+  const fileInputRef = useState(null);
 
   const router = useRouter();
 
@@ -65,13 +65,13 @@ export default function UpdateListingClient({ propertyId, initialData }) {
     formData.city.trim() !== "" &&
     formData.area.trim() !== "" &&
     formData.street.trim() !== "" &&
-    formData.houseNo.trim() !== "" &&
+    formData.house_no.trim() !== "" &&
     (formData.country !== initialData?.address?.country ||
       formData.state !== initialData?.address?.state ||
       formData.city !== initialData?.address?.city ||
       formData.area !== initialData?.address?.area ||
       formData.street !== initialData?.address?.street ||
-      formData.houseNo !== initialData?.address?.houseNo);
+      formData.house_no !== initialData?.address?.house_no);
   const isDetailsComplete =
     formData.beds !== "" &&
     formData.baths !== "" &&
@@ -81,7 +81,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
       formData.area_sqft !== initialData?.area_sqft);
   const isPricingComplete =
     formData.price !== "" && formData.price !== initialData?.price;
-  const isImageComplete = previewUrl !== null;
+  const isImageComplete = previewUrl !== null && previewUrl !== initialData?.image_url;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -117,7 +117,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   };
 
   const handleIconClick = () => {
-    if (fileInputRef?.current) {
+    if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
@@ -284,8 +284,8 @@ export default function UpdateListingClient({ propertyId, initialData }) {
                 <input
                   type="text"
                   placeholder="House No."
-                  name="houseNo"
-                  value={formData.houseNo}
+                  name="house_no"
+                  value={formData.house_no}
                   onChange={handleInputChange}
                   className={styles.input}
                 />
@@ -297,8 +297,8 @@ export default function UpdateListingClient({ propertyId, initialData }) {
               <input
                 type="text"
                 placeholder="Flat No."
-                name="flatNo"
-                value={formData.flatNo}
+                name="flat_no"
+                value={formData.flat_no}
                 onChange={handleInputChange}
                 className={styles.input}
               />
@@ -424,8 +424,8 @@ export default function UpdateListingClient({ propertyId, initialData }) {
                   className={styles.imageInput}
                   disabled={isPending}
                 />
-                <div className={styles.uploadLabel} onClick={handleIconClick}>
-                  <div className={styles.uploadIconCircle}>
+                <div className={styles.uploadLabel}>
+                  <div className={styles.uploadIconCircle} onClick={handleIconClick}>
                     <Image
                       src={uploadIcon}
                       alt="Upload"
