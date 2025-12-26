@@ -42,7 +42,7 @@ class PropertyViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         """Assign serializer based on action."""
-        if self.action == ("list", "my_listings"):
+        if self.action in ("list", "my_listings"):
             return PropertyListSerializer
         if self.action == "retrieve":
             return PropertyRetrieveSerializer
