@@ -32,7 +32,7 @@ export default async function Navbar() {
       ];
     } else if (userRole === "Agent") {
       navButtons = [
-        { text: "Dashboard", href: "/" },
+        { text: "Dashboard", href: "/dashboard" },
         { text: "Create", href: "/properties/create" },
         ...loggedInBaseButtons,
       ];
