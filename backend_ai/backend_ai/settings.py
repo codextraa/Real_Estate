@@ -54,17 +54,19 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sessions",
     "django.contrib.staticfiles",
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "backend.middlewares.RestrictDirectApiMiddleware",
+    "backend_ai.middlewares.RestrictDirectApiMiddleware",
 ]
 
 ROOT_URLCONF = "backend_ai.urls"
@@ -137,8 +139,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
-STATIC_ROOT = "/app/static"
+STATIC_URL = "static_ai/"
+STATIC_ROOT = "/app/static_ai"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -216,8 +218,12 @@ CSRF_COOKIE_HTTPONLY = True  # Must be False since JavaScript needs to read the 
 CSRF_COOKIE_SAMESITE = "Lax"  # Prevent cross-origin requests
 CSRF_COOKIE_AGE = 60 * 60 * 24  # 1 day
 
-# Session Settings
+# Database Routing
+DATABASE_ROUTERS = ["backend_ai.router.SharedDatabaseRouter"]
 
+# Session Settings
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_COOKIE_NAME = "sessionid"
 SESSION_COOKIE_SECURE = True  # Secure session cookies
 
 AUTH_USER_MODEL = "core_db_ai.User"
