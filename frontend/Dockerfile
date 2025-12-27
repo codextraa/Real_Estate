@@ -4,7 +4,9 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 RUN npm install
-RUN apk add --no-cache curl && curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.alpine.sh' | sh && apk add --no-cache infisical
+RUN apk add --no-cache bash curl && \
+    curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.alpine.sh' | distro=alpine version=3.20 bash && \
+    apk add --no-cache infisical
 
 COPY run.sh .
 

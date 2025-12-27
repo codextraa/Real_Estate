@@ -20,6 +20,22 @@ services:
     command: ["chmod +x /app/run.sh && /app/run.sh"]
     volumes:
       - ./backend:/app
+    networks:
+      - web-app-network
+
+  real-estate-backend-ai:
+    container_name: real-estate-backend-ai
+    build: ./backend_ai
+    image: real-estate-backend-ai:Python-3.12-slim-D
+    ports:
+      - "8005:8001"
+    secrets:
+      - infisical_token
+      - .infisical.json
+    entrypoint: sh -c 
+    command: ["chmod +x /app/run.sh && /app/run.sh"]
+    volumes:
+      - ./backend_ai:/app
     depends_on:
       real-estate-redis:
         condition: service_healthy

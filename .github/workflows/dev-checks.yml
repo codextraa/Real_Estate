@@ -74,28 +74,46 @@ jobs:
         run: |
           timeout 120s bash -c 'until [ "$(docker inspect --format="{{.State.Health.Status}}" postgres-db)" = "healthy" ]; do echo "Waiting for Postgres to be healthy..."; sleep 5; done' || { echo "Postgres failed to become healthy within 2 minutes"; exit 1; }
 
-      - name: Start backend and Redis services
-        run: docker compose up -d --build real-estate-backend real-estate-redis
+      - name: Start backend
+        run: docker compose up -d --build real-estate-backend
+      
+      - name: Wait for Main Backend to initialize
+        run: sleep 10
 
-      - name: Install linting dependencies
-        run: |
-          docker exec real-estate-backend sh -c "pip install black==25.1.0 pylint==3.3.4 pylint-django"
+      - name: Start backend ai and Redis services
+        run: docker compose up -d --build real-estate-backend-ai real-estate-redis
 
       - name: Run backend tests
         run: |
           docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && python manage.py test'"
 
-      - name: Show logs if tests fail
+      - name: Show backend logs if tests fail
         if: failure()
         run: docker logs real-estate-backend
 
-      - name: Check linting with Pylint
+      - name: Run backend ai tests
+        run: |
+          docker exec real-estate-backend-ai sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend-ai' -- sh -c 'cd /app && python manage.py test'"
+
+      - name: Show backend ai logs if tests fail
+        if: failure()
+        run: docker logs real-estate-backend-ai
+
+      - name: Check linting of backend with Pylint
         run: |
           docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && pylint backend auth_api property_api core_db'"
+      
+      - name: Check linting of backend ai with Pylint
+        run: |
+          docker exec real-estate-backend-ai sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend-ai' -- sh -c 'cd /app && pylint backend_ai core_db_ai'"
 
-      - name: Check code formatting with Black
+      - name: Check code formatting with Black for backend
         run: |
           docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && black --check .'"
+      
+      - name: Check code formatting with Black for backend ai
+        run: |
+          docker exec real-estate-backend-ai sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend-ai' -- sh -c 'cd /app && black --check .'"
 
       - name: Stop real-estate containers
         if: always()
