@@ -11,14 +11,14 @@ infisical run --path="/Real-Estate/backend" -- sh -c '
   attempt=1
   while [ $attempt -le $retries ]; do
     if pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER"; then
-      echo "PostgreSQL server is ready!"
+      echo "✅ PostgreSQL server is ready!"
       break
     fi
     echo "Attempt $attempt/$retries: Waiting for PostgreSQL server to be ready..."
     sleep $delay
     attempt=$((attempt + 1))
     if [ $attempt -gt $retries ]; then
-      echo "Error: PostgreSQL server not available after $retries attempts. Exiting..." >&2
+      echo "❌ Error: PostgreSQL server not available after $retries attempts. Exiting..." >&2
       exit 1
     fi
   done
@@ -26,13 +26,13 @@ infisical run --path="/Real-Estate/backend" -- sh -c '
   # Check if database exists, create it if not
   echo "Checking if database '\''$DB_NAME'\'' exists..."
   if PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c "SELECT 1 FROM pg_database WHERE datname='\''$DB_NAME'\''" | grep -q 1; then
-    echo "Database '\''$DB_NAME'\'' already exists."
+    echo "✅ Database '\''$DB_NAME'\'' already exists."
   else
     echo "Database '\''$DB_NAME'\'' does not exist. Creating it..."
     if PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c "CREATE DATABASE $DB_NAME"; then
-      echo "Database '\''$DB_NAME'\'' created successfully!"
+      echo "✅ Database '\''$DB_NAME'\'' created successfully!"
     else
-      echo "Error: Failed to create database '\''$DB_NAME'\''. Exiting..." >&2
+      echo "❌ Error: Failed to create database '\''$DB_NAME'\''. Exiting..." >&2
       exit 1
     fi
   fi

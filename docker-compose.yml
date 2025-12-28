@@ -36,9 +36,34 @@ services:
     command: ["chmod +x /app/run.sh && /app/run.sh"]
     volumes:
       - ./backend_ai:/app
+    environment:
+      - SERVICE_TYPE=ai-api
     depends_on:
       real-estate-redis:
         condition: service_healthy
+      real-estate-backend:
+        condition: service_started
+    networks:
+      - web-app-network
+
+  real-estate-backend-ai-worker:
+    container_name: real-estate-backend-ai-worker
+    build: ./backend_ai
+    image: real-estate-backend-ai:Python-3.12-slim-D
+    secrets:
+      - infisical_token
+      - .infisical.json
+    entrypoint: sh -c 
+    command: ["chmod +x /app/run.sh && /app/run.sh"]
+    volumes:
+      - ./backend_ai:/app
+    environment:
+      - SERVICE_TYPE=ai-workers
+    depends_on:
+      real-estate-redis:
+        condition: service_healthy
+      real-estate-backend-ai:
+        condition: service_started
     networks:
       - web-app-network
 

@@ -76,12 +76,12 @@ jobs:
 
       - name: Start backend
         run: docker compose up -d --build real-estate-backend
-      
-      - name: Wait for Main Backend to initialize
-        run: sleep 10
 
       - name: Start backend ai and Redis services
         run: docker compose up -d --build real-estate-backend-ai real-estate-redis
+
+      - name: Start AI Worker (HPC Engine)
+        run: docker compose up -d --build real-estate-backend-ai-worker
 
       - name: Run backend tests
         run: |
