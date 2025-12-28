@@ -28,6 +28,10 @@ jobs:
             "backend/property_api/"
             "backend/core_db/"
             "backend/static/"
+            "backend_ai/backend_ai/"
+            "backend_ai/core_db_ai/"
+            "backend_ai/report_api/"
+            "backend_ai/static_ai/"
             "frontend/src/"
             "frontend/public/"
           )
