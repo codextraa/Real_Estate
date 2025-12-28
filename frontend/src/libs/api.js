@@ -84,3 +84,10 @@ export const updateProperty = async (id, data, isImage = false) => {
 export const deleteProperty = async (id) => {
   return apiClient.delete(`/property-api/properties/${id}/`);
 };
+
+export const getListings = async (queryParams = {}) => {
+  const params = new URLSearchParams(queryParams);
+  return apiClient.get(
+    `/property-api/properties/my-listings/?${params.toString()}`,
+  );
+};
