@@ -1,0 +1,266 @@
+.background {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: #f7f7f7;
+}
+
+.image {
+  position: relative;
+  width: 100%;
+  height: 545px;
+  overflow: hidden;
+}
+
+.imageWrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  filter: blur(1px);
+  opacity: 0.91;
+}
+
+.imageStyle {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+.container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+.content {
+  font-family: "Koh Santepheap", serif;
+  font-weight: 400;
+  font-size: 210px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  background: linear-gradient(
+    280.9deg,
+    #14242c -29.02%,
+    #324b59 40.91%,
+    #648aa2 106.52%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.propertiesContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80px;
+  padding-bottom: 60px;
+}
+
+.searchbar {
+  max-width: 986px;
+  margin: 0 auto;
+  margin-top: 25px;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 5;
+}
+
+.propertyDropdowns {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 30px;
+  max-width: 1240px;
+  margin: 0 auto;
+  margin-bottom: 60px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 100;
+}
+
+/* Ensure each dropdown can expand properly */
+.propertyDropdowns > * {
+  position: relative;
+  z-index: 100;
+}
+
+.propertiesContent {
+  max-width: 1118px;
+  margin: 0 auto;
+  margin-bottom: 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.propertiesTitle {
+  font-family: "Old Standard TT", serif;
+  font-weight: 700;
+  font-size: 50px;
+  line-height: 62px;
+  letter-spacing: 0%;
+  color: #13252e;
+  margin-bottom: 5px;
+}
+
+.propertiesDescription {
+  font-family: "Old Standard TT", serif;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 25px;
+  letter-spacing: 0%;
+  color: #13252e;
+}
+
+.propertyCards {
+  max-width: 1118px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.errorContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 400px;
+  height: 42px;
+  margin: 0 auto;
+  gap: 10px;
+  border-radius: 93px;
+  padding: 8px 22px;
+  background: #980000;
+  color: #f7f7f7;
+  font-family: "Old Standard TT", serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 25px;
+  text-align: center;
+}
+
+.noResultsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 400px;
+  height: 42px;
+  margin: 0 auto;
+  gap: 10px;
+  border-radius: 93px;
+  padding: 8px 22px;
+  background: #13252e;
+  color: #f7f7f7;
+  font-family: "Old Standard TT", serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 25px;
+  text-align: center;
+}
+
+.propertyGridPagination {
+  display: flex;
+  flex-direction: column;
+  gap: 49px;
+}
+
+.propertyGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f7f7f7;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .content {
+    font-size: 150px;
+  }
+
+  .propertiesContainer {
+    padding: 0 60px;
+  }
+
+  .propertyGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+    justify-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    font-size: 100px;
+  }
+
+  .image {
+    height: 400px;
+  }
+
+  .propertiesContainer {
+    padding: 0 40px;
+  }
+
+  .propertiesTitle {
+    font-size: 40px;
+  }
+
+  .propertiesDescription {
+    font-size: 18px;
+  }
+
+  .propertyDropdowns {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .propertyGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 550px) {
+  .content {
+    font-size: 70px;
+  }
+
+  .image {
+    height: 300px;
+  }
+
+  .propertiesContainer {
+    padding: 0 20px;
+  }
+
+  .propertiesTitle {
+    font-size: 30px;
+  }
+
+  .propertiesDescription {
+    font-size: 16px;
+    line-height: 140%;
+  }
+
+  .propertyGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .errorContainer,
+  .noResultsContainer {
+    max-width: 90%;
+    font-size: 16px;
+  }
+}

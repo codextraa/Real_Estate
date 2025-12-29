@@ -1,15 +1,16 @@
 import random
-from django.core.management.base import BaseCommand
-from django.contrib.auth.models import Group
+
 from core_db.factories import (
-    UserFactory,
+    FIXED_PASSWORD,
     AgentFactory,
     PropertyFactory,
-    SuperuserFactory,
     StaffuserFactory,
-    FIXED_PASSWORD,
+    SuperuserFactory,
+    UserFactory,
 )
-from core_db.models import User, Agent, Property
+from core_db.models import Agent, Property, User
+from django.contrib.auth.models import Group
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
@@ -74,21 +75,21 @@ class Command(BaseCommand):
 
         self.stdout.write("\nCreating 2 specific agents and their properties...")
 
-        # Agent 1 (12 Properties)
-        PropertyFactory.create_batch(12, agent=agent1)
+        # Agent 1 (25 Properties)
+        PropertyFactory.create_batch(25, agent=agent1)
         self.stdout.write(
             self.style.SUCCESS(
-                f"✅ Agent 1 ({agent1.user.email}) created with 12 properties."
+                f"✅ Agent 1 ({agent1.user.email}) created with 25 properties."
             )
         )
 
-        # Agent 2 (6 Properties)
+        # Agent 2 (15 Properties)
         agent2 = AgentFactory.create()
         agent2.user.groups.add(agent_group)
-        PropertyFactory.create_batch(6, agent=agent2)
+        PropertyFactory.create_batch(15, agent=agent2)
         self.stdout.write(
             self.style.SUCCESS(
-                f"✅ Agent 2 ({agent2.user.email}) created with 6 properties."
+                f"✅ Agent 2 ({agent2.user.email}) created with 15 properties."
             )
         )
 
@@ -99,24 +100,27 @@ class Command(BaseCommand):
             agent.user.groups.add(agent_group)
         self.stdout.write(self.style.SUCCESS(f"✅ 8 extra agents created."))
 
-        # Assign 12 properties randomly to the 8 extra agents
+        # Assign 85 properties randomly to the 8 extra agents
         self.stdout.write(
-            "Assigning 12 properties to each of the 8 extra agents randomly..."
+            "Assigning 85 properties to each of the 8 extra agents randomly..."
         )
 
-        # Create 12 properties, each assigned to a random agent from the extra agents
-        for i in range(12):
+        # Create 85 properties, each assigned to a random agent from the extra agents
+        for i in range(41, 126):
             random_agent = random.choice(extra_agents)
             PropertyFactory.create(agent=random_agent)
-            self.stdout.write(
-                f"  - Property {i+1} created and assigned to {random_agent.company_name}."
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"✅ 85 properties assigned to each of the 8 extra agents randomly."
             )
+        )
 
         # Verification
         total_properties = Property.objects.count()
         expected_properties = (
-            12 + 6 + 12
-        )  # Agent 1 (12) + Agent 2 (6) + Random pool (12) = 30
+            25 + 15 + 85
+        )  # Agent 1 (25) + Agent 2 (15) + Random pool (85) = 125
 
         self.stdout.write(f"\nTotal Agents Created: {Agent.objects.count()}")
         self.stdout.write(

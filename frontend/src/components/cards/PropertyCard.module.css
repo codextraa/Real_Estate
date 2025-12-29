@@ -1,10 +1,159 @@
-.cardCointainer {
+.cardContainer {
+  position: relative;
+  width: 339px; /* Desktop width */
+  height: 444px; /* Desktop height */
+  overflow: hidden;
+  border-radius: 15px;
+  border: 2px solid rgba(19, 37, 46, 0.3);
+  transition: transform 0.3s ease;
+  background-color: #f0f0f0;
+}
+
+/* Hover and Focus interaction */
+.cardContainer:hover .cardContent,
+.cardContainer:focus-within .cardContent {
+  opacity: 1;
+}
+
+/* Optional: Slight zoom on hover for better feedback */
+.cardContainer:hover .propertyImage {
+  transform: scale(1.05);
+}
+
+.imageContainer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.propertyImage {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.cardContent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 40%,
+    rgba(0, 0, 0, 0.9) 100%
+  );
+  transition: opacity 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  padding: 12px;
+  box-sizing: border-box;
+  pointer-events: none; /* Allows the click to pass through to the Link */
+}
+
+.propertyTitle {
+  position: absolute;
+  bottom: 110px; /* Using bottom instead of top for better mobile scaling */
+  left: 12px;
+  right: 12px;
+  font-family: "Old Standard TT", serif;
+  font-weight: 700;
+  font-size: 32px; /* Slightly smaller for flexibility */
+  line-height: 1.2;
+  color: #ffffff;
+  margin: 0;
+}
+
+.propertyDescription {
+  position: absolute;
+  bottom: 60px;
+  left: 12px;
+  right: 12px;
+  font-family: "Old Standard TT", serif;
+  font-size: 14px;
+  color: #ffffff;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
-  transition: transform 0.2s;
+}
+
+.learnMore {
+  position: absolute;
+  bottom: 15px;
+  left: 12px;
+  padding: 8px 20px;
+  background: rgba(247, 247, 247, 0.2);
+  backdrop-filter: blur(7.5px);
+  -webkit-backdrop-filter: blur(7.5px);
+  border-radius: 29px;
+  color: #f7f7f7;
+  font-family: "Old Standard TT", serif;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* --- RESPONSIVE BREAKPOINTS --- */
+
+/* Tablets (iPad/Small Laptops) */
+@media (max-width: 1200px) {
+  .cardContainer {
+    width: 280px;
+    height: 390px;
+  }
+  .propertyTitle {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .cardContainer {
+    width: 240px;
+    height: 350px;
+  }
+  .propertyTitle {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .cardContainer {
+    width: 200px;
+    height: 300px;
+  }
+  .propertyTitle {
+    font-size: 20px;
+  }
+}
+/* Mobile Devices */
+@media (max-width: 480px) {
+  .cardContainer {
+    width: 160px;
+    height: 260px;
+  }
+  .propertyTitle {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 390px) {
+  .cardContainer {
+    width: 130px;
+    height: 210px;
+  }
+  .propertyTitle {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 330px) {
+  .cardContainer {
+    width: 100px;
+    height: 180px;
+  }
 }

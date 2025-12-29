@@ -191,11 +191,6 @@
   .propertiesContainer {
     padding: 0 60px;
   }
-
-  .propertyGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 28px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -208,7 +203,7 @@
   }
 
   .propertiesContainer {
-    padding: 0 40px;
+    padding: 0 20px;
   }
 
   .propertiesTitle {
@@ -225,8 +220,26 @@
   }
 
   .propertyGrid {
+    /* grid-template-columns: repeat(2, 1fr); */
+    gap: 20px;
+    justify-items: center;
+  }
+}
+
+@media (max-width: 700px) {
+  .content {
+    font-size: 80px;
+  }
+
+  .image {
+    height: 350px;
+  }
+
+  .propertiesContainer {
+    padding: 0 16px;
+  }
+  .propertyGrid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
   }
 }
 
@@ -253,7 +266,7 @@
   }
 
   .propertyGrid {
-    grid-template-columns: 1fr;
+    /* grid-template-columns: 1fr; */
     gap: 20px;
   }
 
