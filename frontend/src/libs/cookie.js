@@ -75,6 +75,11 @@ export const deleteSessionCookie = async () => {
   }
 };
 
+export const getSessionCookie = async () => {
+  const cookieStore = await cookies();
+  return cookieStore.get("__Secure-session");
+};
+
 export const getUserIdFromSession = async () => {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("__Secure-session"); // Retrieve the session cookie

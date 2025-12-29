@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import {
+  getSessionCookie,
   getAccessTokenExpiryFromSession,
   updateSessionCookie,
 } from "@/libs/cookie";
@@ -17,10 +18,13 @@ export async function middleware(req) {
   const isPublicRoute = publicRoutes.includes(pathname);
   const isApiRoute = pathname.startsWith(apiRoute);
   const isAuthRoute = pathname.startsWith(authRoute);
+  const isSessionCookie = await getSessionCookie();
 
   if (isPublicRoute) {
     console.warn("Handling public route");
-    return NextResponse.next(); // Allow access to public routes
+    if (!isSessionCookie) {
+      return NextResponse.next(); // Allow access to public routes
+    }
   }
 
   if (isApiRoute) {
