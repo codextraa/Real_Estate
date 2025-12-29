@@ -83,22 +83,6 @@ jobs:
       - name: Start AI Worker (HPC Engine)
         run: docker compose up -d --build real-estate-backend-ai-worker
 
-      - name: Run backend tests
-        run: |
-          docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && python manage.py test'"
-
-      - name: Show backend logs if tests fail
-        if: failure()
-        run: docker logs real-estate-backend
-
-      - name: Run backend ai tests
-        run: |
-          docker exec real-estate-backend-ai sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend-ai' -- sh -c 'cd /app && python manage.py test'"
-
-      - name: Show backend ai logs if tests fail
-        if: failure()
-        run: docker logs real-estate-backend-ai
-
       - name: Check linting of backend with Pylint
         run: |
           docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && pylint backend auth_api property_api core_db'"
@@ -114,6 +98,22 @@ jobs:
       - name: Check code formatting with Black for backend ai
         run: |
           docker exec real-estate-backend-ai sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend-ai' -- sh -c 'cd /app && black --check .'"
+
+      - name: Run backend tests
+        run: |
+          docker exec real-estate-backend sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend' -- sh -c 'cd /app && python manage.py test'"
+
+      - name: Show backend logs if tests fail
+        if: failure()
+        run: docker logs real-estate-backend
+
+      - name: Run backend ai tests
+        run: |
+          docker exec real-estate-backend-ai sh -c "export INFISICAL_TOKEN=\$(cat /run/secrets/infisical_token) && cd /run/secrets && infisical run --path='/Real-Estate/backend-ai' -- sh -c 'cd /app && python manage.py test'"
+
+      - name: Show backend ai logs if tests fail
+        if: failure()
+        run: docker logs real-estate-backend-ai
 
       - name: Stop real-estate containers
         if: always()
