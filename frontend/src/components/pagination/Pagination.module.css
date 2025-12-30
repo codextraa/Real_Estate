@@ -1,10 +1,11 @@
-.paginationWrapper {
+/*! what is this double styles, you use AI but don't clean up why? */
+/* .paginationWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 15px;
   padding: 10px 25px;
-  border: 2px solid #415261; /* Dark slate border from reference */
+  border: 2px solid #415261; /* Dark slate border from reference
   border-radius: 50px;
   width: fit-content;
   margin: 2rem auto;
@@ -34,10 +35,10 @@
   transition: all 0.2s ease;
 }
 
-/* HIGH CONTRAST ACTIVE STATE */
+/* HIGH CONTRAST ACTIVE STATE
 .pageButton.active {
-  background-color: #b3c2cd; /* Light blue-grey highlight */
-  border: 2px solid #415261; /* Thicker border for clarity */
+  background-color: #b3c2cd; /* Light blue-grey highlight
+  border: 2px solid #415261; /* Thicker border for clarity
   color: #13252e;
   cursor: default;
 }
@@ -70,16 +71,21 @@
 
 .pageButton:hover:not(.active) {
   background-color: rgba(65, 82, 97, 0.1);
-}
+} */
 
 .paginationWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
-  padding: 10px 25px;
+  /*! was gap 15px?? */
+  /* gap: 15px; */
+  gap: 20px;
+  /*! was padding sideways 25px?? */
+  padding: 10px 10px;
   border: 2px solid #415261;
-  border-radius: 50px;
+  /* border-radius: 50px; */
+  /*! what is this, what was the border radius in figma?? */
+  border-radius: 20px;
   width: fit-content;
   margin: 2rem auto;
   background-color: #f7f7f7;
@@ -89,7 +95,9 @@
 .pageNumbers {
   display: flex;
   align-items: center;
-  gap: 12px;
+  /*! was gap 12px ?? */
+  /* gap: 12px; */
+  gap: 30px;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -97,23 +105,29 @@
 .pageButton {
   background-color: transparent;
   border: 1px solid #415261;
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
+  /*! was border radius 8px?? */
+  /* border-radius: 8px; */
+  border-radius: 5px;
+  /*! isn't giving width and height prohibited?? */
+  /* width: 40px;
+  height: 40px; */
+  padding: 5px 10px 3px 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-family: var(--font-old-standard-tt), serif;
   font-weight: 700;
-  font-size: 18px;
+  /*! what was the font size in figma?? */
+  /* font-size: 18px; */
+  font-size: 20px;
   color: #13252e;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .pageButton.active {
-  background-color: #b3c2cd;
+  background-color: rgba(100, 138, 162, 0.5);
   border: 2px solid #415261;
   color: #13252e;
   cursor: default;
@@ -122,26 +136,39 @@
 .arrowButton {
   background: none;
   border: none;
-  font-size: 24px;
+  /*! why will u use font-styles on an image?? */
+  /* font-size: 24px;
   font-weight: bold;
-  color: #13252e;
+  color: #13252e; */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 10px;
-  transition: all 0.2s ease;
+  /*! why will u use padding on an image?? */
+  /* padding: 0 10px; */
+  transition: all 0.3s ease;
   flex-shrink: 0;
-}
-
-.arrowButton:disabled {
-  color: #ccc;
-  cursor: not-allowed;
 }
 
 .arrowButton:hover:not(:disabled) {
   transform: scale(1.15);
+}
+
+.navArrow {
+  width: 20px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.arrowEnabled {
   color: #415261;
+  opacity: 1;
+}
+
+.arrowDisabled {
+  color: #ccc;
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .dots {
@@ -157,95 +184,77 @@
   background-color: rgba(65, 82, 97, 0.1);
 }
 
-/* TABLET DEVICES (768px and below) */
+/* Tablet and Small Laptops */
 @media (max-width: 768px) {
   .paginationWrapper {
-    gap: 12px;
-    padding: 8px 15px;
-    border-radius: 40px;
+    gap: 15px;
+    padding: 8px 12px;
+    border-radius: 18px;
   }
 
   .pageNumbers {
-    gap: 8px;
+    gap: 15px;
   }
 
   .pageButton {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-    border-radius: 6px;
-  }
-
-  .arrowButton {
-    font-size: 20px;
-    padding: 0 8px;
-  }
-
-  .dots {
     font-size: 18px;
+    padding: 4px 8px;
+  }
+
+  .navArrow {
+    width: 18px;
   }
 }
 
-/* MOBILE DEVICES (480px and below) */
+/* Mobile Phones (Portrait) */
 @media (max-width: 480px) {
   .paginationWrapper {
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 30px;
-    margin: 1.5rem auto;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: 16px;
+    border-width: 1px;
   }
 
   .pageNumbers {
-    gap: 6px;
+    gap: 8px;
   }
 
   .pageButton {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-    border-radius: 4px;
-  }
-
-  .pageButton.active {
-    border: 1.5px solid #415261;
-  }
-
-  .arrowButton {
-    font-size: 18px;
-    padding: 0 6px;
+    font-size: 16px;
+    padding: 3px 7px;
+    min-width: 32px;
   }
 
   .dots {
     font-size: 16px;
-    padding-bottom: 3px;
+    gap: 5px;
+  }
+
+  .navArrow {
+    width: 16px;
+    height: 12px;
   }
 }
 
-/* VERY SMALL DEVICES (under 360px) */
-@media (max-width: 360px) {
+/* Very Small Devices / Narrow Screens */
+@media (max-width: 370px) {
   .paginationWrapper {
-    gap: 6px;
-    padding: 6px 10px;
-    border-radius: 25px;
-    margin: 1rem auto;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 14px;
   }
 
   .pageNumbers {
-    gap: 4px;
+    gap: 5px;
   }
 
   .pageButton {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
+    font-size: 14px;
+    padding: 2px 5px;
+    min-width: 28px;
   }
 
   .arrowButton {
-    font-size: 16px;
-    padding: 0 4px;
-  }
-
-  .dots {
-    font-size: 14px;
+    padding: 0 2px;
   }
 }

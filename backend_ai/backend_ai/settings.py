@@ -23,6 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "XXXXXX")
 PUBLIC_KEY = os.getenv("public_key")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG")
@@ -238,6 +239,7 @@ CELERY_REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 CELERY_REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 CELERY_BROKER_URL = f"redis://{CELERY_REDIS_HOST}:{CELERY_REDIS_PORT}/2"
 CELERY_RESULT_BACKEND = f"redis://{CELERY_REDIS_HOST}:{CELERY_REDIS_PORT}/2"
+CELERY_RESULT_EXPIRES = 3600
 
 CELERY_WORKER_CONCURRENCY = int(os.getenv("CELERY_WORKER_CONCURRENCY", "4"))
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
