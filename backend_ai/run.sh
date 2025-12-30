@@ -27,13 +27,17 @@ infisical run --path="/Real-Estate/backend-ai" -- sh -c '
 
     # Check environment and start appropriate server
     if [ "$DJANGO_ENV" = "production" ]; then
-      # Start Gunicorn in production mode
-      echo "Starting Gunicorn production server..."
-      gunicorn backend_ai.wsgi:application --bind 0.0.0.0:8001 --workers=4 --threads=2 --timeout=120
+      # PRODUCTION: Gunicorn with Uvicorn workers
+      echo "Starting Gunicorn with Uvicorn workers (ASGI Production)..."
+      gunicorn backend_ai.asgi:application \
+               --bind 0.0.0.0:8001 \
+               --workers 4 \
+               --worker-class uvicorn.workers.UvicornWorker \
+               --timeout 120
     else
-      # Start Django development server
-      echo "Starting Django development server..."
-      python manage.py runserver 0.0.0.0:8001
+      # DEVELOPMENT: Standard Uvicorn with auto-reload
+      echo "Starting Uvicorn development server..."
+      uvicorn backend_ai.asgi:application --host 0.0.0.0 --port 8001 --reload
     fi
   else
     # Start AI workers

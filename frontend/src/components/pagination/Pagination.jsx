@@ -27,26 +27,26 @@ export default function Pagination({ currentPage, totalPages }) {
     const buffer = 1;
 
     if (totalPages <= 7) {
-      // If total pages are few, just show them all
+      // If total pages are few, show them all
       for (let i = 1; i <= totalPages; i++) {
         pages.push(renderButton(i));
       }
     } else {
-      // 1. Always show First Page
+      // First Page
       pages.push(renderButton(1));
 
       // Calculate window
       let startPage = Math.max(2, currentPage - buffer);
       let endPage = Math.min(totalPages - 1, currentPage + buffer);
 
-      // Ensure we show a consistent amount of numbers even at the edges
+      // Consistent amount of pages in edges
       if (currentPage <= 2) {
         endPage = 4;
       } else if (currentPage >= totalPages - 1) {
         startPage = totalPages - 3;
       }
 
-      // 2. Start Dots
+      // Start Dots
       if (startPage > 2) {
         pages.push(
           <span key="start-dots" className={styles.dots}>
@@ -55,12 +55,12 @@ export default function Pagination({ currentPage, totalPages }) {
         );
       }
 
-      // 3. Middle Window
+      // Middle Window
       for (let i = startPage; i <= endPage; i++) {
         pages.push(renderButton(i));
       }
 
-      // 4. End Dots
+      // End Dots
       if (endPage < totalPages - 1) {
         pages.push(
           <span key="end-dots" className={styles.dots}>
@@ -69,7 +69,7 @@ export default function Pagination({ currentPage, totalPages }) {
         );
       }
 
-      // 5. Always show Last Page
+      // Always show Last Page
       pages.push(renderButton(totalPages));
     }
     return pages;
@@ -91,7 +91,6 @@ export default function Pagination({ currentPage, totalPages }) {
 
   return (
     <div className={styles.paginationWrapper}>
-      {/* PREVIOUS BUTTON */}
       <button
         type="button"
         onClick={() => handlePageChange(currentPage - 1)}
@@ -103,13 +102,13 @@ export default function Pagination({ currentPage, totalPages }) {
           alt="Previous"
           width={24}
           height={24}
-          style={{ opacity: canGoPrev ? 1 : 0.3 }} // Visual feedback for disabled state
+          // style={{ opacity: canGoPrev ? 1 : 0.3 }} //! Why the hell is there inline css
+          className={`${styles.navArrow} ${canGoPrev ? styles.arrowEnabled : styles.arrowDisabled}`}
         />
       </button>
 
       <div className={styles.pageNumbers}>{renderPageNumbers()}</div>
 
-      {/* NEXT BUTTON */}
       <button
         type="button"
         onClick={() => handlePageChange(currentPage + 1)}
@@ -121,7 +120,8 @@ export default function Pagination({ currentPage, totalPages }) {
           alt="Next"
           width={24}
           height={24}
-          style={{ opacity: canGoNext ? 1 : 0.3 }}
+          // style={{ opacity: canGoNext ? 1 : 0.3 }} //! Why the hell is there inline css
+          className={`${styles.navArrow} ${canGoNext ? styles.arrowEnabled : styles.arrowDisabled}`}
         />
       </button>
     </div>
