@@ -1,6 +1,6 @@
 import random
 import factory
-from factory.fuzzy import FuzzyDecimal, FuzzyChoice
+from factory.fuzzy import FuzzyInteger, FuzzyDecimal, FuzzyChoice
 from .models import User, AIReport, Property
 
 
@@ -27,14 +27,18 @@ class AIReportFactory(factory.django.DjangoModelFactory):
 
     @factory.lazy_attribute
     def comparable_data(self):
-        return {
-            "neighbors": [
-                {"price": 45000, "sqft": 1200},
-                {"price": 48000, "sqft": 1350},
-            ],
-            "market_status": "stable",
-        }
+        return [
+            {
+                "price": random.randint(200000, 900000),
+                "area_sqft": random.randint(800, 3500),
+                "beds": random.randint(1, 5),
+                "baths": random.randint(1, 4),
+            }
+            for _ in range(100)
+        ]
 
+    avg_beds = FuzzyInteger(1, 10)
+    avg_baths = FuzzyInteger(1, 10)
     avg_market_price = FuzzyDecimal(15000.00, 60000.00, 2)
     avg_price_per_sqft = FuzzyDecimal(50.00, 300.00, 2)
     investment_rating = FuzzyDecimal(0.0, 5.0, 1)

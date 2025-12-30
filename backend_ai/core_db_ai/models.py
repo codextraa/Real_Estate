@@ -69,6 +69,8 @@ class AIReport(models.Model):
     extracted_area = models.CharField(max_length=100, blank=True)
     extracted_city = models.CharField(max_length=100, blank=True)
     comparable_data = models.JSONField(null=True, blank=True)
+    avg_beds = models.IntegerField(null=True)
+    avg_baths = models.IntegerField(null=True)
     avg_market_price = models.DecimalField(max_digits=15, decimal_places=2, null=True)
     avg_price_per_sqft = models.DecimalField(max_digits=12, decimal_places=2, null=True)
     investment_rating = models.DecimalField(
