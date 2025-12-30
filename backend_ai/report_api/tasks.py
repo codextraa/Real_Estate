@@ -1,7 +1,7 @@
 import os
 import json
-from celery import shared_task, chord
 from openai import OpenAI
+from celery import shared_task, chord
 
 client = OpenAI(
     api_key=os.getenv("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com"

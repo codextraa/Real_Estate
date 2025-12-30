@@ -1,4 +1,6 @@
 from django.db import models
+from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 
@@ -54,8 +56,11 @@ class AIReport(models.Model):
         COMPLETED = "COMPLETED", "Completed"
         FAILED = "FAILED", "Failed"
 
-    property = models.OneToOneField(
-        Property, on_delete=models.CASCADE, related_name="ai_report"
+    property = models.ForeignKey(
+        Property, on_delete=models.CASCADE, related_name="ai_reports"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ai_reports"
     )
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.PENDING
@@ -66,8 +71,13 @@ class AIReport(models.Model):
     comparable_data = models.JSONField(null=True, blank=True)
     avg_market_price = models.DecimalField(max_digits=15, decimal_places=2, null=True)
     avg_price_per_sqft = models.DecimalField(max_digits=12, decimal_places=2, null=True)
-    investment_rating = models.IntegerField(
-        null=True, help_text="Rating from 0 to 5 based on price regression"
+    investment_rating = models.DecimalField(
+        max_digits=2,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
+        help_text="Rating from 0.0 to 5.0 based on analysis",
     )
 
     ai_insight_summary = models.TextField(blank=True)

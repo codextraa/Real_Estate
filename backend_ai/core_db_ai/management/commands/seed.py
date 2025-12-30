@@ -1,32 +1,31 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from core_db_ai.models import Property, AIReport
+from core_db_ai.models import Property, AIReport, User
 from core_db_ai.factories import AIReportFactory
 
 
 class Command(BaseCommand):
-    help = (
-        "Deletes existing AIReports and generates new ones for all existing Properties"
-    )
+    help = "Seeds AI Reports by linking properties to random users"
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.WARNING("Deleting existing AI Reports..."))
-        deleted_count, _ = AIReport.objects.all().delete()
-        self.stdout.write(f"Removed {deleted_count} old reports.")
+        self.stdout.write(self.style.WARNING("Cleaning up old AI Reports..."))
+        AIReport.objects.all().delete()
 
         all_properties = Property.objects.all()
-        total_props = all_properties.count()
+        all_users = User.objects.all()
 
-        if total_props == 0:
+        if not all_properties.exists() or not all_users.exists():
             self.stdout.write(
                 self.style.ERROR(
-                    "No properties found in the database. Please seed core_db first."
+                    "❌ Error: You need both Properties and Users in the DB to seed reports."
                 )
             )
             return
 
         self.stdout.write(
-            self.style.NOTICE(f"Found {total_props} properties. Starting generation...")
+            self.style.NOTICE(
+                f"Seeding reports for {all_properties.count()} properties..."
+            )
         )
 
         count = 0
@@ -38,17 +37,13 @@ class Command(BaseCommand):
 
                     if count % 10 == 0:
                         self.stdout.write(
-                            f"Progress: {count}/{total_props} processed..."
+                            f"Processed {count}/{all_properties.count()}..."
                         )
 
         except Exception as e:
-            self.stdout.write(
-                self.style.ERROR(f"An error occurred during seeding: {e}")
-            )
+            self.stdout.write(self.style.ERROR(f"❌ Seeding failed: {e}"))
             return
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Successfully created {count} AI reports linked to existing properties."
-            )
+            self.style.SUCCESS(f"✅ Created {count} AI reports successfully.")
         )

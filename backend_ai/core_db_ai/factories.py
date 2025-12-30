@@ -1,16 +1,17 @@
 import random
 import factory
-from factory.fuzzy import FuzzyInteger, FuzzyDecimal, FuzzyChoice
-from .models import AIReport, Property
+from factory.fuzzy import FuzzyDecimal, FuzzyChoice
+from .models import User, AIReport, Property
 
 
 class AIReportFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AIReport
 
-    # Instead of SubFactory, we pick a random existing property
+    # Instead of SubFactory, we pick a random existing property and user
     # We use a lambda to ensure the query runs when the factory is called
     property = factory.LazyAttribute(lambda _: random.choice(Property.objects.all()))
+    user = factory.LazyAttribute(lambda _: random.choice(User.objects.all()))
 
     status = FuzzyChoice(
         [
@@ -36,8 +37,6 @@ class AIReportFactory(factory.django.DjangoModelFactory):
 
     avg_market_price = FuzzyDecimal(15000.00, 60000.00, 2)
     avg_price_per_sqft = FuzzyDecimal(50.00, 300.00, 2)
-    investment_rating = FuzzyInteger(
-        0, 4
-    )  # Standardized to 0-4 per your model help_text
+    investment_rating = FuzzyDecimal(0.0, 5.0, 1)
 
     ai_insight_summary = factory.Faker("paragraph", nb_sentences=3)
