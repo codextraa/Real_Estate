@@ -13,7 +13,9 @@ tavily = TavilyClient(api_key=settings.TAVILY_API_KEY)
 
 
 @shared_task
-def search_properties(area, city, area_sqft, beds, baths, count, seed_index):
+def search_properties(
+    area, city, area_sqft, beds, baths, count, seed_index
+):  # pylint: disable=R0913, R0917, R0914
     """
     Worker Task: Calls Tavily and DeepSeek for a specific slice of data.
     """
@@ -80,7 +82,7 @@ def search_properties(area, city, area_sqft, beds, baths, count, seed_index):
         # Extract the list from the JSON response
         data = json.loads(response.choices[0].message.content)
         return data.get("properties", [])
-    except Exception as e:
+    except Exception as e:  # pylint: disable=W0718
         logger.error(f"API Error: {e}. Falling back to mock data.")
         return generate_mock_properties(area_sqft, beds, baths, count)
 
@@ -110,7 +112,7 @@ def compile_results_callback(results):
                 )
                 seen_identifiers.add(fingerprint)
 
-    logger.info(f"Final dataset compiled: {len(final_list)} unique properties.")
+    logger.info("Final dataset compiled: %s unique properties.", len(final_list))
     return final_list
 
 
