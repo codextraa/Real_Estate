@@ -67,7 +67,7 @@ class AIReport(models.Model):
     avg_market_price = models.DecimalField(max_digits=15, decimal_places=2, null=True)
     avg_price_per_sqft = models.DecimalField(max_digits=12, decimal_places=2, null=True)
     investment_rating = models.IntegerField(
-        null=True, help_text="Rating from 0 to 4 based on price regression"
+        null=True, help_text="Rating from 0 to 5 based on price regression"
     )
 
     ai_insight_summary = models.TextField(blank=True)
