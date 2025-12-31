@@ -286,17 +286,13 @@ class PropertyViewSetTests(APITestCase):
 
         response = self.client.delete(url)
 
-        # Even though the property exists, the user doesn't have it in their queryset
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        # Verify the property was NOT actually deleted from the database
         self.assertTrue(Property.objects.filter(id=self.property.id).exists())
 
     # --- ACTION & FILTER TESTS ---
 
     def test_my_listings_action(self):
         """Test the @action 'my-listings' returns only current agent properties."""
-        # We create a second property for a DIFFERENT agent to test filtering.
-        # We must include 'description' here because your model calls full_clean()
         Property.objects.create(
             agent=self.other_agent_profile,
             title="Other Agent Prop",
@@ -309,18 +305,12 @@ class PropertyViewSetTests(APITestCase):
             slug="other-agent-prop",
         )
 
-        # Authenticate as the FIRST agent
         self._authenticate(self.agent_user)
         url = reverse("property-my-listings")
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # Logic check:
-        # Total properties in DB = 2
-        # Properties owned by agent_user = 1 (the one from setUp)
-
-        # Handle pagination if enabled, otherwise check response.data directly
         results = response.data.get("results", response.data)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], self.property.id)
