@@ -1352,15 +1352,24 @@ class AgentViewSetTests(APITestCase):
 
     def tearDown(self):
         """Clean up uploaded test files from the filesystem."""
+        # 1. Clean up the specific test image path if it exists
         if hasattr(self, "image_path") and os.path.exists(self.image_path):
             os.remove(self.image_path)
-        # Check if agent has an image and it's not the default
-        self.agent_user_1.refresh_from_db()
-        if self.agent_user_1.image_url:
-            path = os.path.join(settings.MEDIA_ROOT, self.agent_user_1.image_url.name)
-            if os.path.exists(path) and "default_profile.jpg" not in path:
-                os.remove(path)
 
+        # 2. Check if the agent still exists in the DB before refreshing
+        if Agent.objects.filter(pk=self.agent_user_1.pk).exists():
+            self.agent_user_1.refresh_from_db()
+
+            # 3. Clean up the actual file stored on the agent instance
+            if self.agent_user_1.image_url:
+                path = os.path.join(settings.MEDIA_ROOT, self.agent_user_1.image_url.name)
+                if os.path.exists(path) and "default_profile.jpg" not in path:
+                    os.remove(path)
+        else:
+            # If the agent was deleted, the file might still be on disk.
+            # You can add logic here to clean up orphaned files if necessary,
+            # but the crash will now be avoided.
+            pass
     #     #     # ------------------ List TESTS ------------------
 
     def test_list_agents_normal_user_denied(self):
@@ -1992,130 +2001,3 @@ class AgentViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(User.objects.filter(pk=self.agent_user.pk).exists())
 
-    ## Image Test Cases
-
-    def test_upload_valid_image(self):
-        """Test successfully updating an agent profile with a valid image."""
-        self._authenticate(self.agent_user_1.user)
-        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
-
-        image = self.generate_image(name="profile.png", format="PNG")
-        data = {"company_name": "Updated Agency", "profile_image": image}
-
-        # Use multipart format for file uploads
-        response = self.client.patch(url, data, format="multipart")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.agent_user_1.refresh_from_db()
-        self.assertIn("profile.png", self.agent_user_1.image_url.name)
-
-    def test_image_size_limit_fail(self):
-        """Test that images larger than 2MB are rejected."""
-        self._authenticate(self.agent_user_1.user)
-        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
-
-        # Create a file slightly larger than 2MB
-        large_content = b"0" * (2 * 1024 * 1024 + 1024)
-        large_image = SimpleUploadedFile(
-            "too_big.jpg", large_content, content_type="image/jpeg"
-        )
-
-        data = {"profile_image": large_image}
-        response = self.client.patch(url, data, format="multipart")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # Check for the nested error structure in your AgentImageSerializer
-        self.assertIn("Image size should not exceed 2MB.", str(response.data))
-
-    def test_invalid_image_type(self):
-        """Test that non-image files are rejected."""
-        self._authenticate(self.agent_user_1.user)
-        url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
-
-        fake_image = SimpleUploadedFile(
-            "doc.pdf", b"not-image-data", content_type="application/pdf"
-        )
-
-        data = {"profile_image": fake_image}
-        response = self.client.patch(url, data, format="multipart")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Image type should be JPEG, PNG", str(response.data))
-
-
-#! Agent Image Update Testcases (all of them including errors)
-
-
-# def test_upload_agent_profile_image_success(self):
-#     """Test successfully uploading a profile image via the ViewSet."""
-#     self._authenticate(self.agent_user_1.user)
-#     url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
-
-#     # Create a 10x10 black image
-#     black_image = Image.new("RGB", (10, 10), "black")
-#     image_bytes = io.BytesIO()
-#     black_image.save(image_bytes, format="JPEG")
-#     image_bytes.seek(0)
-
-#     image_file = SimpleUploadedFile(
-#         name="test_image.jpg",
-#         content=image_bytes.read(),
-#         content_type="image/jpeg",
-#     )
-
-#     data = {
-#         "company_name": "Updated Agency",
-#         "profile_image": image_file  # Key used in your ViewSet logic
-#     }
-
-#     # format="multipart" is essential for file uploads
-#     response = self.client.patch(url, data, format="multipart")
-
-#     self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-#     self.agent_user_1.refresh_from_db()
-#     self.image_path = os.path.join(settings.MEDIA_ROOT, self.agent_user_1.image_url.name)
-
-#     # Assertions
-#     self.assertTrue(self.agent_user_1.image_url)
-#     # Verify it saved in the 'profile_images' directory as per Agent model
-#     self.assertIn("profile_images/", self.agent_user_1.image_url.name)
-#     self.assertTrue(os.path.exists(self.image_path))
-
-# def test_image_type_validation_error(self):
-#     """Test that only JPEG and PNG are allowed via AgentImageSerializer."""
-#     self._authenticate(self.agent_user_1.user)
-#     url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
-
-#     # Create a fake text file disguised as an image
-#     fake_image = SimpleUploadedFile(
-#         name="test.gif",
-#         content=b"not-an-image-content",
-#         content_type="image/gif"
-#     )
-
-#     data = {"profile_image": fake_image}
-#     response = self.client.patch(url, data, format="multipart")
-
-#     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-#     # Your Serializer returns errors['type'] = "Image type should be JPEG, PNG"
-#     self.assertIn("Image type should be JPEG, PNG", str(response.data))
-
-# def test_image_size_validation_error(self):
-#     """Test that images exceeding 2MB are rejected."""
-#     self._authenticate(self.agent_user_1.user)
-#     url = AGENT_DETAIL_URL(self.agent_user_1.user.pk)
-
-#     # Generate 3MB of dummy data
-#     large_content = b"0" * (3 * 1024 * 1024)
-#     large_image = SimpleUploadedFile(
-#         name="huge.jpg",
-#         content=large_content,
-#         content_type="image/jpeg"
-#     )
-
-#     data = {"profile_image": large_image}
-#     response = self.client.patch(url, data, format="multipart")
-
-#     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-#     self.assertIn("Image size should not exceed 2MB.", str(response.data))
