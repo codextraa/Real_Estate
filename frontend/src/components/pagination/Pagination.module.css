@@ -1,90 +1,10 @@
-/*! what is this double styles, you use AI but don't clean up why? */
-/* .paginationWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  padding: 10px 25px;
-  border: 2px solid #415261; /* Dark slate border from reference
-  border-radius: 50px;
-  width: fit-content;
-  margin: 2rem auto;
-  background-color: #f7f7f7;
-}
-
-.pageNumbers {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.pageButton {
-  background-color: transparent;
-  border: 1px solid #415261;
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-family: var(--font-old-standard-tt), serif;
-  font-weight: 700;
-  font-size: 18px;
-  color: #13252e;
-  transition: all 0.2s ease;
-}
-
-/* HIGH CONTRAST ACTIVE STATE
-.pageButton.active {
-  background-color: #b3c2cd; /* Light blue-grey highlight
-  border: 2px solid #415261; /* Thicker border for clarity
-  color: #13252e;
-  cursor: default;
-}
-
-.arrowButton {
-  background: none;
-  border: none;
-  font-size: 24px;
-  font-weight: bold;
-  color: #13252e;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 10px;
-}
-
-.arrowButton:disabled {
-  color: #ccc;
-  cursor: not-allowed;
-}
-
-.dots {
-  font-weight: 700;
-  font-size: 20px;
-  color: #13252e;
-  align-self: flex-end;
-  padding-bottom: 5px;
-}
-
-.pageButton:hover:not(.active) {
-  background-color: rgba(65, 82, 97, 0.1);
-} */
-
 .paginationWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  /*! was gap 15px?? */
-  /* gap: 15px; */
   gap: 20px;
-  /*! was padding sideways 25px?? */
   padding: 10px 10px;
   border: 2px solid #415261;
-  /* border-radius: 50px; */
-  /*! what is this, what was the border radius in figma?? */
   border-radius: 20px;
   width: fit-content;
   margin: 2rem auto;
@@ -95,8 +15,6 @@
 .pageNumbers {
   display: flex;
   align-items: center;
-  /*! was gap 12px ?? */
-  /* gap: 12px; */
   gap: 30px;
   flex-wrap: wrap;
   justify-content: center;
@@ -105,12 +23,7 @@
 .pageButton {
   background-color: transparent;
   border: 1px solid #415261;
-  /*! was border radius 8px?? */
-  /* border-radius: 8px; */
   border-radius: 5px;
-  /*! isn't giving width and height prohibited?? */
-  /* width: 40px;
-  height: 40px; */
   padding: 5px 10px 3px 10px;
   display: flex;
   align-items: center;
@@ -118,8 +31,6 @@
   cursor: pointer;
   font-family: var(--font-old-standard-tt), serif;
   font-weight: 700;
-  /*! what was the font size in figma?? */
-  /* font-size: 18px; */
   font-size: 20px;
   color: #13252e;
   transition: all 0.2s ease;
@@ -136,16 +47,10 @@
 .arrowButton {
   background: none;
   border: none;
-  /*! why will u use font-styles on an image?? */
-  /* font-size: 24px;
-  font-weight: bold;
-  color: #13252e; */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  /*! why will u use padding on an image?? */
-  /* padding: 0 10px; */
   transition: all 0.3s ease;
   flex-shrink: 0;
 }
