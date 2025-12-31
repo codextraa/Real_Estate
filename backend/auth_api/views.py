@@ -974,7 +974,7 @@ class UserViewSet(ModelViewSet):
         tags=["User Management"],
         request=None,
         responses={
-            status.HTTP_200_NO_CONTENT: OpenApiResponse(
+            status.HTTP_200_OK: OpenApiResponse(
                 response={
                     "type": "object",
                     "properties": {"success": {"type": "string"}},
@@ -1598,7 +1598,7 @@ class AgentViewSet(ModelViewSet):
         tags=["Agent Management"],
         request=None,
         responses={
-            status.HTTP_200_NO_CONTENT: OpenApiResponse(
+            status.HTTP_200_OK: OpenApiResponse(
                 response=AgentSerializer,
                 description=(
                     "Agent profile deleted successfully."

@@ -20,7 +20,7 @@ const initialState = {
     city: "",
     area: "",
     street: "",
-    houser_no: "",
+    house_no: "",
     flat_no: "",
     beds: "",
     baths: "",
@@ -51,7 +51,7 @@ export default function ListingForm() {
     city: "",
     area: "",
     street: "",
-    houser_no: "",
+    house_no: "",
     flat_no: "",
     beds: "",
     baths: "",
@@ -155,7 +155,7 @@ export default function ListingForm() {
     formData.city.trim() !== "" &&
     formData.area.trim() !== "" &&
     formData.street.trim() !== "" &&
-    formData.houser_no.trim() !== "";
+    formData.house_no.trim() !== "";
   const isDetailsComplete =
     formData.beds.trim() !== "" &&
     formData.baths.trim() !== "" &&
@@ -167,36 +167,35 @@ export default function ListingForm() {
     <div className={styles.container}>
       <div className={styles.sidebar}>
         <div className={styles.sidebarContent}>
-          <div className={styles.sidebarResponsiveWrapper}>
-            <div className={styles.sidebarHeader}>
-              <div className={styles.sidebarTitle}>Create a listing</div>
-              <div className={styles.sidebarSubtitle}>
-                Input property information
-              </div>
+          <div className={styles.sidebarHeader}>
+            <div className={styles.sidebarTitle}>Create a listing</div>
+            <div className={styles.sidebarSubtitle}>
+              Input property information
             </div>
+          </div>
 
-            <div className={styles.checklist}>
-              {[
-                { label: "Title", check: isTitleComplete },
-                { label: "Description", check: isDescriptionComplete },
-                { label: "Address", check: isAddressComplete },
-                { label: "Details", check: isDetailsComplete },
-                { label: "Pricing", check: isPricingComplete },
-                { label: "Image", check: isImageComplete },
-              ].map((item, idx) => (
-                <div key={idx} className={styles.checkItem}>
-                  <div className={styles.iconContainer}>
-                    <Image
-                      src={item.check ? doneIcon : notDoneIcon}
-                      alt="status"
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                  <div className={styles.label}>{item.label}</div>
+          <div className={styles.checklist}>
+            {[
+              { label: "Title", check: isTitleComplete },
+              { label: "Description", check: isDescriptionComplete },
+              { label: "Address", check: isAddressComplete },
+              { label: "Details", check: isDetailsComplete },
+              { label: "Pricing", check: isPricingComplete },
+              { label: "Image", check: isImageComplete },
+            ].map((item, idx) => (
+              <div key={idx} className={styles.checkItem}>
+                <div>
+                  <Image
+                    src={item.check ? doneIcon : notDoneIcon}
+                    alt="status"
+                    width={24}
+                    height={24}
+                    className={styles.icon}
+                  />
                 </div>
-              ))}
-            </div>
+                <div className={styles.label}>{item.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -304,8 +303,8 @@ export default function ListingForm() {
                 <input
                   type="text"
                   placeholder="House No."
-                  name="houser_no"
-                  value={formData.houser_no}
+                  name="house_no"
+                  value={formData.house_no}
                   onChange={handleInputChange}
                   className={styles.input}
                 />
@@ -450,7 +449,7 @@ export default function ListingForm() {
               <span className={styles.errorBox}>{localImageError}</span>
             ) : Object.keys(state.errors).length > 0 &&
               state.errors.image_url ? (
-              <span className={styles.errorText}>{state.errors.image_url}</span>
+              <span className={styles.errorBox}>{state.errors.image_url}</span>
             ) : null}
           </div>
           {state.success && (
@@ -461,7 +460,9 @@ export default function ListingForm() {
           )}
           <div className={styles.buttonGroup}>
             <div className={styles.cancelProfileButton}>
-              <Link href={`/`}>Cancel</Link>
+              <Link href={`/`} className={styles.cancelProfileButtonLink}>
+                Cancel
+              </Link>
             </div>
             <FormButton
               type="submit"
