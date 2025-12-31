@@ -974,7 +974,7 @@ class UserViewSet(ModelViewSet):
         tags=["User Management"],
         request=None,
         responses={
-            status.HTTP_204_NO_CONTENT: OpenApiResponse(
+            status.HTTP_200_NO_CONTENT: OpenApiResponse(
                 response={
                     "type": "object",
                     "properties": {"success": {"type": "string"}},
@@ -992,7 +992,7 @@ class UserViewSet(ModelViewSet):
             OpenApiExample(
                 name="Successful User Deletion",
                 response_only=True,
-                status_codes=["204"],
+                status_codes=["200"],
                 value={"success": "User Profile Deleted Successfully."},
             ),
             OpenApiExample(
@@ -1598,11 +1598,11 @@ class AgentViewSet(ModelViewSet):
         tags=["Agent Management"],
         request=None,
         responses={
-            status.HTTP_204_NO_CONTENT: OpenApiResponse(
+            status.HTTP_200_NO_CONTENT: OpenApiResponse(
                 response=AgentSerializer,
                 description=(
                     "Agent profile deleted successfully."
-                    "Returns a success message with 204 status.",
+                    "Returns a success message with 200 status.",
                 ),
             ),
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
@@ -1616,7 +1616,7 @@ class AgentViewSet(ModelViewSet):
             OpenApiExample(
                 name="Successful Deletion",
                 response_only=True,
-                status_codes=["204"],
+                status_codes=["200"],
                 value={"success": "Agent profile deleted successfully."},
             ),
             OpenApiExample(
