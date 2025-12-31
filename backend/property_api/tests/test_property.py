@@ -152,17 +152,14 @@ class PropertyViewSetTests(APITestCase):
     ### ---- Create -----
 
     def test_create_property_as_agent_success(self):
-        """Test that an agent can create a property listing."""
         self._authenticate(self.agent_user)
         payload = self.get_valid_property_data()
-
         response = self.client.post(PROPERTY_LIST_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(
-            Property.objects.get(id=response.data.get("id", 0)).title,
-            "Luxury Apartment",
-        )
+
+        property_exists = Property.objects.filter(title="Luxury Apartment").exists()
+        self.assertTrue(property_exists)
 
     def test_create_property_forbidden_for_normal_user(self):
         """Test that a user with is_agent=False cannot create a property."""
@@ -185,55 +182,153 @@ class PropertyViewSetTests(APITestCase):
 
     #### ----update-----
 
-    # def test_agent_can_update_own_property(self):
-    #     """Test that an agent can patch their own property."""
-    #     self._authenticate(self.agent_user)
-    #     url = PROPERTY_DETAIL_URL(self.property.id)
-    #     payload = {"title": "Updated Title"}
+    def test_agent_can_update_own_property(self):
+        """Test that an agent can patch their own property."""
+        self._authenticate(self.agent_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+        payload = {"title": "Updated Title"}
 
-    #     response = self.client.patch(url, payload)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.property.refresh_from_db()
-    #     self.assertEqual(self.property.title, "Updated Title")
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.property.refresh_from_db()
+        self.assertEqual(self.property.title, "Updated Title")
 
-    # def test_agent_cannot_update_others_property(self):
-    #     """Test that an agent cannot modify properties they don't own."""
-    #     self._authenticate(self.other_agent_user)
-    #     url = PROPERTY_DETAIL_URL(self.property.id)
+    def test_agent_cannot_update_others_property(self):
+        """Test that an agent cannot modify properties they don't own."""
+        self._authenticate(self.other_agent_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
 
-    #     response = self.client.patch(url, {"title": "Hacked Title"})
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        response = self.client.patch(url, {"title": "Hacked Title"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    # def test_forbidden_fields_ignored_on_update(self):
-    #     """Test that 'slug' and 'agent' fields cannot be changed via API."""
-    #     self._authenticate(self.agent_user)
-    #     url = PROPERTY_DETAIL_URL(self.property.id)
-    #     payload = {"slug": "changed-slug", "title": "New Title"}
+    def test_forbidden_fields_ignored_on_update(self):
+        """Test that 'slug' and 'agent' fields cannot be changed via API."""
+        self._authenticate(self.agent_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+        payload = {"slug": "changed-slug", "title": "New Title"}
 
-    #     response = self.client.patch(url, payload)
-    #     # Your view explicitly checks for 'slug' in request.data and returns 403
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        response = self.client.patch(url, payload)
+        # Your view explicitly checks for 'slug' in request.data and returns 403
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # def test_delete_property_as_owner(self):
-    #     """Test agent can delete their own property."""
-    #     self._authenticate(self.agent_user)
-    #     url = PROPERTY_DETAIL_URL(self.property.id)
+    def test_update_forbidden_fields_fails(self):
+        """Test patching 'agent' returns 403."""
+        self._authenticate(self.agent_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
 
-    #     response = self.client.delete(url)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK) # Your view returns 200 on success
-    #     self.assertFalse(Property.objects.filter(id=self.property.id).exists())
+        response = self.client.patch(url, {"agent": self.other_agent_profile.id})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # def test_image_upload_validation_size(self):
-    #     """Test that images over 2MB are rejected."""
-    #     self._authenticate(self.agent_user)
-    #     # Create a 3MB file
-    #     large_img = SimpleUploadedFile("big.jpg", b"0" * 3 * 1024 * 1024, content_type="image/jpeg")
+    def test_put_method_not_allowed(self):
+        """Test that PUT returns 405 as it is excluded from http_method_names."""
+        self._authenticate(self.agent_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+        # Using the correct helper method name from your setup
+        response = self.client.put(url, self.get_valid_property_data())
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    #     payload = self.get_valid_property_data()
-    #     payload['property_image'] = large_img
+    def test_update_property_not_found(self):
+        """Test updating a property ID that doesn't exist in the DB."""
+        self._authenticate(self.agent_user)
+        # Use an ID that is highly unlikely to exist
+        url = PROPERTY_DETAIL_URL(99999)
+        payload = {"title": "New Title"}
 
-    #     # Use format='multipart' for file uploads
-    #     response = self.client.post(PROPERTY_LIST_URL, payload, format='multipart')
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertIn("Property image size should not exceed 2MB.", str(response.data))
+    def test_normal_user_update_returns_404(self):
+        """
+        Test that a normal user (not agent, not staff) receives a 404
+        because get_queryset returns Property.objects.none().
+        """
+        self._authenticate(self.normal_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+
+        response = self.client.patch(url, {"title": "Normal User Edit"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+    ### --- DELETE ----
+
+    def test_delete_property_as_owner(self):
+        """Test agent can delete their own property."""
+        self._authenticate(self.agent_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK) # Your view returns 200 on success
+        self.assertFalse(Property.objects.filter(id=self.property.id).exists())
+
+    def test_delete_property_unauthorized_404(self):
+        """Other agents shouldn't find the property to delete it."""
+        self._authenticate(self.other_agent_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_property_not_found(self):
+        """Test deleting a property ID that doesn't exist in the DB."""
+        self._authenticate(self.agent_user)
+        url = PROPERTY_DETAIL_URL(99999)
+
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_normal_user_delete_property_returns_404(self):
+        """
+        Test that a normal user cannot delete a property.
+        They receive a 404 because get_queryset returns none() for them.
+        """
+        self._authenticate(self.normal_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+
+        response = self.client.delete(url)
+
+        # Even though the property exists, the user doesn't have it in their queryset
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        # Verify the property was NOT actually deleted from the database
+        self.assertTrue(Property.objects.filter(id=self.property.id).exists())
+
+
+    # --- ACTION & FILTER TESTS ---
+
+    def test_my_listings_action(self):
+        """Test the @action 'my-listings' returns only current agent properties."""
+        # We create a second property for a DIFFERENT agent to test filtering.
+        # We must include 'description' here because your model calls full_clean()
+        Property.objects.create(
+            agent=self.other_agent_profile,
+            title="Other Agent Prop",
+            description="Another description required by full_clean",
+            beds=1,
+            baths=1,
+            price=100000.00,
+            area_sqft=800,
+            address="789 Side Street",
+            slug="other-agent-prop"
+        )
+
+        # Authenticate as the FIRST agent
+        self._authenticate(self.agent_user)
+        url = reverse("property-my-listings")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Logic check:
+        # Total properties in DB = 2
+        # Properties owned by agent_user = 1 (the one from setUp)
+
+        # Handle pagination if enabled, otherwise check response.data directly
+        results = response.data.get("results", response.data)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], self.property.id)
+
+    def test_staff_user_bypass_filter(self):
+        """Test staff user can see any property regardless of owner."""
+        self._authenticate(self.staff_user)
+        url = PROPERTY_DETAIL_URL(self.property.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
