@@ -102,7 +102,6 @@ export default function Pagination({ currentPage, totalPages }) {
           alt="Previous"
           width={24}
           height={24}
-          // style={{ opacity: canGoPrev ? 1 : 0.3 }} //! Why the hell is there inline css
           className={`${styles.navArrow} ${canGoPrev ? styles.arrowEnabled : styles.arrowDisabled}`}
         />
       </button>
@@ -120,7 +119,6 @@ export default function Pagination({ currentPage, totalPages }) {
           alt="Next"
           width={24}
           height={24}
-          // style={{ opacity: canGoNext ? 1 : 0.3 }} //! Why the hell is there inline css
           className={`${styles.navArrow} ${canGoNext ? styles.arrowEnabled : styles.arrowDisabled}`}
         />
       </button>
