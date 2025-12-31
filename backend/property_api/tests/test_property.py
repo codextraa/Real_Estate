@@ -248,7 +248,6 @@ class PropertyViewSetTests(APITestCase):
         response = self.client.patch(url, {"title": "Normal User Edit"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
     ### --- DELETE ----
 
     def test_delete_property_as_owner(self):
@@ -257,7 +256,9 @@ class PropertyViewSetTests(APITestCase):
         url = PROPERTY_DETAIL_URL(self.property.id)
 
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK) # Your view returns 200 on success
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK
+        )  # Your view returns 200 on success
         self.assertFalse(Property.objects.filter(id=self.property.id).exists())
 
     def test_delete_property_unauthorized_404(self):
@@ -290,7 +291,6 @@ class PropertyViewSetTests(APITestCase):
         # Verify the property was NOT actually deleted from the database
         self.assertTrue(Property.objects.filter(id=self.property.id).exists())
 
-
     # --- ACTION & FILTER TESTS ---
 
     def test_my_listings_action(self):
@@ -306,7 +306,7 @@ class PropertyViewSetTests(APITestCase):
             price=100000.00,
             area_sqft=800,
             address="789 Side Street",
-            slug="other-agent-prop"
+            slug="other-agent-prop",
         )
 
         # Authenticate as the FIRST agent
@@ -331,4 +331,3 @@ class PropertyViewSetTests(APITestCase):
         url = PROPERTY_DETAIL_URL(self.property.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
