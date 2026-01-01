@@ -60,6 +60,7 @@ export const deleteUser = async (id, userRole) => {
 
 export const getProperties = async (queryParams = {}) => {
   const params = new URLSearchParams(queryParams);
+  console.log("Fetching My Listings with:", params.toString());
   return apiClient.get(`/property-api/properties/?${params.toString()}`);
 };
 
@@ -86,7 +87,9 @@ export const deleteProperty = async (id) => {
 };
 
 export const getListings = async (queryParams = {}) => {
-  const params = new URLSearchParams(queryParams);
+  const cleanParams = { ...queryParams };
+  delete cleanParams.tab;
+  const params = new URLSearchParams(cleanParams);
   return apiClient.get(
     `/property-api/properties/my-listings/?${params.toString()}`,
   );

@@ -21,15 +21,15 @@ export default async function DashboardPage({ searchParams }) {
   if (userRole !== "Agent") {
     return notFound();
   }
-  const query = await searchParams;
-  const currentTab = query.tab || "my-listings";
-  const currentPage = parseInt(query.page) || 1;
+  const urlSearchParams = await searchParams;
+  const currentTab = urlSearchParams.tab || "my-listings";
+  const currentPage = parseInt(urlSearchParams.page) || 1;
 
   let response = [];
   if (currentTab === "my-listings") {
     response = await getListings({
       page: currentPage,
-      ...query,
+      ...urlSearchParams,
     });
   }
 

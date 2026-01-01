@@ -104,7 +104,11 @@ export default function ListingForm() {
     const { type, name, value } = e.target;
     let newValue = value;
     if (type === "number") {
-      newValue = Math.max(0, parseFloat(value)).toString();
+      if (value === "") {
+        newValue = "";
+      } else {
+        newValue = Math.max(0, parseFloat(value)).toString();
+      }
     }
     setFormData((prev) => ({ ...prev, [name]: newValue }));
   };

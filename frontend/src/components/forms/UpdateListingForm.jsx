@@ -55,41 +55,52 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   };
 
   // Check completion status - compare with initial data
+  const addressChanged =
+    formData.country !== initialData?.address?.country ||
+    formData.state !== initialData?.address?.state ||
+    formData.city !== initialData?.address?.city ||
+    formData.area !== initialData?.address?.area ||
+    formData.street !== initialData?.address?.street ||
+    formData.house_no !== initialData?.address?.house_no ||
+    formData.flat_no !== initialData?.address?.flat_no;
+
+  // Helper to check if detail fields changed (using String() to avoid type mismatch)
+  const detailsChanged =
+    String(formData.beds) !== String(initialData?.beds) ||
+    String(formData.baths) !== String(initialData?.baths) ||
+    String(formData.area_sqft) !== String(initialData?.area_sqft);
+
+  // Completion Logic: Must be non-empty AND different from initial data
   const isTitleComplete =
     formData.title.trim() !== "" && formData.title !== initialData?.title;
+
   const isDescriptionComplete =
     formData.description.trim() !== "" &&
     formData.description !== initialData?.description;
+
   const isAddressComplete =
     formData.country.trim() !== "" &&
-    formData.state.trim() !== "" &&
-    formData.city.trim() !== "" &&
-    formData.area.trim() !== "" &&
-    formData.street.trim() !== "" &&
     formData.house_no.trim() !== "" &&
-    (formData.country !== initialData?.address?.country ||
-      formData.state !== initialData?.address?.state ||
-      formData.city !== initialData?.address?.city ||
-      formData.area !== initialData?.address?.area ||
-      formData.street !== initialData?.address?.street ||
-      formData.house_no !== initialData?.address?.house_no);
+    addressChanged;
+
   const isDetailsComplete =
-    formData.beds !== "" &&
-    formData.baths !== "" &&
-    formData.area_sqft !== "" &&
-    (formData.beds !== initialData?.beds ||
-      formData.baths !== initialData?.baths ||
-      formData.area_sqft !== initialData?.area_sqft);
+    formData.beds !== "" && formData.baths !== "" && detailsChanged;
+
   const isPricingComplete =
-    formData.price !== "" && formData.price !== initialData?.price;
+    formData.price !== "" &&
+    String(formData.price) !== String(initialData?.price);
   const isImageComplete =
-    previewUrl !== null && previewUrl !== initialData?.image_url;
+    previewUrl !== null && previewUrl !== initialData.image_url;
 
   const handleInputChange = (e) => {
     const { type, name, value } = e.target;
     let newValue = value;
     if (type === "number") {
-      newValue = Math.max(0, parseFloat(value)).toString();
+      if (value === "") {
+        newValue = "";
+      } else {
+        newValue = Math.max(0, parseFloat(value)).toString();
+      }
     }
     setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
@@ -473,7 +484,9 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
           <div className={styles.buttonGroup}>
             <div className={styles.cancelProfileButton}>
-              <Link href="/">Cancel</Link>
+              <Link href={`/`} className={styles.cancelProfileButtonLink}>
+                Cancel
+              </Link>
             </div>
             <FormButton
               type="submit"
