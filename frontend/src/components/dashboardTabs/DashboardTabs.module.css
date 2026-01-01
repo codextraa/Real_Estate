@@ -43,3 +43,13 @@
     font-size: 16px;
   }
 }
+
+@media (max-width: 400px) {
+  .tabWrapper {
+    gap: 20px;
+  }
+
+  .tabLink {
+    font-size: 14px;
+  }
+}
