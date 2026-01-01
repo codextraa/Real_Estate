@@ -227,6 +227,12 @@ class AIReportViewSet(ModelViewSet):
                 value={"error": "Property ID is required."},
             ),
             OpenApiExample(
+                name="Report Already Exists",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Report for this property already exists (ID: 1)."},
+            ),
+            OpenApiExample(
                 name="Unauthorized Access",
                 response_only=True,
                 status_codes=["401"],
@@ -264,15 +270,33 @@ class AIReportViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        property_obj = None
+
         try:
-            Property.objects.get(id=property_id)
+            property_obj = Property.objects.get(id=property_id)
         except Property.DoesNotExist:
             return Response(
                 {"error": "Property not found."},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_404_NOT_FOUND,
             )
 
-        property_obj = Property.objects.get(id=property_id)
+        existing_report = AIReport.objects.filter(
+            user=current_user, property=property_obj
+        ).first()
+
+        if existing_report:
+            if existing_report.status != AIReport.Status.FAILED:
+                return Response(
+                    {
+                        "error": (
+                            "Report for this property already exists "
+                            f"(ID: {existing_report.id})."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            existing_report.delete()
+
         area, city = extract_location(property_obj.address)
 
         report_data = {
