@@ -1,0 +1,144 @@
+.propertyPageBackground {
+  background: #f7f7f7;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Container 1: Detail View */
+.propertyPageContainer1 {
+  background: linear-gradient(
+    109.45deg,
+    #f7f7f7 -5.74%,
+    #b0c9d8 66.26%,
+    #415261 120.87%
+  );
+  display: flex;
+  flex-direction: column;
+  padding-top: 71px;
+  padding-left: 81px;
+  padding-right: 81px;
+}
+
+.profileDetailTitle {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 50px;
+  color: #13252e;
+}
+
+.propertyDetailContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.propertyImageCard {
+  flex: 1;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.propertyDetailCard {
+  flex-shrink: 0;
+  background: #f7f7f7;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.propertyDetailDescription {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  margin-top: 15px;
+  margin-bottom: 30px;
+}
+
+.propertyDetailDescription h2 {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #13252e;
+  opacity: 0.8;
+}
+
+/* Container 2: Recommendations */
+.propertyPageContainer2 {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-top: 25px;
+  border-top: 1px solid rgba(19, 37, 46, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.propertyDetailDropdowns {
+  display: flex;
+  justify-content: center;
+}
+
+.recommendationSection {
+  margin-bottom: 57px;
+}
+
+.recommendationTitle {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 50px;
+  color: #13252e;
+  margin-top: 60px;
+}
+
+.recommendationGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  justify-items: center;
+}
+
+@media (max-width: 1100px) {
+  .propertyDetailContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .recommendationGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .recommendationTitle {
+    margin-top: 0px;
+  }
+}
+
+/* @media (max-width: 1150px) {
+  
+} */
+@media (max-width: 768px) {
+  .profileDetailTitle {
+    font-size: 32px;
+  }
+
+  .recommendationSection h4 {
+    font-size: 28px;
+    text-align: center;
+  }
+
+  .recommendationGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .propertyPageContainer1 {
+    padding-top: 80px;
+  }
+}

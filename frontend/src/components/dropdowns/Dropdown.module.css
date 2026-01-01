@@ -165,18 +165,7 @@
 /* Phones and Small Tablets */
 @media (max-width: 768px) {
   .propertyDropdowns {
-    flex-direction: column; /* Stack vertically */
     gap: 15px;
-  }
-
-  .addressFilter,
-  .priceFilter,
-  .areaSqftFilter,
-  .bedroomsFilter,
-  .bathroomsFilter {
-    width: 100%; /* Full width capsules */
-    max-width: 400px; /* Prevent them from being too wide on landscape phones */
-    height: 65px; /* Slightly taller for better touch targets */
   }
 
   .addressLabel,
@@ -204,6 +193,18 @@
     width: 100%;
     left: 0;
     top: 70px;
+  }
+}
+
+@media (max-width: 540px) {
+  .addressFilter,
+  .priceFilter,
+  .areaSqftFilter,
+  .bedroomsFilter,
+  .bathroomsFilter {
+    width: 100%;
+    max-width: 400px;
+    height: 65px;
   }
 }
 
