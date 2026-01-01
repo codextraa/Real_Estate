@@ -169,36 +169,34 @@ export default function UpdateListingClient({ propertyId, initialData }) {
     <div className={styles.container}>
       <div className={styles.sidebar}>
         <div className={styles.sidebarContent}>
-          <div className={styles.sidebarResponsiveWrapper}>
-            <div className={styles.sidebarHeader}>
-              <div className={styles.sidebarTitle}>Update a listing</div>
-              <div className={styles.sidebarSubtitle}>
-                Input property information
-              </div>
+          <div className={styles.sidebarHeader}>
+            <div className={styles.sidebarTitle}>Update a listing</div>
+            <div className={styles.sidebarSubtitle}>
+              Input property information
             </div>
+          </div>
 
-            <div className={styles.checklist}>
-              {[
-                { label: "Title", check: isTitleComplete },
-                { label: "Description", check: isDescriptionComplete },
-                { label: "Address", check: isAddressComplete },
-                { label: "Details", check: isDetailsComplete },
-                { label: "Pricing", check: isPricingComplete },
-                { label: "Image", check: isImageComplete },
-              ].map((item, idx) => (
-                <div key={idx} className={styles.checkItem}>
-                  <div className={styles.iconContainer}>
-                    <Image
-                      src={item.check ? doneIcon : notDoneIcon}
-                      alt="status"
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                  <div className={styles.label}>{item.label}</div>
+          <div className={styles.checklist}>
+            {[
+              { label: "Title", check: isTitleComplete },
+              { label: "Description", check: isDescriptionComplete },
+              { label: "Address", check: isAddressComplete },
+              { label: "Details", check: isDetailsComplete },
+              { label: "Pricing", check: isPricingComplete },
+              { label: "Image", check: isImageComplete },
+            ].map((item, idx) => (
+              <div key={idx} className={styles.checkItem}>
+                <div className={styles.iconContainer}>
+                  <Image
+                    src={item.check ? doneIcon : notDoneIcon}
+                    alt="status"
+                    width={24}
+                    height={24}
+                  />
                 </div>
-              ))}
-            </div>
+                <div className={styles.label}>{item.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

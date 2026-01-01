@@ -443,8 +443,6 @@ export default function ListingForm() {
                 </div>
               </div>
             </div>
-
-            {/* Error Handling */}
             {localImageError ? (
               <span className={styles.errorBox}>{localImageError}</span>
             ) : Object.keys(state.errors).length > 0 &&
