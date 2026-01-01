@@ -1,7 +1,7 @@
 .cardContainer {
   position: relative;
-  width: 339px; /* Desktop width */
-  height: 444px; /* Desktop height */
+  width: 339px;
+  height: 444px;
   overflow: hidden;
   border-radius: 15px;
   border: 2px solid rgba(19, 37, 46, 0.3);
@@ -9,13 +9,11 @@
   background-color: #f0f0f0;
 }
 
-/* Hover and Focus interaction */
 .cardContainer:hover .cardContent,
 .cardContainer:focus-within .cardContent {
   opacity: 1;
 }
 
-/* Optional: Slight zoom on hover for better feedback */
 .cardContainer:hover .propertyImage {
   transform: scale(1.05);
 }
@@ -53,17 +51,17 @@
   flex-direction: column;
   padding: 12px;
   box-sizing: border-box;
-  pointer-events: none; /* Allows the click to pass through to the Link */
+  pointer-events: none;
 }
 
 .propertyTitle {
   position: absolute;
-  bottom: 110px; /* Using bottom instead of top for better mobile scaling */
+  bottom: 110px;
   left: 12px;
   right: 12px;
-  font-family: "Old Standard TT", serif;
+  font-family: var(--font-old-standard-tt);
   font-weight: 700;
-  font-size: 32px; /* Slightly smaller for flexibility */
+  font-size: 32px;
   line-height: 1.2;
   color: #ffffff;
   margin: 0;
@@ -74,7 +72,7 @@
   bottom: 60px;
   left: 12px;
   right: 12px;
-  font-family: "Old Standard TT", serif;
+  font-family: var(--font-old-standard-tt);
   font-size: 14px;
   color: #ffffff;
   display: -webkit-box;
@@ -93,67 +91,58 @@
   -webkit-backdrop-filter: blur(7.5px);
   border-radius: 29px;
   color: #f7f7f7;
-  font-family: "Old Standard TT", serif;
+  font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 14px;
 }
 
-/* --- RESPONSIVE BREAKPOINTS --- */
+/* ... Keep your existing CSS above ... */
 
-/* Tablets (iPad/Small Laptops) */
-@media (max-width: 1200px) {
+@media (max-width: 768px) {
   .cardContainer {
-    width: 280px;
-    height: 390px;
+    width: 100%; /* Cards take full width of their column */
+    max-width: 400px; /* Prevents them from getting too wide */
+    height: 380px; /* Slightly shorter for mobile screens */
+    margin: 0 auto;
   }
+
+  /* Make content partially visible by default on mobile so user knows it's there */
+  .cardContent {
+    opacity: 1;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0) 20%,
+      rgba(0, 0, 0, 0.8) 100%
+    );
+  }
+
   .propertyTitle {
-    font-size: 28px;
+    font-size: 24px; /* Smaller font for mobile */
+    bottom: 90px;
+  }
+
+  .propertyDescription {
+    font-size: 13px;
+    bottom: 55px;
+    -webkit-line-clamp: 3; /* Show a bit more text on mobile */
+  }
+
+  .learnMore {
+    bottom: 12px;
+    padding: 6px 16px;
+    font-size: 12px;
+    background: rgba(247, 247, 247, 0.3); /* Slightly more visible */
   }
 }
 
-@media (max-width: 1000px) {
-  .cardContainer {
-    width: 240px;
-    height: 350px;
-  }
-  .propertyTitle {
-    font-size: 24px;
-  }
-}
-
-@media (max-width: 900px) {
-  .cardContainer {
-    width: 200px;
-    height: 300px;
-  }
-  .propertyTitle {
-    font-size: 20px;
-  }
-}
-/* Mobile Devices */
+/* For very small devices (portrait phones) */
 @media (max-width: 480px) {
   .cardContainer {
-    width: 160px;
-    height: 260px;
+    height: 320px;
   }
-  .propertyTitle {
-    font-size: 16px;
-  }
-}
 
-@media (max-width: 390px) {
-  .cardContainer {
-    width: 130px;
-    height: 210px;
-  }
   .propertyTitle {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 330px) {
-  .cardContainer {
-    width: 100px;
-    height: 180px;
+    font-size: 20px;
+    bottom: 85px;
   }
 }

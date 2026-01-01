@@ -1,11 +1,8 @@
-/*! clean up unused css */
-
 .container {
   display: flex;
   gap: 30px;
 }
 
-/* Sidebar Styles */
 .sidebar {
   width: 17%;
   flex-shrink: 0;
@@ -58,6 +55,16 @@
   height: 18px;
 }
 
+.label {
+  display: block;
+  font-size: 20px;
+  font-family: var(--font-old-standard-tt);
+  font-style: regular;
+  font-weight: 400;
+  line-height: 100%;
+  padding-bottom: 5px;
+}
+
 .formContainer {
   flex: 1;
   background-color: #f7f7f7;
@@ -76,32 +83,6 @@
   font-weight: 700;
 }
 
-.label {
-  display: block;
-  font-size: 20px;
-  font-family: var(--font-old-standard-tt);
-  font-style: regular;
-  font-weight: 400;
-  line-height: 100%;
-  padding-bottom: 5px;
-}
-
-/* Input Styles */
-.inputTitle {
-  font-family: var(--font-old-standard-tt);
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 100%;
-  font-style: bold;
-  color: #13252e;
-}
-
-.inputContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
 .input {
   width: 100%;
   padding: 10px;
@@ -116,6 +97,21 @@
 .input:focus {
   outline: none;
   border-color: #9ca3af;
+}
+
+.inputTitle {
+  font-family: var(--font-old-standard-tt);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 100%;
+  font-style: bold;
+  color: #13252e;
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .bioContainer {
@@ -159,11 +155,6 @@
   color: #415261;
 }
 
-/* Textarea Styles */
-.textareaWrapper {
-  position: relative;
-}
-
 .textarea {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -187,7 +178,6 @@
   color: #6b7280;
 }
 
-/* Grid Layout */
 .gridThree {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -195,7 +185,6 @@
   margin-bottom: 1rem;
 }
 
-/* Price Input */
 .priceInputWrapper {
   position: relative;
 }
@@ -209,7 +198,6 @@
   font-weight: 400;
   line-height: 100%;
   font-style: regular;
-  /* $ */
 }
 
 .priceInput {
@@ -285,12 +273,6 @@
   margin-bottom: 1rem;
 }
 
-.uploadSvg {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: white;
-}
-
 .uploadText {
   font-size: 1.125rem;
   font-weight: 500;
@@ -300,11 +282,6 @@
 .uploadSubtext {
   font-size: 0.875rem;
   color: #6b7280;
-}
-
-.fileInput {
-  border: 1px solid #415261;
-  border-radius: 5px;
 }
 
 .imageInput {
@@ -327,29 +304,6 @@
   object-fit: cover;
 }
 
-.deleteImageBtn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background-color: #ef4444;
-  color: white;
-  padding: 0.5rem;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.deleteImageBtn:hover {
-  background-color: #dc2626;
-}
-
-.deleteIcon {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-/* Error Box */
 .errorBox {
   font-family: var(--font-old-standard-tt);
   color: #e30202;
@@ -373,7 +327,6 @@
   text-align: center;
 }
 
-/* Success Box */
 .successBox {
   font-family: var(--font-old-standard-tt);
   color: #368c04;
@@ -385,7 +338,6 @@
   text-align: center;
 }
 
-/* Buttons */
 .buttonGroup {
   display: flex;
   justify-content: flex-end;
@@ -471,8 +423,28 @@
   }
 }
 
-@media (max-width: 550px) {
+@media (max-width: 600px) {
   /*! font size for everything small */
+  .sidebarTitle {
+    font-size: 20px;
+  }
+
+  .sidebarSubTitle {
+    font-size: 16px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+  }
+
+  .inputTitle {
+    font-size: 16px;
+  }
+
+  .input {
+    font-size: 14px;
+  }
+
   .checklist {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
@@ -483,21 +455,37 @@
   }
 
   .storedText {
-    font-size: 16px;
+    font-size: 14px;
     padding: 5px 10px 10px 10px;
   }
 
   .charCount {
     font-size: 14px;
   }
+  .buttonGroup {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .cancelProfileButton {
+    padding: 1px 20px 0px 20px;
+  }
+
+  .cancelProfileButtonLink {
+    font-size: 16px;
+  }
+
+  .submitBtn {
+    padding: 7px 20px 7px 20px;
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 400px) {
-  /*! font size for everything small */
-  .buttonGroup {
-    flex-direction: column;
+  .label {
+    font-size: 16px;
   }
-
   .storedText {
     font-size: 14px;
     padding: 5px 10px;

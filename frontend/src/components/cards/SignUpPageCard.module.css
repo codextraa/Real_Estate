@@ -69,7 +69,6 @@
   color: #356983;
 }
 
-/* Mobile Responsive */
 @media (max-width: 768px) {
   .signUpCardTitle {
     font-size: 36px;
@@ -91,11 +90,6 @@
   .signUpLink {
     font-size: 16px;
   }
-
-  /* 
-  .signUpCardContainer {
-    margin-top: -5rem;
-  } */
 }
 
 @media (max-width: 480px) {
