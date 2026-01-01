@@ -220,18 +220,22 @@ def analyze_insight(compiled_data, property_data):
             temperature=0.8,  # Increased creativity
         )
         summary = response.choices[0].message.content
-        logger.info(f"DeepSeek summary generated successfully")
-    except Exception as e:
-        logger.error(f"DeepSeek Summary Error: {e}")
+        logger.info("DeepSeek summary generated successfully")
+    except Exception as e:  # pylint: disable=W0718
+        logger.error("DeepSeek Summary Error: %s", e)
         # avg_comp_price = sum(p.get('price', 0) for p in compiled_data) / len(compiled_data)
         # price_diff = "below" if price < avg_comp_price else "above"
         # summary = (
         #     f"PROS:\n"
-        #     f"1. Competitive Positioning: The property is priced {price_diff} the local market average of ${avg_comp_price:,.2f}.\n"
-        #     f"2. Solid Utility: With {beds} beds and {baths} baths, the layout matches high-demand rental profiles for {sqft} sqft homes.\n\n"
+        #     f"1. Competitive Positioning: The property is priced {price_diff} "
+        #     f"the local market average of ${avg_comp_price:,.2f}.\n"
+        #     f"2. Solid Utility: With {beds} beds and {baths} baths, the layout "
+        #     f"matches high-demand rental profiles for {sqft} sqft homes.\n\n"
         #     f"CONS:\n"
-        #     f"1. Market Saturation: Several similar units in the {title} area may limit immediate appreciation.\n"
-        #     f"2. Scale Constraints: At {sqft} sqft, the property may face competition from larger newly-built comps."
+        #     f"1. Market Saturation: Several similar units in the {title} area "
+        #     f"may limit immediate appreciation.\n"
+        #     f"2. Scale Constraints: At {sqft} sqft, the property may face "
+        #     f"competition from larger newly-built comps."
         # )
         summary = "Analysis failed"
 
@@ -259,11 +263,11 @@ def report_finalizer(analysis_results, compiled_data, report_id):
         report.status = AIReport.Status.COMPLETED
         report.save()
 
-        logger.info(f"Report {report_id} fully finalized.")
+        logger.info("Report %s fully finalized.", report_id)
         return f"Report {report_id} Success"
 
-    except Exception as e:
-        logger.error(f"Finalizer failed: {e}")
+    except Exception as e:  # pylint: disable=W0718
+        logger.error("Finalizer failed: %s", e)
         report.status = AIReport.Status.FAILED
         report.ai_insight_summary = "Analysis failed"
         report.save()

@@ -1,9 +1,30 @@
 from rest_framework import serializers
-from core_db_ai.models import AIReport
+from core_db_ai.models import User, Property, AIReport
+
+
+class AIReportUserSerializer(serializers.ModelSerializer):
+    """AI Report property serializer for property model."""
+
+    class Meta:
+        model = User
+        fields = ["id", "username"]
+        read_only_fields = fields
+
+
+class AIReportPropertySerializer(serializers.ModelSerializer):
+    """AI Report property serializer for property model."""
+
+    class Meta:
+        model = Property
+        fields = ["id", "title"]
+        read_only_fields = fields
 
 
 class AIReportSerializer(serializers.ModelSerializer):
     """AI Report serializer for property model."""
+
+    property = AIReportPropertySerializer(read_only=True)
+    user = AIReportUserSerializer(read_only=True)
 
     class Meta:
         model = AIReport
@@ -14,7 +35,6 @@ class AIReportSerializer(serializers.ModelSerializer):
             "status",
             "extracted_area",
             "extracted_city",
-            "comparable_data",
             "avg_beds",
             "avg_baths",
             "avg_market_price",
@@ -23,8 +43,7 @@ class AIReportSerializer(serializers.ModelSerializer):
             "ai_insight_summary",
             "created_at",
         ]
-
-        read_only_fields = "__all__"
+        read_only_fields = fields
 
 
 class AIReportListSerializer(serializers.ModelSerializer):
@@ -34,7 +53,6 @@ class AIReportListSerializer(serializers.ModelSerializer):
         model = AIReport
         fields = [
             "id",
-            "property",
             "status",
             "extracted_area",
             "extracted_city",
@@ -42,12 +60,19 @@ class AIReportListSerializer(serializers.ModelSerializer):
             "investment_rating",
             "created_at",
         ]
+        read_only_fields = fields
 
-        read_only_fields = "__all__"
 
-
-class AIReportRequestSerializer(serializers.ModelSerializer):
-    """AI Report request serializer for property model."""
+class AIReportRequestSerializer(serializers.ModelSerializer):  # pylint: disable=W0223
+    """AI Report request serializer for report creation."""
 
     property_id = serializers.IntegerField(required=True)
     user_id = serializers.IntegerField(required=True)
+
+
+class ErrorResponseSerializer(serializers.Serializer):  # pylint: disable=W0223
+    """Standard error response structure (HTTP 400, 429, 500)."""
+
+    error = serializers.CharField(
+        help_text="A descriptive error message explaining the failure or status."
+    )

@@ -996,7 +996,7 @@ class UserViewSet(ModelViewSet):
                 value={"success": "User Profile Deleted Successfully."},
             ),
             OpenApiExample(
-                name="Unauthorized User Update Error",
+                name="Unauthorized User Delete Error",
                 response_only=True,
                 status_codes=["401"],
                 value={"error": "You are not authenticated."},
@@ -1008,7 +1008,7 @@ class UserViewSet(ModelViewSet):
                 value={"error": "User ID Not Found or Does not exist."},
             ),
             OpenApiExample(
-                name="Unauthorized User Delete Error",
+                name="Forbidden User Delete Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You are not authorized to delete this user."},
@@ -1599,7 +1599,10 @@ class AgentViewSet(ModelViewSet):
         request=None,
         responses={
             status.HTTP_200_OK: OpenApiResponse(
-                response=AgentSerializer,
+                response={
+                    "type": "object",
+                    "properties": {"success": {"type": "string"}},
+                },
                 description=(
                     "Agent profile deleted successfully."
                     "Returns a success message with 200 status.",
@@ -1620,13 +1623,13 @@ class AgentViewSet(ModelViewSet):
                 value={"success": "Agent profile deleted successfully."},
             ),
             OpenApiExample(
-                name="Unauthorized User Update Error",
+                name="Unauthorized Agent Delete Error",
                 response_only=True,
                 status_codes=["401"],
                 value={"error": "You are not authenticated."},
             ),
             OpenApiExample(
-                name="Unauthorized Delete Error",
+                name="Forbidden Delete Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You are not authorized to delete this user."},

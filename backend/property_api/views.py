@@ -517,11 +517,14 @@ class PropertyViewSet(ModelViewSet):
         tags=["Property Management"],
         request=None,
         responses={
-            status.HTTP_204_NO_CONTENT: OpenApiResponse(
-                response=PropertySerializer,
+            status.HTTP_200_OK: OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {"success": {"type": "string"}},
+                },
                 description=(
                     "Property deleted successfully."
-                    "Returns a success message with 204 status.",
+                    "Returns a success message with 200 status.",
                 ),
             ),
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
@@ -538,11 +541,17 @@ class PropertyViewSet(ModelViewSet):
             OpenApiExample(
                 name="Successful Deletion",
                 response_only=True,
-                status_codes=["204"],
+                status_codes=["200"],
                 value={"success": "Property Nice House deleted successfully."},
             ),
             OpenApiExample(
                 name="Unauthorized Delete Error",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Forbidden Delete Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You are not authorized to delete this property."},
