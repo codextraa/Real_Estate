@@ -29,7 +29,7 @@ class InvestmentRegressor:
 
         return X, y
 
-    def calculate_rating(self, compiled_data, property_data):
+    def calculate_rating(self, compiled_data, property_data):  # pylint: disable=R0914
         """Main entry point to get the 0.0 - 5.0 score."""
         area_sqft = property_data.get("area_sqft")
         beds = property_data.get("beds")
@@ -53,6 +53,7 @@ class InvestmentRegressor:
 
         # Rating
         price_ratio = predicted_price / actual_price
-        rating = round(min(5.0, max(0.0, price_ratio * 2.5)), 1)
+        raw_rating = min(5.0, max(0.0, price_ratio * 2.5))
+        rating = round(raw_rating * 2) / 2
 
         return float(rating)
