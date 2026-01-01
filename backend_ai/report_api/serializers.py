@@ -2,6 +2,21 @@ from rest_framework import serializers
 from core_db_ai.models import User, Property, AIReport
 
 
+class AIReportSerializer(serializers.ModelSerializer):
+    """AI Report serializer for property model."""
+
+    class Meta:
+        model = AIReport
+        fields = [
+            "id",
+            "property",
+            "user",
+            "extracted_area",
+            "extracted_city",
+        ]
+        read_only_fields = ["id"]
+
+
 class AIReportUserSerializer(serializers.ModelSerializer):
     """AI Report property serializer for property model."""
 
@@ -20,7 +35,7 @@ class AIReportPropertySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class AIReportSerializer(serializers.ModelSerializer):
+class AIReportRetrieveSerializer(serializers.ModelSerializer):
     """AI Report serializer for property model."""
 
     property = AIReportPropertySerializer(read_only=True)
@@ -57,17 +72,17 @@ class AIReportListSerializer(serializers.ModelSerializer):
             "extracted_area",
             "extracted_city",
             "avg_market_price",
+            "avg_price_per_sqft",
             "investment_rating",
             "created_at",
         ]
         read_only_fields = fields
 
 
-class AIReportRequestSerializer(serializers.ModelSerializer):  # pylint: disable=W0223
+class AIReportRequestSerializer(serializers.Serializer):  # pylint: disable=W0223
     """AI Report request serializer for report creation."""
 
     property_id = serializers.IntegerField(required=True)
-    user_id = serializers.IntegerField(required=True)
 
 
 class ErrorResponseSerializer(serializers.Serializer):  # pylint: disable=W0223

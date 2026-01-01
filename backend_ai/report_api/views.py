@@ -8,14 +8,18 @@ from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from backend_ai.mixins import http_method_mixin
 from backend_ai.renderers import ViewRenderer
-from core_db_ai.models import AIReport
+from core_db_ai.models import AIReport, Property
 from .serializers import (
     AIReportSerializer,
     AIReportListSerializer,
+    AIReportRetrieveSerializer,
+    AIReportRequestSerializer,
     ErrorResponseSerializer,
 )
 from .paginations import AIReportPagination
 from .filters import AIReportFilter
+from .utils import extract_location
+from .tasks import parallel_report_generator
 
 
 class AIReportViewSet(ModelViewSet):
@@ -35,12 +39,14 @@ class AIReportViewSet(ModelViewSet):
         """Assign serializer based on action."""
         if self.action in ("list", "my_reports"):
             return AIReportListSerializer
+        if self.action == "retrieve":
+            return AIReportRetrieveSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
         """Queryset for Report View."""
         user = self.request.user
-        queryset = AIReport.objects.select_related("report", "user").order_by(
+        queryset = AIReport.objects.select_related("property", "user").order_by(
             "-created_at"
         )
 
@@ -184,6 +190,120 @@ class AIReportViewSet(ModelViewSet):
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
+        summary="Create New Report",
+        description="Creates a new report.",
+        tags=["AI Reports"],
+        request=AIReportRequestSerializer,
+        responses={
+            status.HTTP_202_ACCEPTED: OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {"success": {"type": "string"}},
+                },
+                description="Report generation started. Returns a success message.",
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description=("Bad Request. Occurs on missing required fields",),
+            ),
+            status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden. Report cannot be created by staffs.",
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: ErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name="Successful Report Creation",
+                response_only=True,
+                status_codes=["202"],
+                value={"success": "Analysis Report 1 is being generated."},
+            ),
+            OpenApiExample(
+                name="Property ID Required",
+                response_only=True,
+                status_codes=["400"],
+                value={"error": "Property ID is required."},
+            ),
+            OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Creating Report Error",
+                response_only=True,
+                status_codes=["403"],
+                value={"error": "You do not have permission to create a report."},
+            ),
+            OpenApiExample(
+                name="Property Not Found",
+                response_only=True,
+                status_codes=["404"],
+                value={"error": "Property not found."},
+            ),
+        ],
+    )
+    def create(self, request, *args, **kwargs):
+        """Create a new report."""
+        current_user = request.user
+
+        if current_user.is_staff and not current_user.is_superuser:
+            return Response(
+                {"error": "You do not have permission to create a report."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        property_id = request.data.get("property_id")
+
+        if not property_id:
+            return Response(
+                {"error": "Property ID is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            Property.objects.get(id=property_id)
+        except Property.DoesNotExist:
+            return Response(
+                {"error": "Property not found."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        property_obj = Property.objects.get(id=property_id)
+        area, city = extract_location(property_obj.address)
+
+        report_data = {
+            "user": current_user.id,
+            "property": property_obj.pk,
+            "extracted_area": area,
+            "extracted_city": city,
+        }
+
+        serializer = self.get_serializer(data=report_data)
+        serializer.is_valid(raise_exception=True)
+        report = serializer.save()
+
+        property_data = {
+            "title": property_obj.title,
+            "area": area,
+            "city": city,
+            "area_sqft": property_obj.area_sqft,
+            "beds": property_obj.beds,
+            "baths": property_obj.baths,
+            "price": property_obj.price,
+        }
+
+        parallel_report_generator.delay(report.id, property_data)
+
+        return Response(
+            {"success": f"Analysis Report {report.id} is being generated."},
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+    @extend_schema(
         summary="Delete Report",
         description="Deletes a Report by ID.",
         tags=["AI Reports"],
@@ -208,7 +328,7 @@ class AIReportViewSet(ModelViewSet):
                 name="Successful Report Deletion",
                 response_only=True,
                 status_codes=["200"],
-                value={"success": "Report Deleted Successfully."},
+                value={"success": "Report with ID 1 deleted successfully."},
             ),
             OpenApiExample(
                 name="Unauthorized Report Delete Error",
