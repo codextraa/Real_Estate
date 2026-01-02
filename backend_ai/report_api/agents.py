@@ -55,7 +55,6 @@ def groq_json_formatter(context_text, area, city):
         f"1. Use ONLY the data provided above.\n"
         f"2. Return ONLY a JSON object with a key 'properties' containing a list.\n"
         f"3. Do not include properties with None/null values for core fields.\n"
-        f"Required Fields: [price, area_sqft, beds, baths]."
         f"Required Fields per object: [price, area_sqft, beds, baths].\n"
         f"Exclude any other fields."
     )

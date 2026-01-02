@@ -222,7 +222,7 @@ export default function ListingForm() {
           </div>
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Description</div>
-            <div className={styles.bioContainer}>
+            <div className={styles.descContainer}>
               <textarea
                 name="description"
                 ref={textAreaRef}

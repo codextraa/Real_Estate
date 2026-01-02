@@ -114,7 +114,12 @@ export default function PropertyDetailCard({ property }) {
             <div className={styles.agentName}>
               {property.agent.first_name} {property.agent.last_name}
             </div>
-            <div className={styles.agentContact}>Contact</div>
+            <Link
+              href={`/profile/${property.agent.slug}?user_id=${property.agent.user_id}&user_role=${property.agent.user_role}`}
+              className={styles.agentContact}
+            >
+              Contact
+            </Link>
           </div>
           <div className={styles.agentImageContainer}>
             <Image

@@ -219,6 +219,18 @@ def check_user_id(user_id):
     },
     examples=[
         OpenApiExample(
+            name="Successful Login",
+            response_only=True,
+            status_codes=["200"],
+            value={
+                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-1",
+                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUz1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
+                "user_id": 101,
+                "user_role": "Agent",
+                "access_token_expiry": (now() + timedelta(hours=1)).isoformat(),
+            },
+        ),
+        OpenApiExample(
             name="Superuser Login Request Example",
             value={
                 "email": "superuser@example.com",
@@ -244,18 +256,6 @@ def check_user_id(user_id):
             value={
                 "email": "defaultuser@example.com",
                 "password": "Django@123",
-            },
-        ),
-        OpenApiExample(
-            name="Successful Agent Login",
-            response_only=True,
-            status_codes=["200"],
-            value={
-                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-1",
-                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUz1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
-                "user_id": 101,
-                "user_role": "Agent",
-                "access_token_expiry": (now() + timedelta(hours=1)).isoformat(),
             },
         ),
         OpenApiExample(
@@ -400,9 +400,7 @@ class LogoutView(APIView):
         "Also returns the refresh token and updated user metadata."
     ),
     tags=["Authentication"],
-    # Define the request body schema
     request=RefreshTokenRequestSerializer,
-    # Define the possible responses and link them to serializers/examples
     responses={
         status.HTTP_200_OK: OpenApiResponse(
             response=LoginResponseSerializer,

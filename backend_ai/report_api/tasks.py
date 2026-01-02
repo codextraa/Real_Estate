@@ -1,63 +1,75 @@
-import time
-import random
+# import time
+# import random
 from celery.utils.log import get_task_logger
 from celery import shared_task, chord
 from core_db_ai.models import AIReport
-from .agents import tavily_search, groq_json_formatter, groq_ai_insight_prompt
+
+# from .agents import tavily_search, groq_json_formatter, groq_ai_insight_prompt
 from .regression_model import InvestmentRegressor
 from .utils import (
     average_prices,
     average_beds_baths,
     generate_mock_summary,
-    # generate_mock_properties,
+    generate_mock_properties,
 )
 
 
 logger = get_task_logger(__name__)
 
 
-@shared_task(
-    bind=True,
-    rate_limit="15/m",  # Max 15 calls/m to avoid Groq 429s
-    autoretry_for=(Exception,),
-    retry_backoff=True,
-    retry_jitter=True,
-    max_retries=3,
-)
-def search_properties(self, property_data, count, seed_index):
+@shared_task()
+def search_properties(property_data, count, seed_index):  # pylint: disable=W0613
     """
-    Worker Task: Calls Tavily and Groq llama for a specific slice of data.
+    Worker Task: Mocks Tavily and Groq llama for a specific slice of data.
     """
-    area = property_data.get("area")
-    city = property_data.get("city")
     area_sqft = property_data.get("area_sqft")
     beds = property_data.get("beds")
     baths = property_data.get("baths")
+    return generate_mock_properties(area_sqft, beds, baths, count)
 
-    try:
-        # Variations to ensure the 4 workers find different things
-        context_text, tavily_credits = tavily_search(
-            area, city, area_sqft, beds, baths, count, seed_index
-        )
 
-        logger.info(f"[Tavily] Used {tavily_credits} credits for query {seed_index}")
+# @shared_task(
+#     bind=True,
+#     rate_limit="15/m",  # Max 15 calls/m to avoid Groq 429s
+#     autoretry_for=(Exception,),
+#     retry_backoff=True,
+#     retry_jitter=True,
+#     max_retries=3,
+# )
+# def search_properties(self, property_data, count, seed_index):
+#     """
+#     Worker Task: Calls Tavily and Groq llama for a specific slice of data.
+#     """
+#     area = property_data.get("area")
+#     city = property_data.get("city")
+#     area_sqft = property_data.get("area_sqft")
+#     beds = property_data.get("beds")
+#     baths = property_data.get("baths")
 
-        time.sleep(random.uniform(0.2, 1.5))
+#     try:
+#         # Variations to ensure the 4 workers find different things
+#         context_text, tavily_credits = tavily_search(
+#             area, city, area_sqft, beds, baths, count, seed_index
+#         )
 
-        properties_json, usage = groq_json_formatter(context_text, area, city)
+#         logger.info(f"[Tavily] Used {tavily_credits} credits for query {seed_index}")
 
-        logger.info(
-            f"[Groq Search] Prompt Tokens:{usage.prompt_tokens} | "
-            f"Completion Tokens:{usage.completion_tokens} | "
-            f"Total:{usage.total_tokens}"
-        )
+#         time.sleep(random.uniform(0.2, 1.5))
 
-        return properties_json
-    except Exception as e:  # pylint: disable=W0718
-        logger.error(f"Search Task Error: {e}. Retrying...")
-        raise self.retry(exc=e)
-        # logger.error(f"API Error: {e}. Falling back to mock data.")
-        # return generate_mock_properties(area_sqft, beds, baths, count)
+#         properties_json, usage = groq_json_formatter(context_text, area, city)
+
+#         logger.info(
+#             f"[Groq Search] Prompt Tokens:{usage.prompt_tokens} | "
+#             f"Completion Tokens:{usage.completion_tokens} | "
+#             f"Total:{usage.total_tokens}"
+#         )
+
+#         return properties_json
+#     except Exception as e:  # pylint: disable=W0718
+#         logger.error(f"Search Task Error: {e}. Retrying...")
+#         raise self.retry(exc=e)
+#         # logger.error(f"API Error: {e}. Falling back to mock data.")
+#         # return generate_mock_properties(area_sqft, beds, baths, count)
 
 
 @shared_task
@@ -131,40 +143,51 @@ def analyze_investment_rating(compiled_data, property_data):
     return {"investment_rating": rating}
 
 
-@shared_task(rate_limit="15/m")
+@shared_task()
 def analyze_insight(compiled_data, property_data):
-    """
-    Uses Groq llama to generate the pros/cons insight summary.
-    """
-    if not compiled_data:
-        return {"ai_insight_summary": "No market data available for analysis."}
-
+    """Mocks Groq llama to generate the pros/cons insight summary."""
     title = property_data.get("title")
     price = property_data.get("price")
-    sqft = property_data.get("area_sqft")
     beds = property_data.get("beds")
     baths = property_data.get("baths")
 
-    # Small compiled json data to avoid window bloat
-    comps_sample = compiled_data[:20]
+    return generate_mock_summary(compiled_data, title, price, beds, baths)
 
-    try:
-        json, usage = groq_ai_insight_prompt(
-            comps_sample, title, price, sqft, beds, baths
-        )
 
-        logger.info(
-            "[Groq Search] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
-            usage.prompt_tokens,
-            usage.completion_tokens,
-            usage.total_tokens,
-        )
-        logger.info("Groq llama summary generated successfully")
+# @shared_task(rate_limit="15/m")
+# def analyze_insight(compiled_data, property_data):
+#     """
+#     Uses Groq llama to generate the pros/cons insight summary.
+#     """
+#     if not compiled_data:
+#         return {"ai_insight_summary": "No market data available for analysis."}
 
-        return json
-    except Exception as e:  # pylint: disable=W0718
-        logger.error("Groq llama Summary Error: %s", e)
-        return generate_mock_summary(compiled_data, title, price, beds, baths)
+#     title = property_data.get("title")
+#     price = property_data.get("price")
+#     sqft = property_data.get("area_sqft")
+#     beds = property_data.get("beds")
+#     baths = property_data.get("baths")
+
+#     # Small compiled json data to avoid window bloat
+#     comps_sample = compiled_data[:20]
+
+#     try:
+#         json, usage = groq_ai_insight_prompt(
+#             comps_sample, title, price, sqft, beds, baths
+#         )
+
+#         logger.info(
+#             "[Groq Search] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
+#             usage.prompt_tokens,
+#             usage.completion_tokens,
+#             usage.total_tokens,
+#         )
+#         logger.info("Groq llama summary generated successfully")
+
+#         return json
+#     except Exception as e:  # pylint: disable=W0718
+#         logger.error("Groq llama Summary Error: %s", e)
+#         return generate_mock_summary(compiled_data, title, price, beds, baths)
 
 
 @shared_task

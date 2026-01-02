@@ -12,7 +12,7 @@
   position: sticky;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: left;
   justify-content: center;
   gap: 25px;
 }
@@ -114,14 +114,14 @@
   gap: 5px;
 }
 
-.bioContainer {
+.descContainer {
   position: relative;
   border: 1px solid #415261;
   border-radius: 5px;
   width: 100%;
 }
 
-.bioContainer:focus {
+.descContainer:focus {
   outline: none;
   border-color: #9ca3af;
 }
@@ -325,6 +325,7 @@
   line-height: 100%;
   display: block;
   text-align: center;
+  margin-bottom: 30px;
 }
 
 .successBox {
@@ -336,6 +337,7 @@
   line-height: 100%;
   display: block;
   text-align: center;
+  margin-bottom: 30px;
 }
 
 .buttonGroup {
@@ -462,6 +464,7 @@
   .charCount {
     font-size: 14px;
   }
+
   .buttonGroup {
     flex-direction: row;
     justify-content: space-between;
@@ -486,6 +489,7 @@
   .label {
     font-size: 16px;
   }
+
   .storedText {
     font-size: 14px;
     padding: 5px 10px;

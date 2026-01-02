@@ -13,7 +13,7 @@
   );
 }
 
-@media (max-width: 850px) {
+@media (max-width: 900px) {
   .form {
     padding-left: 50px;
     padding-right: 50px;

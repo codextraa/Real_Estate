@@ -170,7 +170,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   useEffect(() => {
     if (state.success) {
       setTimeout(() => {
-        router.push("/");
+        router.push(`/properties`);
       }, 1000);
       setLocalImageError("");
     }
@@ -197,12 +197,13 @@ export default function UpdateListingClient({ propertyId, initialData }) {
               { label: "Image", check: isImageComplete },
             ].map((item, idx) => (
               <div key={idx} className={styles.checkItem}>
-                <div className={styles.iconContainer}>
+                <div>
                   <Image
                     src={item.check ? doneIcon : notDoneIcon}
                     alt="status"
                     width={24}
                     height={24}
+                    className={styles.icon}
                   />
                 </div>
                 <div className={styles.label}>{item.label}</div>
@@ -231,7 +232,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
           <div className={styles.section}>
             <div className={styles.sectionTitle}>Description</div>
-            <div className={styles.bioContainer}>
+            <div className={styles.descContainer}>
               <textarea
                 name="description"
                 ref={textAreaRef}

@@ -18,18 +18,20 @@ export default async function ProfileCard({ searchParams }) {
 
   return (
     <div className={styles.propertyPageBackground}>
-      <div className={styles.propertyPageContainer1}>
-        <div className={styles.profileDetailTitle}>{response.title}</div>
-        <div className={styles.propertyDetailContainer}>
-          <div className={styles.propertyImageCard}>
-            <PropertyImageCard image={response.image_url} />
+      <div className={styles.propertyPageContainerBackground}>
+        <div className={styles.propertyPageContainer1}>
+          <div className={styles.profileDetailTitle}>{response.title}</div>
+          <div className={styles.propertyDetailContainer}>
+            <div className={styles.propertyImageCard}>
+              <PropertyImageCard image={response.image_url} />
+            </div>
+            <div className={styles.propertyDetailCard}>
+              <PropertyDetailCard property={response} />
+            </div>
           </div>
-          <div className={styles.propertyDetailCard}>
-            <PropertyDetailCard property={response} />
+          <div className={styles.propertyDetailDescription}>
+            <h2>{response.description}</h2>
           </div>
-        </div>
-        <div className={styles.propertyDetailDescription}>
-          <h2>{response.description}</h2>
         </div>
       </div>
       <div className={styles.propertyPageContainer2}>

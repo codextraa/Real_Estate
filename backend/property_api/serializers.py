@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from core_db.models import Agent, Property
 
 
@@ -92,9 +93,15 @@ class PropertyAgentRetrieveSerializer(serializers.ModelSerializer):
     Includes profile image, first_name, and last_name.
     """
 
+    @extend_schema_field(serializers.CharField)
+    def get_user_role(self, obj):  # pylint: disable=W0613
+        return "Agent"
+
     user_id = serializers.IntegerField(source="user.id", read_only=True)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
+    slug = serializers.CharField(source="user.slug", read_only=True)
+    user_role = serializers.SerializerMethodField()
     image_url = serializers.ImageField(read_only=True)
 
     class Meta:
@@ -104,7 +111,9 @@ class PropertyAgentRetrieveSerializer(serializers.ModelSerializer):
             "user_id",
             "first_name",
             "last_name",
+            "user_role",
             "image_url",
+            "slug",
         ]
         read_only_fields = fields
 

@@ -58,7 +58,6 @@
   margin: 0 auto;
   padding: 0 40px 20px 40px;
   position: relative;
-  /* Pulling the search elements up to overlap the hero slightly */
   margin-top: 25px;
   z-index: 10;
 }
@@ -251,6 +250,7 @@
     grid-template-columns: 1fr;
     gap: 20px;
   }
+
   .searchbar,
   .dropdowns {
     width: 100%;
@@ -263,6 +263,7 @@
   .content2 {
     font-size: 60px;
   }
+
   .image {
     height: 280px;
   }
