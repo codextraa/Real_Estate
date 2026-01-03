@@ -208,7 +208,6 @@ class PropertyViewSetTests(APITestCase):
         payload = {"slug": "changed-slug", "title": "New Title"}
 
         response = self.client.patch(url, payload)
-        # Your view explicitly checks for 'slug' in request.data and returns 403
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_forbidden_fields_fails(self):

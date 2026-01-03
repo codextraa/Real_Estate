@@ -130,13 +130,14 @@ class PropertyViewSet(ModelViewSet):
             )
 
         queryset = self.get_queryset()
+        filtered_queryset = self.filter_queryset(queryset)
+        page = self.paginate_queryset(filtered_queryset)
 
-        page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(filtered_queryset, many=True)
         return Response(serializer.data)
 
     @extend_schema(
@@ -517,11 +518,14 @@ class PropertyViewSet(ModelViewSet):
         tags=["Property Management"],
         request=None,
         responses={
-            status.HTTP_204_NO_CONTENT: OpenApiResponse(
-                response=PropertySerializer,
+            status.HTTP_200_OK: OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {"success": {"type": "string"}},
+                },
                 description=(
                     "Property deleted successfully."
-                    "Returns a success message with 204 status.",
+                    "Returns a success message with 200 status.",
                 ),
             ),
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
@@ -538,11 +542,17 @@ class PropertyViewSet(ModelViewSet):
             OpenApiExample(
                 name="Successful Deletion",
                 response_only=True,
-                status_codes=["204"],
+                status_codes=["200"],
                 value={"success": "Property Nice House deleted successfully."},
             ),
             OpenApiExample(
                 name="Unauthorized Delete Error",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
+            OpenApiExample(
+                name="Forbidden Delete Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You are not authorized to delete this property."},

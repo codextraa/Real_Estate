@@ -109,7 +109,7 @@ export const createPropertyAction = async (prevState, formData) => {
     beds: beds || prevState.formPropertyData.beds,
     baths: baths || prevState.formPropertyData.baths,
     area_sqft: area_sqft || prevState.formPropertyData.area_sqft,
-    property_image: property_image || prevState.formPropertyData.property_image,
+    image_url: prevState.formPropertyData.image_url,
     ...addressParts,
   };
 
@@ -135,6 +135,7 @@ export const createPropertyAction = async (prevState, formData) => {
     "state",
     "country",
   ];
+
   const missing = requiredAddressFields.filter(
     (field) => !addressParts[field].trim(),
   );
@@ -156,7 +157,10 @@ export const createPropertyAction = async (prevState, formData) => {
     errors.area_sqft = "Area is required.";
   }
 
-  if (!property_image) {
+  const isNewImageUploaded =
+    property_image && property_image instanceof File && property_image.size > 0;
+
+  if (!isNewImageUploaded) {
     errors.image_url = "Image is required.";
   }
 
@@ -170,11 +174,6 @@ export const createPropertyAction = async (prevState, formData) => {
 
   try {
     let response;
-    const isNewImageUploaded =
-      property_image &&
-      property_image instanceof File &&
-      property_image.size > 0;
-
     if (isNewImageUploaded) {
       response = await createProperty(formData, true);
     } else {

@@ -49,9 +49,8 @@ export default async function Page({ searchParams }) {
             src={imageUrl}
             alt="Modern city buildings representing real estate"
             priority
+            fill
             className={styles.imageStyle}
-            width={100}
-            height={100}
           />
         </div>
         <div className={styles.container}>
@@ -62,7 +61,7 @@ export default async function Page({ searchParams }) {
         <div className={styles.searchbar}>
           <Searchbar />
         </div>
-        <div className={styles.propertyDropdowns}>
+        <div className={styles.dropdowns}>
           <Dropdown />
         </div>
         <div className={styles.propertiesContent}>

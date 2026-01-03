@@ -1362,7 +1362,9 @@ class AgentViewSetTests(APITestCase):
 
             # 3. Clean up the actual file stored on the agent instance
             if self.agent_user_1.image_url:
-                path = os.path.join(settings.MEDIA_ROOT, self.agent_user_1.image_url.name)
+                path = os.path.join(
+                    settings.MEDIA_ROOT, self.agent_user_1.image_url.name
+                )
                 if os.path.exists(path) and "default_profile.jpg" not in path:
                     os.remove(path)
         else:
@@ -1370,6 +1372,7 @@ class AgentViewSetTests(APITestCase):
             # You can add logic here to clean up orphaned files if necessary,
             # but the crash will now be avoided.
             pass
+
     #     #     # ------------------ List TESTS ------------------
 
     def test_list_agents_normal_user_denied(self):
@@ -2000,4 +2003,3 @@ class AgentViewSetTests(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(User.objects.filter(pk=self.agent_user.pk).exists())
-

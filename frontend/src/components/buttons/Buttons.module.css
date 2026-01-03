@@ -4,9 +4,8 @@
 .formButton {
   border: none;
   cursor: pointer;
-  font-family: "Old Standard TT", serif;
+  font-family: var(--font-old-standard-tt);
   font-weight: 700;
-  font-style: bold;
   line-height: 1;
   transition: background 0.3s ease;
 }
@@ -21,25 +20,32 @@
   position: absolute;
   /* Adjust positioning to be vertically centered and near the right edge of the input field */
   top: 50%;
-  right: 10px; /* Space from the right edge of the input */
+  right: 10px;
+  /* Space from the right edge of the input */
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 5px; /* Makes the click target easier */
-  z-index: 10; /* Ensure it is above the input field */
+  padding: 5px;
+  /* Makes the click target easier */
+  z-index: 10;
+  /* Ensure it is above the input field */
 }
 
 .toggleIcon {
-  width: 20px; /* Set the size of the icon */
+  width: 20px;
+  /* Set the size of the icon */
   height: 14px;
-  display: block; /* Ensures no weird spacing issues */
+  display: block;
+  /* Ensures no weird spacing issues */
   opacity: 0.8;
 }
 
 .passwordToggle:hover .toggleIcon {
-  opacity: 1; /* Full opacity on hover */
+  opacity: 1;
+  /* Full opacity on hover */
 }
+
 /* For pending state */
 .passwordToggle:disabled {
   cursor: not-allowed;
@@ -207,6 +213,7 @@
     padding: 4px 10px;
   }
 }
+
 /* 
 /* @media screen and (max-width: 400px) {
   .NavSignUpButton {

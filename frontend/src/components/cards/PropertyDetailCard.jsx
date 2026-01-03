@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import styles from "./PropertyImageCard.module.css";
+import styles from "./PropertyDetailCard.module.css";
 import Image from "next/image";
 import { DeleteButton } from "@/components/buttons/Buttons";
 import DeleteModal from "@/components/modals/DeleteModal";
@@ -12,6 +12,32 @@ export default function PropertyDetailCard({ property }) {
   const [userId, setUserId] = useState(null);
   const [isClient, setIsClient] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const formatAddress = (addressString) => {
+    if (!addressString) return "";
+    const parts = addressString.split(",").map((p) => p.trim());
+    const addressObj = {};
+
+    parts.forEach((part) => {
+      const [key, value] = part.split("=");
+      if (key && value) {
+        addressObj[key.trim()] = value.trim();
+      }
+    });
+
+    const formattedParts = [];
+
+    if (addressObj.flat_no) formattedParts.push(`Flat ${addressObj.flat_no}`);
+    if (addressObj.house_no)
+      formattedParts.push(`House ${addressObj.house_no}`);
+    if (addressObj.street) formattedParts.push(addressObj.street);
+    if (addressObj.area) formattedParts.push(addressObj.area);
+    if (addressObj.city) formattedParts.push(addressObj.city);
+    if (addressObj.state) formattedParts.push(addressObj.state);
+    if (addressObj.country) formattedParts.push(addressObj.country);
+
+    return formattedParts.join(", ") + ".";
+  };
 
   const openDeleteModal = () => {
     setIsDeleteModalOpen(true);
@@ -41,15 +67,19 @@ export default function PropertyDetailCard({ property }) {
   }, [isClient]);
   return (
     <div className={styles.propertyDetailCard}>
-      <div className={styles.location}>
-        <Image
-          src={locationIcon}
-          alt="Location Icon"
-          width={100}
-          height={100}
-          className={styles.locationIcon}
-        />
-        <div className={styles.locationText}>{property.address}</div>
+      <div className={styles.locationContainer}>
+        <div className={styles.location}>
+          <Image
+            src={locationIcon}
+            alt="Location Icon"
+            width={100}
+            height={100}
+            className={styles.locationIcon}
+          />
+          <div className={styles.locationText}>
+            {formatAddress(property.address)}
+          </div>
+        </div>
       </div>
       <div className={styles.details}>
         <div className={styles.detailText}>Details</div>
@@ -73,7 +103,7 @@ export default function PropertyDetailCard({ property }) {
         <div className={styles.pricePayment}>
           <span className={styles.priceValue}>${property.price}</span>
           <div className={styles.button}>
-            <button className={styles.paymentButton}>Analyze &gt;</button>
+            <button className={styles.paymentButton}>Analyze</button>
           </div>
         </div>
       </div>
@@ -84,7 +114,12 @@ export default function PropertyDetailCard({ property }) {
             <div className={styles.agentName}>
               {property.agent.first_name} {property.agent.last_name}
             </div>
-            <div className={styles.agentContact}>Contact</div>
+            <Link
+              href={`/profile/${property.agent.slug}?user_id=${property.agent.user_id}&user_role=${property.agent.user_role}`}
+              className={styles.agentContact}
+            >
+              Contact
+            </Link>
           </div>
           <div className={styles.agentImageContainer}>
             <Image
@@ -104,7 +139,7 @@ export default function PropertyDetailCard({ property }) {
               href={`/properties/${property.slug}/edit`}
               className={styles.editProfileButton}
             >
-              Edit Property
+              Update
             </Link>
           </div>
           <div className={styles.deleteProfileButton}>

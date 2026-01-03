@@ -219,6 +219,18 @@ def check_user_id(user_id):
     },
     examples=[
         OpenApiExample(
+            name="Successful Login",
+            response_only=True,
+            status_codes=["200"],
+            value={
+                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-1",
+                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUz1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
+                "user_id": 101,
+                "user_role": "Agent",
+                "access_token_expiry": (now() + timedelta(hours=1)).isoformat(),
+            },
+        ),
+        OpenApiExample(
             name="Superuser Login Request Example",
             value={
                 "email": "superuser@example.com",
@@ -244,18 +256,6 @@ def check_user_id(user_id):
             value={
                 "email": "defaultuser@example.com",
                 "password": "Django@123",
-            },
-        ),
-        OpenApiExample(
-            name="Successful Agent Login",
-            response_only=True,
-            status_codes=["200"],
-            value={
-                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-1",
-                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUz1NiJ9.A-VERY-LONG-JWT-TOKEN-PART-2",
-                "user_id": 101,
-                "user_role": "Agent",
-                "access_token_expiry": (now() + timedelta(hours=1)).isoformat(),
             },
         ),
         OpenApiExample(
@@ -400,9 +400,7 @@ class LogoutView(APIView):
         "Also returns the refresh token and updated user metadata."
     ),
     tags=["Authentication"],
-    # Define the request body schema
     request=RefreshTokenRequestSerializer,
-    # Define the possible responses and link them to serializers/examples
     responses={
         status.HTTP_200_OK: OpenApiResponse(
             response=LoginResponseSerializer,
@@ -974,7 +972,7 @@ class UserViewSet(ModelViewSet):
         tags=["User Management"],
         request=None,
         responses={
-            status.HTTP_204_NO_CONTENT: OpenApiResponse(
+            status.HTTP_200_OK: OpenApiResponse(
                 response={
                     "type": "object",
                     "properties": {"success": {"type": "string"}},
@@ -992,11 +990,11 @@ class UserViewSet(ModelViewSet):
             OpenApiExample(
                 name="Successful User Deletion",
                 response_only=True,
-                status_codes=["204"],
+                status_codes=["200"],
                 value={"success": "User Profile Deleted Successfully."},
             ),
             OpenApiExample(
-                name="Unauthorized User Update Error",
+                name="Unauthorized User Delete Error",
                 response_only=True,
                 status_codes=["401"],
                 value={"error": "You are not authenticated."},
@@ -1008,7 +1006,7 @@ class UserViewSet(ModelViewSet):
                 value={"error": "User ID Not Found or Does not exist."},
             ),
             OpenApiExample(
-                name="Unauthorized User Delete Error",
+                name="Forbidden User Delete Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You are not authorized to delete this user."},
@@ -1598,11 +1596,14 @@ class AgentViewSet(ModelViewSet):
         tags=["Agent Management"],
         request=None,
         responses={
-            status.HTTP_204_NO_CONTENT: OpenApiResponse(
-                response=AgentSerializer,
+            status.HTTP_200_OK: OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {"success": {"type": "string"}},
+                },
                 description=(
                     "Agent profile deleted successfully."
-                    "Returns a success message with 204 status.",
+                    "Returns a success message with 200 status.",
                 ),
             ),
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
@@ -1616,17 +1617,17 @@ class AgentViewSet(ModelViewSet):
             OpenApiExample(
                 name="Successful Deletion",
                 response_only=True,
-                status_codes=["204"],
+                status_codes=["200"],
                 value={"success": "Agent profile deleted successfully."},
             ),
             OpenApiExample(
-                name="Unauthorized User Update Error",
+                name="Unauthorized Agent Delete Error",
                 response_only=True,
                 status_codes=["401"],
                 value={"error": "You are not authenticated."},
             ),
             OpenApiExample(
-                name="Unauthorized Delete Error",
+                name="Forbidden Delete Error",
                 response_only=True,
                 status_codes=["403"],
                 value={"error": "You are not authorized to delete this user."},

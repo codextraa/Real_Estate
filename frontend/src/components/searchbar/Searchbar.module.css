@@ -1,41 +1,43 @@
 .searchbarForm {
-  /* Layout and Sizing */
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 986px;
+  /* Positioning & Sizing from your specs */
+  position: absolute;
+  width: 986px;
   height: 43px;
-  margin: 2rem auto; /* Centers the bar horizontally */
-  padding: 0 15px;
-
-  /* Visual Styles from Reference */
-  box-sizing: border-box;
+  /* Background & Border */
   background: rgba(100, 138, 162, 0.41);
-  /* Combining the opacity and background for the exact look */
   border: 2px solid #13252e;
   border-radius: 15px;
+  opacity: 0.61;
+  box-sizing: border-box;
+
+  /* Layout */
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+/* Increases opacity when the user is actually using it */
+.searchbarForm:focus-within {
+  opacity: 1;
 }
 
 .searchButton {
   background: none;
   border: none;
-  padding: 0;
-  margin-right: 10px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.searchButton:hover {
-  transform: scale(1.1);
+  padding: 0;
+  margin-right: 10px;
 }
 
 .searchIcon {
-  /* Using filter to ensure the icon matches the #13252E color 
-     if the SVG isn't already that color */
-  display: block;
+  /* Keeps icon color consistent with your dark theme */
+  filter: brightness(0) saturate(100%) invert(11%) sepia(21%) font-weight(700)
+    saturate(915%) hue-rotate(158deg) brightness(92%) contrast(96%);
 }
 
 .searchInput {
@@ -45,19 +47,14 @@
   outline: none;
   height: 100%;
 
-  /* Text Styles from Reference */
-  font-family: var(--font-old-standard-tt);
-  font-style: bold;
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 100%;
-  letter-spacing: 0%;
+  /* Text Styling */
+  font-family: inherit;
+  font-size: 16px;
   color: #13252e;
 }
 
 .searchInput::placeholder {
-  color: #13252e;
-  opacity: 0.8; /* Slight fade for the placeholder text */
+  color: rgba(19, 37, 46, 0.7);
 }
 
 /* Responsive adjustment for mobile */

@@ -1,50 +1,45 @@
 .background {
   position: relative;
-  width: 100%;
-  min-height: 100vh;
   background: #f7f7f7;
 }
 
 .image {
   position: relative;
   width: 100%;
-  height: 545px;
+  height: 544px;
   overflow: hidden;
 }
 
 .imageWrapper {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  filter: blur(1px);
-  opacity: 0.91;
+  inset: 0;
+  z-index: 1;
 }
 
 .imageStyle {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover;
+  opacity: 0.61;
+  filter: blur(1.5px);
+  transform: scale(1.02);
 }
 
 .container {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 2;
 }
 
-.content {
-  font-family: "Koh Santepheap", serif;
-  font-weight: 400;
-  font-size: 210px;
-  line-height: 100%;
-  letter-spacing: 0%;
+.content,
+.content2 {
   text-align: center;
+  font-family: var(--font-koh-santepheap);
+  font-size: 210px;
+  font-weight: 400;
   background: linear-gradient(
     280.9deg,
     #14242c -29.02%,
@@ -53,75 +48,58 @@
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: transparent;
+  letter-spacing: -2px;
+  pointer-events: none;
 }
 
 .propertiesContainer {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 80px;
+  padding: 0 40px 20px 40px;
+  position: relative;
+  margin-top: 25px;
+  z-index: 10;
 }
 
 .searchbar {
-  max-width: 986px;
-  margin: 0 auto;
-  margin-top: 25px;
-  margin-bottom: 40px;
-  position: relative;
-  z-index: 5;
-}
-
-.propertyDropdowns {
+  margin-bottom: 25px;
   display: flex;
-  align-items: flex-start;
   justify-content: center;
-  gap: 30px;
-  max-width: 1240px;
-  margin: 0 auto;
-  margin-bottom: 60px;
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 100;
 }
 
-/* Ensure each dropdown can expand properly */
-.propertyDropdowns > * {
-  position: relative;
-  z-index: 100;
+.dropdowns {
+  margin-top: 80px;
+  display: flex;
+  justify-content: center;
 }
 
 .propertiesContent {
-  max-width: 1118px;
-  margin: 0 auto;
-  margin-bottom: 48px;
-  position: relative;
-  z-index: 1;
+  margin-top: 80px;
+  text-align: left;
 }
 
 .propertiesTitle {
-  font-family: "Old Standard TT", serif;
+  font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 50px;
-  line-height: 62px;
-  letter-spacing: 0%;
   color: #13252e;
-  margin-bottom: 5px;
 }
 
 .propertiesDescription {
-  font-family: "Old Standard TT", serif;
+  font-family: var(--font-old-standard-tt);
   font-weight: 400;
   font-size: 20px;
-  line-height: 25px;
+  line-height: 100%;
   letter-spacing: 0%;
   color: #13252e;
 }
 
 .propertyCards {
-  max-width: 1118px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
 }
 
 .errorContainer {
@@ -136,7 +114,7 @@
   padding: 8px 22px;
   background: #980000;
   color: #f7f7f7;
-  font-family: "Old Standard TT", serif;
+  font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 20px;
   line-height: 25px;
@@ -155,7 +133,7 @@
   padding: 8px 22px;
   background: #13252e;
   color: #f7f7f7;
-  font-family: "Old Standard TT", serif;
+  font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 20px;
   line-height: 25px;
@@ -165,13 +143,12 @@
 .propertyGridPagination {
   display: flex;
   flex-direction: column;
-  gap: 49px;
 }
 
 .propertyGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  gap: 49px;
 }
 
 .paginationContainer {
@@ -179,100 +156,122 @@
   justify-content: center;
   align-items: center;
   background: #f7f7f7;
+  padding-top: 40px;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .content {
+@media (max-width: 1500px) {
+  .content2 {
     font-size: 150px;
   }
-
-  .propertiesContainer {
-    padding: 0 60px;
-  }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1150px) {
+  .propertiesContent {
+    margin-top: 20px;
+  }
+
   .content {
-    font-size: 100px;
+    font-size: 140px;
   }
 
-  .image {
-    height: 400px;
-  }
-
-  .propertiesContainer {
-    padding: 0 20px;
-  }
-
-  .propertiesTitle {
-    font-size: 40px;
-  }
-
-  .propertiesDescription {
-    font-size: 18px;
-  }
-
-  .propertyDropdowns {
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-
-  .propertyGrid {
-    /* grid-template-columns: repeat(2, 1fr); */
-    gap: 20px;
-    justify-items: center;
-  }
-}
-
-@media (max-width: 700px) {
-  .content {
-    font-size: 80px;
-  }
-
-  .image {
-    height: 350px;
-  }
-
-  .propertiesContainer {
-    padding: 0 16px;
+  .content2 {
+    font-size: 120px;
   }
 
   .propertyGrid {
     grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 550px) {
-  .content {
-    font-size: 70px;
-  }
-
-  .image {
-    height: 300px;
+    gap: 30px;
   }
 
   .propertiesContainer {
+    padding: 0 30px 40px 30px;
+  }
+}
+
+@media (max-width: 1150px) {
+  .propertiesContent {
+    margin-top: 20px;
+  }
+
+  .content {
+    font-size: 140px;
+  }
+
+  .content2 {
+    font-size: 120px;
+  }
+
+  .propertyGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+  }
+
+  .propertiesContainer {
+    padding: 0 30px 40px 30px;
+  }
+}
+
+@media (max-width: 900px) {
+  .content2 {
+    font-size: 90px;
+  }
+}
+
+@media (max-width: 768px) {
+  .image {
+    height: 350px;
+  }
+
+  .content,
+  .content2 {
+    font-size: 80px;
+    letter-spacing: -1px;
+  }
+
+  .propertiesContainer {
+    margin-top: 10px;
     padding: 0 20px;
   }
 
+  .dropdowns {
+    margin-top: 50px;
+  }
+
   .propertiesTitle {
-    font-size: 30px;
+    font-size: 32px;
   }
 
   .propertiesDescription {
     font-size: 16px;
-    line-height: 140%;
+    line-height: 1.4;
   }
 
   .propertyGrid {
-    /* grid-template-columns: 1fr; */
+    grid-template-columns: 1fr;
     gap: 20px;
+  }
+
+  .searchbar,
+  .dropdowns {
+    width: 100%;
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 480px) {
+  .content,
+  .content2 {
+    font-size: 60px;
+  }
+
+  .image {
+    height: 280px;
   }
 
   .errorContainer,
   .noResultsContainer {
-    max-width: 90%;
+    max-width: 100%;
     font-size: 16px;
+    padding: 8px 15px;
   }
 }
