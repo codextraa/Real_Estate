@@ -1,0 +1,104 @@
+# name: real-estate-data
+
+secrets:
+  infisical_token:
+    file: ./infisical_token.txt
+  .infisical.json:
+    file: ./.infisical.json
+
+services:
+  real-estate-backend-ai:
+    container_name: real-estate-backend-ai
+    # build: ../backend_ai
+    # image: real-estate-backend-ai:Python-3.12-alpine-P
+    image: codxtra/real-estate-backend-ai:Python-3.12-alpine-P
+    restart: unless-stopped
+    ports:
+      - "8005:8001"
+    secrets:
+      - infisical_token
+      - .infisical.json
+    entrypoint: /app/run.sh
+    volumes:
+      - backend-static-ai:/app/static_ai
+    environment:
+      - SERVICE_TYPE=ai-api
+    extra_hosts:
+      - "real-estate.dev:192.168.122.214"
+    depends_on:
+      real-estate-redis:
+        condition: service_healthy
+    networks:
+      - web-app-network
+    cpus: '0.5'
+    mem_limit: 512m
+
+  real-estate-backend-ai-worker:
+    container_name: real-estate-backend-ai-worker
+    image: codxtra/real-estate-backend-ai:Python-3.12-alpine-P
+    restart: unless-stopped
+    secrets:
+      - infisical_token
+      - .infisical.json
+    entrypoint: /app/run.sh
+    volumes:
+      - backend-static-ai:/app/static_ai
+    environment:
+      - SERVICE_TYPE=ai-workers
+    depends_on:
+      real-estate-redis:
+        condition: service_healthy
+      real-estate-backend-ai:
+        condition: service_started
+    networks:
+      - web-app-network
+    cpus: '1'
+    mem_limit: 1.5g
+
+  real-estate-redis:
+    container_name: real-estate-redis
+    # build: ../redis
+    # image: jwt-djrest-redis:Redis-7.4.2-alpine-P
+    image: codxtra/real-estate-redis:Redis-7.4.2-alpine-P
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6383:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - web-app-network
+    cpus: '0.2'
+    mem_limit: 256m
+
+  real-estate-s3:
+    container_name: real-estate-s3
+    # build: ../minio
+    # image: real-estate-s3:Minio-2025-09-07T16-13-09Z-cpuv1
+    image: codxtra/real-estate-s3:Minio-2025-09-07T16-13-09Z-cpuv1
+    restart: unless-stopped
+    ports:
+      - "9000:9000" # s3 API
+      - "9001:9001" # web console
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - web-app-network
+    cpus: '0.3'
+    mem_limit: 256m
+
+volumes:
+  backend-static-ai:
+  redis-data:
+    driver: local
+  minio-data:
+
+networks:
+  web-app-network:
+    driver: bridge

@@ -1,0 +1,31 @@
+# name: real-estate-app
+
+secrets:
+  infisical_token:
+    file: ./infisical_token.txt
+  .infisical.json:
+    file: ./.infisical.json
+
+services:
+  real-estate-frontend:
+    container_name: real-estate-frontend
+    # build: ../frontend
+    # image: real-estate-frontend:Node-22-alpine-P
+    image: codxtra/real-estate-frontend:Node-22-alpine-P
+    restart: unless-stopped
+    ports:
+      - "3004:3000"
+    secrets:
+      - infisical_token
+      - .infisical.json
+    entrypoint: /app/run.sh
+    networks:
+      - web-app-network
+    extra_hosts:
+      - "real-estate.dev:192.168.122.214"
+    cpus: '1.0'
+    mem_limit: 800m
+
+networks:
+  web-app-network:
+    driver: bridge

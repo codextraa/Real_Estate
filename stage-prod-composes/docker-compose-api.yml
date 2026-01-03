@@ -1,0 +1,36 @@
+# name: real-estate-api
+
+secrets:
+  infisical_token:
+    file: ./infisical_token.txt
+  .infisical.json:
+    file: ./.infisical.json
+
+services:
+  real-estate-backend:
+    container_name: real-estate-backend
+    # build: ../backend
+    # image: real-estate-backend:Python-3.12-alpine-P
+    image: codxtra/real-estate-backend:Python-3.12-alpine-P
+    restart: unless-stopped
+    ports:
+      - "8004:8000"
+    secrets:
+      - infisical_token
+      - .infisical.json
+    entrypoint: /app/run.sh
+    volumes:
+      - backend-static:/app/static
+    networks:
+      - web-app-network
+    extra_hosts:
+      - "real-estate.dev:192.168.122.214"
+    cpus: '1.0'
+    mem_limit: 800m
+
+volumes:
+  backend-static:
+
+networks:
+  web-app-network:
+    driver: bridge
