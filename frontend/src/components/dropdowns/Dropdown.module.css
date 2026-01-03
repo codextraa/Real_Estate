@@ -1,46 +1,45 @@
 .propertyDropdowns {
   display: flex;
-  /* Force buttons to stay in a single line */
-  flex-wrap: nowrap;
-  gap: 12px;
-  padding: 20px;
+  flex-direction: row;
+  align-items: center;
   justify-content: center;
-  align-items: flex-start;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+  gap: 30px;
+  position: absolute;
+  padding-bottom: 20px;
 }
 
-/* Base Filter Container */
 .addressFilter,
 .priceFilter,
-.areaSqftFilter,
-.bedroomsFilter,
-.bathroomsFilter {
+.areaSqftFilter {
+  width: 224px;
+  height: 60px;
   position: relative;
-  flex: 1;
-  min-width: 0;
-  /* Ensures they don't get too thin before wrapping */
 }
 
-/* The Clickable Button (Pill Shape) */
+.bedroomsFilter,
+.bathroomsFilter {
+  width: 170px;
+  height: 60px;
+  position: relative;
+}
+
 .addressButton,
 .priceButton,
 .area_sqftButton,
 .bedsButton,
 .bathsButton {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  background: #f7f7f7;
+  border: 2px solid rgba(19, 37, 46, 0.6);
+  border-radius: 84px;
   display: flex;
   align-items: center;
-  width: 100%;
-  padding: 10px 20px;
-  background: #f7f7f7;
-  border: 1.5px solid #415261;
-  border-radius: 50px;
-  /* Pill shape from image */
+  padding-left: 11px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  gap: 12px;
-  text-align: left;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .addressButton:hover,
@@ -48,21 +47,18 @@
 .area_sqftButton:hover,
 .bedsButton:hover,
 .bathsButton:hover {
-  background: #edf1f3;
   border-color: #13252e;
 }
 
-/* Icon Styling */
 .addressIcon,
 .priceIcon,
 .area_sqftIcon,
 .bedsIcon,
 .bathsIcon {
-  opacity: 0.8;
-  flex-shrink: 0;
+  margin-top: 19px;
+  margin-bottom: 19px;
 }
 
-/* Label and Value Texts */
 .addressTexts,
 .priceTexts,
 .area_sqftTexts,
@@ -70,7 +66,8 @@
 .bathsTexts {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .addressLabel,
@@ -79,10 +76,10 @@
 .bedsLabel,
 .bathsLabel {
   font-family: var(--font-old-standard-tt);
-  font-size: 14px;
   font-weight: 700;
+  font-size: 20px;
+  padding-left: 10px;
   color: #13252e;
-  line-height: 1.2;
 }
 
 .addressValue,
@@ -91,250 +88,137 @@
 .bedsValue,
 .bathsValue {
   font-family: var(--font-old-standard-tt);
-  font-size: 16px;
   font-weight: 400;
-  color: #415261;
+  font-size: 15px;
+  padding-left: 10px;
+  color: #13252e;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Dropdown Menu Container */
 .addressDropdown,
 .priceDropdown,
 .area_sqftDropdown,
 .bedsDropdown,
 .bathsDropdown {
+  box-sizing: border-box;
   position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  width: 100%;
-  max-height: 400px;
-  overflow-y: auto;
+  top: 65px;
   background: #f7f7f7;
   border: 1px solid #13252e;
-  border-radius: 12px;
+  border-radius: 10px;
   z-index: 100;
+  overflow-y: auto;
   box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Individual Items inside Dropdown */
 .addressDropdownItem,
 .priceDropdownItem,
 .area_sqftDropdownItem,
 .bedsDropdownItem,
 .bathsDropdownItem {
-  display: block;
   width: 100%;
-  padding: 12px 15px;
-  text-align: left;
+  padding: 12px 20px;
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(65, 82, 97, 0.2);
+  text-align: left;
   font-family: var(--font-old-standard-tt);
   font-size: 16px;
   color: #13252e;
   cursor: pointer;
-  transition: background 0.2s;
+  border-bottom: 1px solid rgba(19, 37, 46, 0.1);
 }
 
-.addressDropdownItem:last-child,
-.priceDropdownItem:last-child,
-.area_sqftDropdownItem:last-child,
-.bedsDropdownItem:last-child,
-.bathsDropdownItem:last-child {
-  border-bottom: none;
-}
-
-.addressDropdownItem:hover {
+.addressDropdownItem:hover,
+.priceDropdownItem:hover,
+.area_sqftDropdownItem:hover,
+.bedsDropdownItem:hover,
+.bathsDropdownItem:hover {
   background: rgba(19, 37, 46, 0.05);
 }
 
-/* --- Responsive Adjustments --- */
-@media (max-width: 1260px) {
+/* --- RESPONSIVE DESIGN --- */
+
+/* Tablets and Medium Screens */
+@media (max-width: 1150px) {
   .propertyDropdowns {
-    gap: 8px;
-    padding: 15px 10px;
+    position: relative; /* Remove absolute positioning to flow with content */
+    flex-wrap: wrap; /* Allow capsules to move to a new line */
+    width: 100%;
+    height: auto;
+    gap: 20px;
+    padding: 10px;
   }
 
-  /* Target the buttons inside the dropdown container */
-  .propertyDropdowns button[class*="Button"] {
-    padding: 8px 16px;
-    /* Smaller padding */
-    gap: 8px;
-  }
-
-  /* Shrink the Labels and Values */
-  .propertyDropdowns div[class*="Label"] {
-    font-size: 12px;
-  }
-
-  .propertyDropdowns div[class*="Value"] {
-    font-size: 14px;
-  }
-
-  /* Shrink the Icons */
-  .propertyDropdowns img[class*="Icon"] {
-    width: 20px !important;
-    height: 20px !important;
-  }
-
-  .addressButton,
-  .priceButton,
-  .area_sqftButton,
-  .bedsButton,
-  .bathsButton {
-    padding: 8px 10px;
-    gap: 6px;
-  }
-  .addressLabel,
-  .priceLabel,
-  .area_sqftLabel,
-  .bedsLabel,
-  .bathsLabel {
-    font-size: 11px;
-  }
-
-  .addressValue,
-  .priceValue,
-  .area_sqftValue,
-  .bedsValue,
-  .bathsValue {
-    font-size: 12px;
-  }
-
-  .propertyDropdowns img[class*="Icon"] {
-    width: 18px !important;
-    height: 18px !important;
+  /* Adjust widths to fit 2 or 3 per row */
+  .addressFilter,
+  .priceFilter,
+  .areaSqftFilter,
+  .bedroomsFilter,
+  .bathroomsFilter {
+    width: calc(45% - 10px);
+    min-width: 160px;
   }
 }
 
-@media (max-width: 820px) {
-  .propertyDropdowns {
-    gap: 6px;
-    padding: 12px 8px;
-  }
-
-  /* Target the buttons inside the dropdown container */
-  .propertyDropdowns button[class*="Button"] {
-    padding: 6px 12px;
-    /* Smaller padding */
-    gap: 6px;
-  }
-
-  /* Shrink the Labels and Values */
-  .propertyDropdowns div[class*="Label"] {
-    font-size: 10px;
-  }
-
-  .propertyDropdowns div[class*="Value"] {
-    font-size: 12px;
-  }
-
-  /* Shrink the Icons */
-  .propertyDropdowns img[class*="Icon"] {
-    width: 16px !important;
-    height: 16px !important;
-  }
-
-  .addressButton,
-  .priceButton,
-  .area_sqftButton,
-  .bedsButton,
-  .bathsButton {
-    padding: 6px 8px;
-    gap: 4px;
-  }
-  .addressLabel,
-  .priceLabel,
-  .area_sqftLabel,
-  .bedsLabel,
-  .bathsLabel {
-    font-size: 9px;
-  }
-
-  .addressValue,
-  .priceValue,
-  .area_sqftValue,
-  .bedsValue,
-  .bathsValue {
-    font-size: 10px;
-  }
-
-  .propertyDropdowns img[class*="Icon"] {
-    width: 15px !important;
-    height: 15px !important;
-  }
-}
-
-/* --- Tablet Scaling (768px and below) --- */
+/* Phones and Small Tablets */
 @media (max-width: 768px) {
   .propertyDropdowns {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 5px;
-    /* Reduce gap between buttons */
+    gap: 15px;
   }
 
-  /* Target the buttons inside the dropdown container */
-  .propertyDropdowns button[class*="Button"] {
-    padding: 8px 16px;
-    /* Smaller padding */
-    gap: 8px;
+  .addressLabel,
+  .priceLabel,
+  .area_sqftLabel,
+  .bedsLabel,
+  .bathsLabel {
+    font-size: 18px; /* Slightly smaller text */
   }
 
-  /* Shrink the Labels and Values */
-  .propertyDropdowns div[class*="Label"] {
-    font-size: 12px;
-  }
-
-  .propertyDropdowns div[class*="Value"] {
+  .addressValue,
+  .priceValue,
+  .area_sqftValue,
+  .bedsValue,
+  .bathsValue {
     font-size: 14px;
   }
 
-  /* Shrink the Icons */
-  .propertyDropdowns img[class*="Icon"] {
-    width: 20px !important;
-    height: 20px !important;
+  /* Adjust the dropdown menu list to be full width of the capsule */
+  .addressDropdown,
+  .priceDropdown,
+  .area_sqftDropdown,
+  .bedsDropdown,
+  .bathsDropdown {
+    width: 100%;
+    left: 0;
+    top: 70px;
   }
 }
 
-/* --- Mobile Scaling (550px and below) --- */
-@media (max-width: 550px) {
-  .propertyDropdowns {
-    gap: 10px;
-    justify-content: space-between;
-    /* Helps use full width */
-  }
-
-  /* Make buttons even more compact */
-  .propertyDropdowns button[class*="Button"] {
-    padding: 6px 12px;
-    border-radius: 30px;
-    /* Adjust pill shape for smaller size */
-    min-width: 140px;
-    /* Prevents text from being too squished */
-    flex: 1 1 45%;
-    /* Allow 2 buttons per row on small screens if space permits */
-  }
-
-  .propertyDropdowns div[class*="Label"] {
-    font-size: 10px;
-    line-height: 1.1;
-  }
-
-  .propertyDropdowns div[class*="Value"] {
-    font-size: 12px;
-  }
-
-  /* Further shrink the Icons */
-  .propertyDropdowns img[class*="Icon"] {
-    width: 16px !important;
-    height: 16px !important;
-  }
-
-  /* Make sure the dropdown menu itself isn't too wide */
-  .propertyDropdowns div[class*="Dropdown"] {
+@media (max-width: 540px) {
+  .addressFilter,
+  .priceFilter,
+  .areaSqftFilter,
+  .bedroomsFilter,
+  .bathroomsFilter {
     width: 100%;
-    font-size: 14px;
+    max-width: 400px;
+    height: 65px;
+  }
+}
+
+/* Very Small Devices */
+@media (max-width: 480px) {
+  .propertyDropdowns {
+    gap: 12px;
+  }
+
+  .addressButton,
+  .priceButton,
+  .area_sqftButton,
+  .bedsButton,
+  .bathsButton {
+    padding-left: 15px; /* More breathing room on small screens */
   }
 }

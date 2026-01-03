@@ -1,30 +1,20 @@
-/* components/ListingForm.module.css */
-
 .container {
   display: flex;
-  gap: 2rem;
+  gap: 30px;
 }
 
-/* Sidebar Styles */
 .sidebar {
-  width: 16rem;
+  width: 17%;
   flex-shrink: 0;
 }
 
 .sidebarContent {
-  /* background-color: #f1f5f9; */
-  padding: 1.5rem;
-  padding-top: 0;
-  border-radius: 0.5rem;
   position: sticky;
-  top: 2rem;
-}
-
-.sidebarResponsiveWrapper {
   display: flex;
   flex-direction: column;
-  /* Default vertical */
-  gap: 2rem;
+  align-items: left;
+  justify-content: center;
+  gap: 25px;
 }
 
 .sidebarHeader {
@@ -57,15 +47,24 @@
 .checkItem {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
 }
 
-.statusIcon {
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+.label {
   display: block;
-  object-fit: contain;
+  font-size: 20px;
+  font-family: var(--font-old-standard-tt);
+  font-style: regular;
+  font-weight: 400;
+  line-height: 100%;
+  padding-bottom: 5px;
 }
 
-/* Form Container */
 .formContainer {
   flex: 1;
   background-color: #f7f7f7;
@@ -79,25 +78,27 @@
 }
 
 .sectionTitle {
-  display: block;
   font-size: 30px;
   font-family: var(--font-old-standard-tt);
-  font-style: bold;
-  margin-bottom: 0.75rem;
   font-weight: 700;
 }
 
-.label {
-  display: block;
-  font-size: 20px;
-  font-family: var(--font-old-standard-tt);
-  font-style: regular;
-  font-weight: 400;
-  line-height: 100%;
-  padding-bottom: 5px;
+.input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #415261;
+  background-color: #f7f7f7;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 16px;
+  transition: all 0.2s;
 }
 
-/* Input Styles */
+.input:focus {
+  outline: none;
+  border-color: #9ca3af;
+}
+
 .inputTitle {
   font-family: var(--font-old-standard-tt);
   font-size: 18px;
@@ -113,30 +114,14 @@
   gap: 5px;
 }
 
-.input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #415261;
-  background-color: #f7f7f7;
-  border-radius: 5px;
-  font-family: inherit;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-.input:focus {
-  outline: none;
-  border-color: #9ca3af;
-}
-
-.bioContainer {
+.descContainer {
   position: relative;
   border: 1px solid #415261;
   border-radius: 5px;
   width: 100%;
 }
 
-.bioContainer:focus {
+.descContainer:focus {
   outline: none;
   border-color: #9ca3af;
 }
@@ -170,11 +155,6 @@
   color: #415261;
 }
 
-/* Textarea Styles */
-.textareaWrapper {
-  position: relative;
-}
-
 .textarea {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -198,7 +178,6 @@
   color: #6b7280;
 }
 
-/* Grid Layout */
 .gridThree {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -206,7 +185,6 @@
   margin-bottom: 1rem;
 }
 
-/* Price Input */
 .priceInputWrapper {
   position: relative;
 }
@@ -220,7 +198,6 @@
   font-weight: 400;
   line-height: 100%;
   font-style: regular;
-  /* $ */
 }
 
 .priceInput {
@@ -240,16 +217,11 @@
   border-color: #9ca3af;
 }
 
-/* Image Upload */
 .imageUploadBox {
-  /* border: 1px solid #415261;
-  border-radius: 10px;
-  padding: 2rem; */
   display: flex;
   border: 1px solid #415261;
   border-radius: 10px;
   overflow: hidden;
-  /* Keeps image corners rounded */
   min-height: 250px;
   background-color: #f7f7f7;
 }
@@ -272,11 +244,6 @@
 }
 
 .uploadLabel {
-  /* display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer; */
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -306,12 +273,6 @@
   margin-bottom: 1rem;
 }
 
-.uploadSvg {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: white;
-}
-
 .uploadText {
   font-size: 1.125rem;
   font-weight: 500;
@@ -323,20 +284,12 @@
   color: #6b7280;
 }
 
-.fileInput {
-  border: 1px solid #415261;
-  border-radius: 5px;
-}
-
 .imageInput {
   display: none;
 }
 
-/* Image Preview */
 .imagePreviewContainer {
-  /* position: relative; */
   flex: 1.2;
-  /* Slightly wider for the image */
   position: relative;
   border-right: 1px solid #415261;
   display: flex;
@@ -349,35 +302,11 @@
   width: 100%;
   height: 16rem;
   object-fit: cover;
-  /* border-radius: 0.375rem; */
 }
 
-.deleteImageBtn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background-color: #ef4444;
-  color: white;
-  padding: 0.5rem;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.deleteImageBtn:hover {
-  background-color: #dc2626;
-}
-
-.deleteIcon {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-/* Error Box */
 .errorBox {
   font-family: var(--font-old-standard-tt);
-  color: #b70000;
+  color: #e30202;
   font-size: 16px;
   font-style: bold;
   font-weight: 700;
@@ -396,9 +325,9 @@
   line-height: 100%;
   display: block;
   text-align: center;
+  margin-bottom: 30px;
 }
 
-/* Success Box */
 .successBox {
   font-family: var(--font-old-standard-tt);
   color: #368c04;
@@ -408,13 +337,13 @@
   line-height: 100%;
   display: block;
   text-align: center;
+  margin-bottom: 30px;
 }
 
-/* Buttons */
 .buttonGroup {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
+  gap: 40px;
 }
 
 .cancelProfileButton {
@@ -422,18 +351,23 @@
   border-radius: 21px;
   border: 1px solid #13252e;
   background: transparent;
-  padding: 11px 21px 9px 21px;
+  padding: 1px 39px 0px 39px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 39px;
   transition: background 0.3s;
+  cursor: pointer;
 }
 
-.cancelProfileButton a {
+.cancelProfileButtonLink {
   color: #13252e;
+  font-family: var(--font-old-standard-tt);
   font-size: 20px;
-  line-height: 100%;
-  letter-spacing: 0%;
-  text-align: center;
+  font-weight: 700;
+  line-height: normal;
+  display: inline-block;
   text-decoration: none;
-  display: block;
 }
 
 .cancelProfileButton:hover {
@@ -441,105 +375,19 @@
 }
 
 .submitBtn {
-  padding: 0.75rem 2rem;
+  padding: 7px 39px 7px 39px;
   background-color: #111827;
   color: white;
-  font-family: var(--font-old-standard-tt);
-  font-weight: 700;
   font-size: 20px;
-  line-height: 100%;
-  letter-spacing: 0%;
   text-align: center;
-
   border: none;
-  border-radius: 9999px;
+  border-radius: 21px;
   cursor: pointer;
   transition: background-color 0.3s;
 }
 
 .submitBtn:hover {
   background-color: #233e4f;
-}
-
-/* Responsive Design */
-
-@media (max-width: 1300px) {
-  .sidebar {
-    width: 12rem;
-    /* Reduced from 16rem */
-  }
-
-  /* 2. Make the gap between sidebar and form smaller */
-  .container {
-    gap: 1rem;
-  }
-
-  /* 3. Adjust text sizes so they don't wrap awkwardly */
-  .sidebarTitle {
-    font-size: 20px;
-  }
-
-  .sidebarSubtitle {
-    font-size: 14px;
-  }
-
-  .label {
-    font-size: 16px;
-  }
-}
-
-@media (max-width: 1200px) {
-  .sidebar {
-    width: 8rem;
-    /* Reduced from 16rem */
-  }
-
-  /* 2. Make the gap between sidebar and form smaller */
-  .container {
-    gap: 1rem;
-  }
-
-  /* 3. Adjust text sizes so they don't wrap awkwardly */
-  .sidebarTitle {
-    font-size: 18px;
-  }
-
-  .sidebarSubtitle {
-    font-size: 12px;
-  }
-
-  .label {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 1000px) {
-  .sidebar {
-    width: 6rem;
-    /* Reduced from 16rem */
-  }
-
-  /* 2. Make the gap between sidebar and form smaller */
-  .container {
-    gap: 2rem;
-  }
-
-  /* 3. Adjust text sizes so they don't wrap awkwardly */
-  .sidebarTitle {
-    font-size: 16px;
-  }
-
-  .sidebarSubtitle {
-    font-size: 10px;
-  }
-
-  .label {
-    font-size: 12px;
-  }
-
-  /* .gridThree {
-    grid-template-columns: repeat(2, 1fr);
-  } */
 }
 
 @media (max-width: 800px) {
@@ -556,11 +404,6 @@
     top: 0;
   }
 
-  /* .sidebarResponsiveWrapper {
-    flex-direction: row; 
-    justify-content: space-between;
-    align-items: flex-start;
-  } */
   .imageUploadBox {
     flex-direction: column;
   }
@@ -572,11 +415,9 @@
   }
 
   .checklist {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-    align-items: flex-start;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
   }
 
   .gridThree {
@@ -584,9 +425,31 @@
   }
 }
 
-@media (max-width: 500px) {
-  .sidebarResponsiveWrapper {
-    flex-direction: column;
+@media (max-width: 600px) {
+  /*! font size for everything small */
+  .sidebarTitle {
+    font-size: 20px;
+  }
+
+  .sidebarSubTitle {
+    font-size: 16px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+  }
+
+  .inputTitle {
+    font-size: 16px;
+  }
+
+  .input {
+    font-size: 14px;
+  }
+
+  .checklist {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
   .gridThree {
@@ -594,18 +457,37 @@
   }
 
   .storedText {
-    font-size: 16px;
+    font-size: 14px;
     padding: 5px 10px 10px 10px;
   }
 
   .charCount {
     font-size: 14px;
   }
+
+  .buttonGroup {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .cancelProfileButton {
+    padding: 1px 20px 0px 20px;
+  }
+
+  .cancelProfileButtonLink {
+    font-size: 16px;
+  }
+
+  .submitBtn {
+    padding: 7px 20px 7px 20px;
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 400px) {
-  .buttonGroup {
-    flex-direction: column;
+  .label {
+    font-size: 16px;
   }
 
   .storedText {

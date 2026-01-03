@@ -6,7 +6,7 @@ import PropertyCard from "@/components/cards/PropertyCard";
 import DashboardTabs from "@/components/dashboardTabs/DashboardTabs";
 import Dropdown from "@/components/dropdowns/Dropdown";
 import Pagination from "@/components/pagination/Pagination";
-import styles from "@/styles/DashboardPage.module.css";
+import styles from "@/styles/PropertyPage.module.css";
 import Image from "next/image";
 import { DEFAULT_LOGIN_REDIRECT } from "@/route";
 
@@ -21,15 +21,15 @@ export default async function DashboardPage({ searchParams }) {
   if (userRole !== "Agent") {
     return notFound();
   }
-  const query = await searchParams;
-  const currentTab = query.tab || "my-listings";
-  const currentPage = parseInt(query.page) || 1;
+  const urlSearchParams = await searchParams;
+  const currentTab = urlSearchParams.tab || "my-listings";
+  const currentPage = parseInt(urlSearchParams.page) || 1;
 
   let response = [];
   if (currentTab === "my-listings") {
     response = await getListings({
       page: currentPage,
-      ...query,
+      ...urlSearchParams,
     });
   }
 
@@ -41,13 +41,12 @@ export default async function DashboardPage({ searchParams }) {
             src={imageUrl}
             alt="Modern city buildings representing real estate"
             priority
+            fill
             className={styles.imageStyle}
-            width={100}
-            height={100}
           />
         </div>
         <div className={styles.container}>
-          <div className={styles.content}>My Dashboard</div>
+          <div className={styles.content2}>My Dashboard</div>
         </div>
       </div>
       <div className={styles.tabs}>
@@ -58,7 +57,7 @@ export default async function DashboardPage({ searchParams }) {
           <div className={styles.searchbar}>
             <Searchbar />
           </div>
-          <div className={styles.propertyDropdowns}>
+          <div className={styles.dropdowns}>
             <Dropdown />
           </div>
           <div className={styles.propertiesContent}>

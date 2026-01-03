@@ -10,6 +10,7 @@ export default async function CreatePropertyPage() {
       return notFound();
     }
   }
+
   return (
     <div className={styles.background}>
       <div className={styles.form}>

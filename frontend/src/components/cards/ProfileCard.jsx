@@ -1,8 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getUserIdAction } from "@/actions/authActions";
 import styles from "./ProfileCard.module.css";
 
-export default function ProfileCard({ userData, userRole }) {
+export default async function ProfileCard({ userData, userId, userRole }) {
+  const actionUserId = await getUserIdAction();
+  let isOwnProfile = true;
+
+  if (actionUserId != userId) {
+    isOwnProfile = false;
+  }
+
   return (
     <div className={styles.profileInfoContainer}>
       <div className={styles.profileDetailTitle}>Profile Information</div>
@@ -73,27 +81,29 @@ export default function ProfileCard({ userData, userRole }) {
                 </div>
               </div>
             </div>
-            <div className={styles.agentProfileButtonContainer}>
-              <Link
-                href={`/profile/${userData.user.slug}/edit`}
-                className={`${styles.editProfileButton} ${styles.editAgentProfileButton}`}
-              >
-                Edit Profile
-              </Link>
-              <Link
-                href={`/my-listings`}
-                className={`${styles.editProfileButton} ${styles.myListingsButton}`}
-              >
-                View Listings
-                <Image
-                  className={styles.arrowIcon}
-                  src="/assets/button-arrow.svg"
-                  alt="Right Arrow Icon"
-                  width={53}
-                  height={45}
-                />
-              </Link>
-            </div>
+            {isOwnProfile && (
+              <div className={styles.agentProfileButtonContainer}>
+                <Link
+                  href={`/profile/${userData.user.slug}/edit`}
+                  className={`${styles.editProfileButton} ${styles.editAgentProfileButton}`}
+                >
+                  Edit Profile
+                </Link>
+                <Link
+                  href={`/my-listings`}
+                  className={`${styles.editProfileButton} ${styles.myListingsButton}`}
+                >
+                  View Listings
+                  <Image
+                    className={styles.arrowIcon}
+                    src="/assets/button-arrow.svg"
+                    alt="Right Arrow Icon"
+                    width={53}
+                    height={45}
+                  />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -116,14 +126,16 @@ export default function ProfileCard({ userData, userRole }) {
               <div className={styles.storedContent}>{userData.username}</div>
             </div>
           </div>
-          <div className={styles.profileDetailButtonContainer}>
-            <Link
-              href={`/profile/${userData.slug}/edit`}
-              className={styles.editProfileButton}
-            >
-              Edit Profile
-            </Link>
-          </div>
+          {isOwnProfile && (
+            <div className={styles.profileDetailButtonContainer}>
+              <Link
+                href={`/profile/${userData.slug}/edit`}
+                className={styles.editProfileButton}
+              >
+                Edit Profile
+              </Link>
+            </div>
+          )}
         </>
       )}
     </div>

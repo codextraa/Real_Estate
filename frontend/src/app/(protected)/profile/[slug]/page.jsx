@@ -5,12 +5,18 @@ import { getUserIdAction, getUserRoleAction } from "@/actions/authActions";
 import ProfileCard from "@/components/cards/ProfileCard";
 import styles from "@/styles/ProfilePage.module.css";
 
-export default async function ProfilePage({ params }) {
+export default async function ProfilePage({ params, searchParams }) {
   const urlParams = await params;
+  const urlSearchParams = await searchParams;
   const slug = urlParams.slug;
-  const userId = await getUserIdAction();
-  const userRole = await getUserRoleAction();
+  let userId = urlSearchParams.user_id;
+  let userRole = urlSearchParams.user_role;
   const imgUrl = "/real-estate/real-estate.jpg";
+
+  if (!userId && !userRole) {
+    userId = await getUserIdAction();
+    userRole = await getUserRoleAction();
+  }
 
   let response;
   let response_slug;
@@ -43,7 +49,11 @@ export default async function ProfilePage({ params }) {
       </div>
       <div className={styles.profilePageWrapper}>
         <div className={containerClassStyle}>
-          <ProfileCard userData={response} userRole={userRole} />
+          <ProfileCard
+            userData={response}
+            userId={userId}
+            userRole={userRole}
+          />
         </div>
       </div>
     </>
