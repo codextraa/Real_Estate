@@ -49,9 +49,11 @@ jobs:
           path: postgres-db
 
       - name: Create token file for real-estate
+        working-directory: ./docker
         run: echo "${{ secrets.INFISICAL_TOKEN_DEV }}" > infisical_token.txt
 
       - name: Create Infisical config for real-estate
+        working-directory: ./docker
         run: |
           echo "${{ secrets.INFISICAL_JSON_DEV }}" | base64 -d > .infisical.json
 
