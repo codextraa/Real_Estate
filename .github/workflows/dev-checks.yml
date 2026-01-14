@@ -121,6 +121,7 @@ jobs:
         run: docker logs real-estate-backend-ai
 
       - name: Stop real-estate containers
+        working-directory: ./docker
         if: always()
         run: docker compose down -v
 
