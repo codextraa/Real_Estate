@@ -74,13 +74,16 @@ jobs:
         run: |
           timeout 120s bash -c 'until [ "$(docker inspect --format="{{.State.Health.Status}}" postgres-db)" = "healthy" ]; do echo "Waiting for Postgres to be healthy..."; sleep 5; done' || { echo "Postgres failed to become healthy within 2 minutes"; exit 1; }
 
+      - name: Move to docker directory
+        run: cd docker
+
       - name: Start backend
         run: docker compose up -d --build real-estate-backend
 
       - name: Start backend ai and Redis services
         run: docker compose up -d --build real-estate-backend-ai real-estate-redis
 
-      - name: Start AI Worker (HPC Engine)
+      - name: Start AI Worker
         run: docker compose up -d --build real-estate-backend-ai-worker
 
       - name: Check linting of backend with Pylint
