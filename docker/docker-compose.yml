@@ -9,7 +9,9 @@ secrets:
 services:
   real-estate-backend:
     container_name: real-estate-backend
-    build: ./backend
+    build: 
+      context: ..
+      dockerfile: ./docker/backend/dev/Dockerfile
     image: real-estate-backend:Python-3.12-slim-D
     ports:
       - "8004:8000"
@@ -19,13 +21,16 @@ services:
     entrypoint: sh -c 
     command: ["chmod +x /app/run.sh && /app/run.sh"]
     volumes:
-      - ./backend:/app
+      - ../backend:/app
+      - ./backend/run.sh:/app/run.sh
     networks:
       - web-app-network
 
   real-estate-backend-ai:
     container_name: real-estate-backend-ai
-    build: ./backend_ai
+    build: 
+      context: ..
+      dockerfile: ./docker/backend_ai/dev/Dockerfile
     image: real-estate-backend-ai:Python-3.12-slim-D
     ports:
       - "8005:8001"
@@ -35,7 +40,8 @@ services:
     entrypoint: sh -c 
     command: ["chmod +x /app/run.sh && /app/run.sh"]
     volumes:
-      - ./backend_ai:/app
+      - ../backend_ai:/app
+      - ./backend_ai/run.sh:/app/run.sh
     environment:
       - SERVICE_TYPE=ai-api
     depends_on:
@@ -48,7 +54,9 @@ services:
 
   real-estate-backend-ai-worker:
     container_name: real-estate-backend-ai-worker
-    build: ./backend_ai
+    build: 
+      context: ..
+      dockerfile: ./docker/backend_ai/dev/Dockerfile
     image: real-estate-backend-ai:Python-3.12-slim-D
     secrets:
       - infisical_token
@@ -56,7 +64,8 @@ services:
     entrypoint: sh -c 
     command: ["chmod +x /app/run.sh && /app/run.sh"]
     volumes:
-      - ./backend_ai:/app
+      - ../backend_ai:/app
+      - ./backend_ai/run.sh:/app/run.sh
     environment:
       - SERVICE_TYPE=ai-workers
     depends_on:
@@ -69,7 +78,9 @@ services:
 
   real-estate-frontend:
     container_name: real-estate-frontend
-    build: ./frontend
+    build: 
+      context: ..
+      dockerfile: ./docker/frontend/dev/Dockerfile
     image: real-estate-frontend:Node-20-alpine-D
     ports:
       - "3004:3000"
@@ -79,7 +90,8 @@ services:
     entrypoint: sh -c 
     command: ["chmod +x /app/run.sh && /app/run.sh"]
     volumes:
-      - ./frontend:/app
+      - ../frontend:/app
+      - ./frontend/run.sh:/app/run.sh
       - frontend_node_modules:/app/node_modules
     extra_hosts:
       - "real-estate.dev:host-gateway"
@@ -87,7 +99,9 @@ services:
       - web-app-network
 
   real-estate-redis:
-    build: ./redis
+    build: 
+      context: ..
+      dockerfile: ./docker/redis/Dockerfile
     container_name: real-estate-redis
     image: real-estate-redis:Redis-7.4.2-alpine-D
     volumes:

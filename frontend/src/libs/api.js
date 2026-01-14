@@ -5,7 +5,11 @@ const HTTPS = process.env.HTTPS === "true";
 const API_URL = HTTPS
   ? process.env.API_BASE_HTTPS_URL
   : process.env.API_BASE_URL;
+const API_AI_URL = HTTPS
+  ? process.env.API_AI_BASE_HTTPS_URL
+  : process.env.API_AI_BASE_URL;
 const apiClient = new ApiClient(API_URL);
+const apiAiClient = new ApiClient(API_AI_URL);
 
 export const refreshToken = async (refreshToken) => {
   return await apiClient.post("/auth-api/refresh-token/", {
@@ -60,7 +64,6 @@ export const deleteUser = async (id, userRole) => {
 
 export const getProperties = async (queryParams = {}) => {
   const params = new URLSearchParams(queryParams);
-  console.log("Fetching My Listings with:", params.toString());
   return apiClient.get(`/property-api/properties/?${params.toString()}`);
 };
 
@@ -93,4 +96,30 @@ export const getListings = async (queryParams = {}) => {
   return apiClient.get(
     `/property-api/properties/my-listings/?${params.toString()}`,
   );
+};
+
+export const getReports = async (queryParams = {}) => {
+  const params = new URLSearchParams(queryParams);
+
+  return apiAiClient.get(`/report-api/reports/?${params.toString()}`);
+};
+
+export const getMyReports = async (queryParams = {}) => {
+  const params = new URLSearchParams(queryParams);
+
+  return apiAiClient.get(
+    `/report-api/reports/my-reports/?${params.toString()}`,
+  );
+};
+
+export const createReport = async (data) => {
+  return apiAiClient.post("/report-api/reports/", data);
+};
+
+export const getReport = async (id) => {
+  return apiAiClient.get(`/report-api/reports/${id}/`);
+};
+
+export const deleteReport = async (id) => {
+  return apiAiClient.delete(`/report-api/reports/${id}/`);
 };

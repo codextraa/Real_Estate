@@ -6,12 +6,16 @@ import Image from "next/image";
 import { DeleteButton } from "@/components/buttons/Buttons";
 import DeleteModal from "@/components/modals/DeleteModal";
 import { getUserIdAction } from "@/actions/authActions";
+import { createReportAction } from "@/actions/reportActions";
 
 const locationIcon = "/assets/location-icon.svg";
 export default function PropertyDetailCard({ property }) {
   const [userId, setUserId] = useState(null);
   const [isClient, setIsClient] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState("idle");
 
   const formatAddress = (addressString) => {
     if (!addressString) return "";
@@ -47,6 +51,29 @@ export default function PropertyDetailCard({ property }) {
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
     document.body.style.overflow = "auto";
+  };
+
+  const handleAnalyze = async () => {
+    setLoading(true);
+    setStatus("idle");
+
+    try {
+      const response = await createReportAction(property.id);
+
+      if (response?.success) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+      }
+    } catch (error) {
+      console.error("Report Action Failed:", error);
+      setStatus("error");
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setStatus("idle");
+      }, 3000);
+    }
   };
 
   async function fetchUserId() {
@@ -103,7 +130,25 @@ export default function PropertyDetailCard({ property }) {
         <div className={styles.pricePayment}>
           <span className={styles.priceValue}>${property.price}</span>
           <div className={styles.button}>
-            <button className={styles.paymentButton}>Analyze</button>
+            {status === "idle" ? (
+              <button
+                className={styles.paymentButton}
+                onClick={handleAnalyze}
+                disabled={loading}
+              >
+                {loading ? "Analyzing..." : "Analyze"}
+              </button>
+            ) : (
+              <span
+                className={
+                  status === "success" ? styles.successMsg : styles.errorMsg
+                }
+              >
+                {status === "success"
+                  ? "✓ Report Created"
+                  : "✕ Failed to create"}
+              </span>
+            )}
           </div>
         </div>
       </div>

@@ -462,7 +462,10 @@ export default function ListingForm() {
           )}
           <div className={styles.buttonGroup}>
             <div className={styles.cancelProfileButton}>
-              <Link href={`/`} className={styles.cancelProfileButtonLink}>
+              <Link
+                href={`/dashboard?tab=my-listings`}
+                className={styles.cancelProfileButtonLink}
+              >
                 Cancel
               </Link>
             </div>
