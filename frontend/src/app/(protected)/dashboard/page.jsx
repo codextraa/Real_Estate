@@ -1,4 +1,4 @@
-import { getListings } from "@/libs/api";
+import { getListings, getReports, getMyReports } from "@/libs/api";
 import { getUserIdAction, getUserRoleAction } from "@/actions/authActions";
 import { redirect, notFound } from "next/navigation";
 import Searchbar from "@/components/searchbar/Searchbar";
@@ -6,6 +6,8 @@ import PropertyCard from "@/components/cards/PropertyCard";
 import DashboardTabs from "@/components/dashboardTabs/DashboardTabs";
 import Dropdown from "@/components/dropdowns/Dropdown";
 import Pagination from "@/components/pagination/Pagination";
+import ReportCard from "@/components/cards/ReportCard";
+import ReportFilterTabs from "@/components/reportTabs/ReportTabs";
 import styles from "@/styles/PropertyPage.module.css";
 import Image from "next/image";
 import { DEFAULT_LOGIN_REDIRECT } from "@/route";
@@ -22,17 +24,30 @@ export default async function DashboardPage({ searchParams }) {
     return notFound();
   }
   const urlSearchParams = await searchParams;
-  const currentTab = urlSearchParams.tab || "my-listings";
+  const currentTab =
+    urlSearchParams.tab ||
+    (userRole === "Default" ? "my-reports" : "my-listings");
   const currentPage = parseInt(urlSearchParams.page) || 1;
+  const currentStatus = urlSearchParams.status || "PENDING";
 
-  let response = [];
+  let response = { results: [], total_pages: 0, count: 0 };
+
   if (currentTab === "my-listings") {
     response = await getListings({
       page: currentPage,
       ...urlSearchParams,
     });
+  } else if (currentTab === "my-reports") {
+    response = await getMyReports({
+      page: currentPage,
+      ...urlSearchParams,
+    });
+  } else if (currentTab === "all-reports") {
+    response = await getReports({
+      page: currentPage,
+      ...urlSearchParams,
+    });
   }
-
   return (
     <div className={styles.background}>
       <div className={styles.image}>
@@ -50,7 +65,7 @@ export default async function DashboardPage({ searchParams }) {
         </div>
       </div>
       <div className={styles.tabs}>
-        <DashboardTabs currentTab={currentTab} />
+        <DashboardTabs currentTab={currentTab} userRole={userRole} />
       </div>
       {currentTab === "my-listings" ? (
         <div className={styles.propertiesContainer}>
@@ -102,9 +117,40 @@ export default async function DashboardPage({ searchParams }) {
           </div>
         </div>
       ) : (
-        <div className={styles.reportsContent}>
-          {/* My Reports Content (Null for now) */}
-          <p>No reports available yet.</p>
+        <div className={styles.reportsWrapper}>
+          <div className={styles.reportHeader}>
+            <div className={styles.propertiesTitle}>Reports</div>
+            {/* Status Filtering Tabs */}
+            <ReportFilterTabs currentStatus={currentStatus} />
+          </div>
+
+          <div className={styles.reportGrid}>
+            {(() => {
+              const safeResults = response.results;
+
+              const filteredReports = safeResults.filter(
+                (r) => r?.status === currentStatus,
+              );
+
+              if (filteredReports.length === 0) {
+                return (
+                  <div className={styles.noResultsContainer}>
+                    No {currentStatus} Reports Found
+                  </div>
+                );
+              }
+              return filteredReports.map((report) => (
+                <ReportCard key={report.id} report={report} />
+              ));
+            })()}
+          </div>
+
+          <div className={styles.paginationContainer}>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={response.total_pages}
+            />
+          </div>
         </div>
       )}
     </div>

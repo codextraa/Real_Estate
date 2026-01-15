@@ -5,13 +5,14 @@ import {
   getUserIdAction,
   getUserRoleAction,
   logoutAction,
-} from "@/actions/authActions"; // Assuming authAction.js is in /actions
+} from "@/actions/authActions";
 
 export default async function Navbar() {
   const userId = await getUserIdAction();
   const userRole = await getUserRoleAction();
 
   const loggedInBaseButtons = [
+    { text: "Dashboard", href: "/dashboard" },
     { text: "Profile", href: "/profile" },
     { text: "Logout", onClick: logoutAction },
   ];
@@ -19,26 +20,7 @@ export default async function Navbar() {
   let navButtons = [];
 
   if (userId && userRole) {
-    if (userRole === "Superuser") {
-      navButtons = [
-        { text: "All Listings", href: "/" },
-        { text: "Create Admin", href: "/" },
-        ...loggedInBaseButtons,
-      ];
-    } else if (userRole === "Admin") {
-      navButtons = [
-        { text: "All Listings", href: "/" },
-        ...loggedInBaseButtons,
-      ];
-    } else if (userRole === "Agent") {
-      navButtons = [
-        { text: "Dashboard", href: "/dashboard" },
-        { text: "Create", href: "/properties/create" },
-        ...loggedInBaseButtons,
-      ];
-    } else {
-      navButtons = loggedInBaseButtons;
-    }
+    navButtons = loggedInBaseButtons;
   } else {
     navButtons = [
       { text: "Sign Up", href: "/auth/signup" },

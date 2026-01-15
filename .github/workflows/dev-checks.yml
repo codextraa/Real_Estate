@@ -49,9 +49,11 @@ jobs:
           path: postgres-db
 
       - name: Create token file for real-estate
+        working-directory: ./docker
         run: echo "${{ secrets.INFISICAL_TOKEN_DEV }}" > infisical_token.txt
 
       - name: Create Infisical config for real-estate
+        working-directory: ./docker
         run: |
           echo "${{ secrets.INFISICAL_JSON_DEV }}" | base64 -d > .infisical.json
 
@@ -75,12 +77,15 @@ jobs:
           timeout 120s bash -c 'until [ "$(docker inspect --format="{{.State.Health.Status}}" postgres-db)" = "healthy" ]; do echo "Waiting for Postgres to be healthy..."; sleep 5; done' || { echo "Postgres failed to become healthy within 2 minutes"; exit 1; }
 
       - name: Start backend
+        working-directory: ./docker
         run: docker compose up -d --build real-estate-backend
 
       - name: Start backend ai and Redis services
+        working-directory: ./docker
         run: docker compose up -d --build real-estate-backend-ai real-estate-redis
 
-      - name: Start AI Worker (HPC Engine)
+      - name: Start AI Worker
+        working-directory: ./docker
         run: docker compose up -d --build real-estate-backend-ai-worker
 
       - name: Check linting of backend with Pylint
@@ -116,6 +121,7 @@ jobs:
         run: docker logs real-estate-backend-ai
 
       - name: Stop real-estate containers
+        working-directory: ./docker
         if: always()
         run: docker compose down -v
 
