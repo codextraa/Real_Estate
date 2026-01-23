@@ -2,20 +2,23 @@ import styles from "@/styles/Loading.module.css";
 import Image from "next/image";
 
 export default function Loading() {
+  const gifUrl = "/assets/loading-anime.gif";
+
   return (
     <div className={styles.background}>
       <div className={styles.logoContainer}>
         <Image
-          src="/assets/loading.svg"
-          alt="Loading Logo"
-          width={105}
-          height={105}
-          className={styles.logo}
+          src={gifUrl}
+          alt="Loading Animation"
+          width={200}
+          height={200}
+          className={styles.gif}
+          unoptimized
         />
       </div>
       <div className={styles.text}>
         Loading
-        <span className={styles.dots}>...</span>
+        <span className={styles.dots}>.</span>
       </div>
     </div>
   );
