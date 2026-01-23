@@ -1,0 +1,50 @@
+.filterContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 100px;
+  padding: 10px 0;
+
+  border-top: 2px solid #13252e;
+  border-bottom: 2px solid #13252e;
+
+  width: 100%;
+  max-width: 1118px;
+  margin: 20px auto;
+}
+
+.filterBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+
+  font-family: var(--font-old-standard-tt);
+  font-style: bold;
+  font-weight: 700;
+  font-size: 25px;
+  line-height: 31px;
+  color: #13252e;
+  transition: font-weight 0.2s ease-in-out;
+}
+
+.active {
+  font-weight: 700;
+}
+
+.filterBtn:hover {
+  opacity: 0.7;
+}
+
+@media (max-width: 800px) {
+  .filterContainer {
+    gap: 30px;
+    padding: 10px;
+  }
+
+  .filterBtn {
+    font-size: 18px;
+  }
+}

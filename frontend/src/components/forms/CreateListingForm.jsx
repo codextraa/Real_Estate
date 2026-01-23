@@ -4,7 +4,6 @@ import { useState, useEffect, useActionState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Form from "next/form";
 import Image from "next/image";
-import Link from "next/link";
 import { createPropertyAction } from "@/actions/propertyActions";
 import { FormButton } from "@/components/buttons/Buttons";
 import styles from "./CreateListingForm.module.css";
@@ -145,7 +144,7 @@ export default function ListingForm() {
   useEffect(() => {
     if (state.success) {
       setTimeout(() => {
-        router.push("/");
+        router.back();
       }, 2000);
       setLocalImageError("");
     }
@@ -462,13 +461,15 @@ export default function ListingForm() {
           )}
           <div className={styles.buttonGroup}>
             <div className={styles.cancelProfileButton}>
-              <Link
-                href={`/dashboard?tab=my-listings`}
+              <button
+                onClick={() => router.back()}
                 className={styles.cancelProfileButtonLink}
+                type="submit"
               >
                 Cancel
-              </Link>
+              </button>
             </div>
+
             <FormButton
               type="submit"
               text="Create"
