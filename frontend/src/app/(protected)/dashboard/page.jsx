@@ -130,9 +130,8 @@ export default async function DashboardPage({ searchParams }) {
       ) : (
         <div className={styles.reportsWrapper}>
           <div className={styles.reportHeader}>
-            <div className={styles.propertiesTitle}>Reports</div>
-            {/* Status Filtering Tabs */}
             <ReportFilterTabs currentStatus={currentStatus} />
+            <div className={styles.propertiesTitle}>Reports</div>
           </div>
 
           <div className={styles.reportGrid}>

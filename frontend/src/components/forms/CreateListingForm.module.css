@@ -368,6 +368,10 @@
   line-height: normal;
   display: inline-block;
   text-decoration: none;
+
+  border: none;
+  background: none;
+  outline: none;
 }
 
 .cancelProfileButton:hover {
