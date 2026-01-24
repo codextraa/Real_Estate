@@ -90,7 +90,7 @@ export default async function ProfileCard({ userData, userId, userRole }) {
                   Edit Profile
                 </Link>
                 <Link
-                  href={`/my-listings`}
+                  href={`/dashboard?tab=my-listings`}
                   className={`${styles.editProfileButton} ${styles.myListingsButton}`}
                 >
                   View Listings
