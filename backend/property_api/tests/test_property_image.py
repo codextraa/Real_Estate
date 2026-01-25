@@ -93,7 +93,7 @@ class PropertyImageTests(APITestCase):
         prop = Property.objects.get(address=payload["address"])
         self.assertEqual(prop.image_url, "property_images/default_image.jpg")
 
-    # --- Validation / Failure Cases ---
+    # --- Validation---
 
     def test_image_invalid_type_fails(self):
         """Test that uploading a .txt file disguised as an image fails."""

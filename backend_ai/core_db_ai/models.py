@@ -87,3 +87,31 @@ class AIReport(models.Model):
 
     def __str__(self):
         return f"Analysis for {self.property.title} ({self.status})"
+
+
+class ChatSession(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    report = models.ForeignKey(
+        AIReport, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    user_message_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Chat with {self.user.username}"
+
+
+class ChatMessage(models.Model):
+    class Role(models.TextChoices):
+        USER = "user", "User"
+        AI = "ai", "AI"
+
+    session = models.ForeignKey(
+        ChatSession, on_delete=models.CASCADE, related_name="messages"
+    )
+    role = models.CharField(max_length=10, choices=Role.choices)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["timestamp"]
