@@ -13,18 +13,21 @@ def tavily_search(
     area, city, area_sqft, beds, baths, count, seed_index
 ):  # pylint: disable=R0913, R0917
     search_queries = [
-        f"list of recently sold homes in {area} {city} with price and sqft beds baths",
         (
-            f"real estate listings in {area} {city} {area_sqft} sqft "
-            f"{beds} bed {baths} bath sold price"
+            f"recently sold properties in {area} {city} with price area_sqft "
+            "beds baths 'sold date'"
         ),
         (
-            f"site:zillow.com OR site:redfin.com sold properties in "
-            f"{area} {city} with price sqft beds baths"
+            f"comparable properties for sales {area} {city} {area_sqft} sqft "
+            f"{beds} beds {baths} baths with price"
         ),
         (
-            f"property records {area} {city} {area_sqft} square feet price "
-            f"per sqft beds baths"
+            f"site:zillow.com {area} {city} 'recently sold' {area_sqft} sqft "
+            f"{beds} beds {baths} baths with price"
+        ),
+        (
+            f"site:redfin.com {area} {city} 'property history' {area_sqft} sqft "
+            f"{beds} beds {baths} baths with price"
         ),
     ]
 
@@ -33,7 +36,7 @@ def tavily_search(
         query=search_queries[seed_index],
         max_results=count,
         search_depth="advanced",
-        include_raw_content=True,
+        include_raw_content=False,
         include_usage=True,
     )
 
@@ -41,7 +44,12 @@ def tavily_search(
     tavily_credits = search_result.get("usage", {}).get("credits", "unknown")
 
     # Tavily Context
-    context_text = "\n---\n".join([res["content"] for res in search_result["results"]])
+    context_text = "\n---\n".join(
+        [
+            f"Source: {res['url']}\nContent: {res['content']}"
+            for res in search_result["results"]
+        ]
+    )
 
     return context_text, tavily_credits
 
@@ -60,7 +68,7 @@ def groq_json_formatter(context_text, area, city):
     )
 
     response = openai.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.1,  # Low temperature for strict extraction accuracy
@@ -88,7 +96,7 @@ def groq_ai_insight_prompt(
     )
 
     response = openai.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="qwen/qwen3-32b",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.8,  # Higher temperature for more creative responses

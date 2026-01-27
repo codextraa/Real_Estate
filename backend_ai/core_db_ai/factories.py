@@ -65,7 +65,9 @@ class ChatMessageFactory(factory.django.DjangoModelFactory):
     content = factory.Faker("paragraph", nb_sentences=3)
 
     @factory.post_generation
-    def update_session_counter(self, create, extracted, **kwargs):  # pylint: disable=unused-argument
+    def update_session_counter(
+        self, create, extracted, **kwargs
+    ):  # pylint: disable=unused-argument
         if not create:
             return
 

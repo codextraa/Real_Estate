@@ -61,6 +61,22 @@ def extract_location(address_string):
     return location_data.get("area"), location_data.get("city")
 
 
+def split_context(text, parts=2):
+    if not text:
+        return ["", ""]
+
+    lines = text.split("\n---\n")
+
+    if len(lines) < parts:
+        return [text, ""]
+
+    mid = len(lines) // parts
+    chunk1 = "\n---\n".join(lines[:mid])
+    chunk2 = "\n---\n".join(lines[mid:])
+
+    return [chunk1, chunk2]
+
+
 def average_prices(compiled_data):
     prices = [p["price"] for p in compiled_data if p.get("price")]
     sqft = [p["area_sqft"] for p in compiled_data if p.get("area_sqft")]
