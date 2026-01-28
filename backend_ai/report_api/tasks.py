@@ -9,6 +9,7 @@ from .agents import tavily_search, groq_json_formatter, groq_ai_insight_prompt
 from .regression_model import InvestmentRegressor
 from .utils import (
     split_context,
+    clean_properties,
     average_prices,
     average_beds_baths,
     generate_mock_summary,
@@ -86,7 +87,7 @@ def search_properties(
     if completed_chunks is None:
         completed_chunks = []
 
-    chunks = split_context(context_text, parts=2)
+    chunks = split_context(context_text)
     time.sleep(random.uniform(1.0, 5.0))
 
     for i, chunk in enumerate(chunks):
@@ -143,7 +144,7 @@ def search_properties(
 
 
 @shared_task
-def compile_search_data(results):
+def compile_search_data(results, property_data):
     """
     Merges results into a single LIST of dictionaries.
     Uses a safe fingerprint that handles missing keys.
@@ -156,19 +157,8 @@ def compile_search_data(results):
             continue
         for item in chunk:
             try:
-                price = int(
-                    str(item.get("price", 0))
-                    .replace("$", "")
-                    .replace(",", "")
-                    .split(".", maxsplit=1)[0]
-                )
-                sqft = int(float(str(item.get("area_sqft", 0)).replace(",", "")))
-                bds = int(float(str(item.get("beds", 0))))
-                bths = int(float(str(item.get("baths", 0))))
-            except (ValueError, TypeError):
-                continue
-
-            if price <= 0 or sqft <= 0 or bds <= 0 or bths <= 0:
+                price, sqft, bds, bths = clean_properties(item, property_data)
+            except (ValueError, TypeError, IndexError):
                 continue
 
             fingerprint = f"{price}-{sqft}-{bds}-{bths}"
@@ -335,10 +325,13 @@ def parallel_report_generator(report_id, property_data):
     AIReport.objects.filter(id=report_id).update(status="PROCESSING")
 
     # Define 4 parallel chunks (25 properties each = 100 total)
-    search_tasks = [search_properties.s(property_data, 25, i) for i in range(4)]
+    search_tasks = [
+        search_properties.s(property_data, 25, i).set(countdown=i * 20)
+        for i in range(4)
+    ]
 
     # Define the callback that merges the data
-    finalizer = compile_search_data.s()
+    finalizer = compile_search_data.s(property_data=property_data)
 
     # Linking the tasks so that search_tasks ends then callback is called
     workflow_result = chord(search_tasks)(

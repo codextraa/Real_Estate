@@ -2,6 +2,7 @@ import json
 from openai import OpenAI
 from tavily import TavilyClient
 from django.conf import settings
+from .utils import clean_context
 
 openai = OpenAI(
     api_key=settings.GROQ_API_KEY, base_url="https://api.groq.com/openai/v1"
@@ -18,15 +19,15 @@ def tavily_search(
             "beds baths 'sold date'"
         ),
         (
-            f"comparable properties for sales {area} {city} {area_sqft} sqft "
-            f"{beds} beds {baths} baths with price"
+            f"site:homes.com {area} {city} 'recently sold' {area_sqft} sqft "
+            f"{beds} beds {baths} baths price"
         ),
         (
             f"site:zillow.com {area} {city} 'recently sold' {area_sqft} sqft "
             f"{beds} beds {baths} baths with price"
         ),
         (
-            f"site:redfin.com {area} {city} 'property history' {area_sqft} sqft "
+            f"site:redfin.com {area} {city} 'recently sold homes' {area_sqft} sqft "
             f"{beds} beds {baths} baths with price"
         ),
     ]
@@ -51,6 +52,8 @@ def tavily_search(
         ]
     )
 
+    context_text = clean_context(context_text)
+
     return context_text, tavily_credits
 
 
@@ -59,19 +62,20 @@ def groq_json_formatter(context_text, area, city):
     prompt = (
         f"You are a Real Estate Data Expert. Extract comparable properties for {area}, {city}.\n\n"
         f"RAW DATA:\n{context_text}\n\n"
-        f"STRICT RULES:\n"
-        f"1. Use ONLY the data provided above.\n"
-        f"2. Return ONLY a JSON object with a key 'properties' containing a list.\n"
-        f"3. Do not include properties with None/null values for core fields.\n"
-        f"Required Fields per object: [price, area_sqft, beds, baths].\n"
-        f"Exclude any other fields."
+        "STRICT RULES:\n"
+        "1. Use ONLY the data provided above.\n"
+        "2. Return ONLY a JSON object with a key 'properties' containing a list.\n"
+        "3. Required Fields per object: [price, area_sqft, beds, baths].\n"
+        "4. If ANY REQUIRED field is missing, 'None', or 'unknown', DO NOT EXTRACT THAT PROPERTY.\n"
+        "5. Exclude any other fields."
     )
 
     response = openai.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
-        temperature=0.1,  # Low temperature for strict extraction accuracy
+        temperature=0.0,  # Low temperature for strict extraction accuracy
+        max_tokens=1000,
     )
 
     # Groq Credit Usage

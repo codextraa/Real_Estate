@@ -1,3 +1,4 @@
+import re
 import random
 
 
@@ -61,20 +62,98 @@ def extract_location(address_string):
     return location_data.get("area"), location_data.get("city")
 
 
-def split_context(text, parts=2):
+def clean_context(text):
+    # Remove multiple newlines and extra spaces
+    text = text.replace("\n---\n", "||SEP||")
+
+    junk_phrases = [
+        r"Click to see more",
+        r"View details",
+        r"Read more",
+        r"Find out why.*",
+        r"Follow us on.*",
+        r"Save this home",
+        r"Terms and Conditions",
+    ]
+    for pattern in junk_phrases:
+        text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+
+    text = re.sub(r"\n\s*\n", "\n", text)
+    text = re.sub(r" +", " ", text)
+
+    text = text.replace("||SEP||", "\n---\n")
+    return text.strip()
+
+
+def split_context(text, max_chars=10000):
+    """
+    Splits by \n---\n to keep properties whole.
+    If a group of properties exceeds max_chars, it breaks them up.
+    If a single segment is still too big (no separators found),
+    it forces a character split so Groq doesn't crash.
+    """
     if not text:
-        return ["", ""]
+        return []
 
-    lines = text.split("\n---\n")
+    segments = text.split("\n---\n")
 
-    if len(lines) < parts:
-        return [text, ""]
+    chunks = []
+    current_chunk = ""
 
-    mid = len(lines) // parts
-    chunk1 = "\n---\n".join(lines[:mid])
-    chunk2 = "\n---\n".join(lines[mid:])
+    for segment in segments:
+        if len(current_chunk) + len(segment) < max_chars:
+            current_chunk += segment + "\n---\n"
+        else:
+            if current_chunk:
+                chunks.append(current_chunk.strip())
 
-    return [chunk1, chunk2]
+            if len(segment) > max_chars:
+                for i in range(0, len(segment), max_chars):
+                    chunks.append(segment[i : i + max_chars])
+                current_chunk = ""
+            else:
+                current_chunk = segment + "\n---\n"
+
+    if current_chunk:
+        chunks.append(current_chunk.strip())
+
+    return chunks
+
+
+def clean_properties(item, property_data):
+    SQFT_VARIANCE = 0.30
+    BED_VARIANCE = 1
+    BATH_VARIANCE = 1
+
+    target_sqft = property_data.get("area_sqft")
+    target_beds = property_data.get("beds")
+    target_baths = property_data.get("baths")
+
+    price = int(
+        str(item.get("price", 0))
+        .replace("$", "")
+        .replace(",", "")
+        .split(".", maxsplit=1)[0]
+    )
+    sqft = int(float(str(item.get("area_sqft", 0)).replace(",", "")))
+    beds = int(float(str(item.get("beds", 0))))
+    baths = int(float(str(item.get("baths", 0))))
+
+    if price <= 10000 or sqft <= 100 or beds <= 0 or baths <= 0:
+        raise ValueError
+
+    if not (
+        target_sqft * (1 - SQFT_VARIANCE) <= sqft <= target_sqft * (1 + SQFT_VARIANCE)
+    ):
+        raise ValueError
+
+    if not target_beds - BED_VARIANCE <= beds <= target_beds + BED_VARIANCE:
+        raise ValueError
+
+    if not target_baths - BATH_VARIANCE <= baths <= target_baths + BATH_VARIANCE:
+        raise ValueError
+
+    return price, sqft, beds, baths
 
 
 def average_prices(compiled_data):
