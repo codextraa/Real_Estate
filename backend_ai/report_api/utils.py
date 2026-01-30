@@ -1,5 +1,6 @@
 import re
 import random
+import numpy as np
 
 
 def generate_mock_properties(area_sqft, beds, baths, count):
@@ -22,7 +23,12 @@ def generate_mock_properties(area_sqft, beds, baths, count):
     return properties
 
 
-def generate_mock_summary(compiled_data, title, price, beds, baths):
+def generate_mock_summary(compiled_data, property_data):
+    title = property_data.get("title")
+    price = property_data.get("price")
+    beds = property_data.get("beds")
+    baths = property_data.get("baths")
+
     if not compiled_data:
         avg_comp_price = 0
         price_diff = "unknown"
@@ -34,6 +40,7 @@ def generate_mock_summary(compiled_data, title, price, beds, baths):
 
     return {
         "investment_summary": (
+            f"Automated insight generation temporarily unavailable. Fake data generated."
             f"The property at {title} is currently priced at ${price:,.2f}, "
             f"which is {price_diff} the local market average of ${avg_comp_price:,.2f}."
         ),
@@ -156,9 +163,11 @@ def clean_properties(item, property_data):
     return price, sqft, beds, baths
 
 
-def average_prices(compiled_data):
+def average_prices_beds_baths(compiled_data):
     prices = [p["price"] for p in compiled_data if p.get("price")]
     sqft = [p["area_sqft"] for p in compiled_data if p.get("area_sqft")]
+    beds = [p["beds"] for p in compiled_data if p.get("beds") is not None]
+    baths = [p["baths"] for p in compiled_data if p.get("baths") is not None]
 
     if prices:
         avg_price = sum(prices) / len(prices)
@@ -176,13 +185,6 @@ def average_prices(compiled_data):
     else:
         avg_pps = 0
 
-    return avg_price, avg_pps
-
-
-def average_beds_baths(compiled_data):
-    beds = [p["beds"] for p in compiled_data if p.get("beds") is not None]
-    baths = [p["baths"] for p in compiled_data if p.get("baths") is not None]
-
     if beds:
         avg_beds = round(sum(beds) / len(beds))
     else:
@@ -193,4 +195,154 @@ def average_beds_baths(compiled_data):
     else:
         avg_baths = 0
 
-    return avg_beds, avg_baths
+    return avg_price, avg_pps, avg_beds, avg_baths
+
+
+def generate_price_score(price, predicted_price):
+    # Price ratio (20% discount = 2.0 | 30% premium = -2.0)
+    diff_pct = (price - predicted_price) / predicted_price
+    price_score = 1.4
+
+    if diff_pct >= 0:
+        price_score += (diff_pct / 0.20) * 0.6
+        price_remarks = (
+            f"Listed {abs(round(diff_pct*100, 1))}% above AI predicted price"
+        )
+    else:
+        price_score -= (diff_pct / 0.30) * 0.6
+        price_remarks = (
+            f"Listed {abs(round(diff_pct*100, 1))}% below AI predicted price"
+        )
+
+    price_score = np.clip(price_score, -2.0, 2.0)
+    return price_score, price_remarks
+
+
+def generate_space_efficiency(price, area_sqft, avg_pps):
+    # Space efficiency (price per square foot)
+    prop_pps = price / area_sqft
+    pps_diff = (prop_pps - avg_pps) / avg_pps
+    pps_score = 0.77
+
+    if pps_diff >= 0:
+        pps_score += (pps_diff / 0.10) * 0.33
+        pps_remarks = f"PPS is {abs(round(pps_diff*100, 1))}% higher than median"
+    else:
+        pps_score -= (pps_diff / 0.15) * 0.33
+        pps_remarks = f"PPS is {abs(round(pps_diff*100, 1))}% lower than median"
+
+    pps_score = np.clip(pps_score, -1.1, 1.1)
+
+    return pps_score, pps_remarks
+
+
+def generate_bed_score(beds, area_sqft, price, predicted_price, avg_beds, avg_sqft):
+    # Room Factors (-0.8 to 0.8)
+    # Bed counts
+    space_worth_bed = 0
+    if beds == avg_beds:
+        bed_count_score = 0
+        bed_remarks = "same bed, "
+    elif beds > avg_beds:
+        bed_count_score = 0.5
+        bed_remarks = "more bed, "
+    elif (avg_beds - beds) >= 2:
+        bed_count_score = -0.5
+        bed_remarks = "2 or more less bed, "
+    else:
+        bed_count_score = 0.2
+        bed_remarks = "one less bed, "
+
+    if bed_count_score == 0:
+        if area_sqft > avg_sqft and price < predicted_price:
+            bed_final = 0.5
+            bed_remarks += "more sqft, less price"
+        if area_sqft >= avg_sqft and (
+            (predicted_price * 0.9) <= price <= (predicted_price * 1.1)
+        ):
+            bed_final = 0.3
+            bed_remarks += "more sqft, close to predicted price"
+        if area_sqft < avg_sqft and (
+            (predicted_price * 0.9) <= price <= (predicted_price * 1.1)
+        ):
+            bed_final = -0.2
+            bed_remarks += "less sqft, close to predicted price"
+        else:
+            bed_final = -0.5
+            bed_remarks += "more price, sqft discarded"
+    else:
+        # Space Worth
+        prop_spb = area_sqft / beds
+        avg_spb = avg_sqft / avg_beds
+        if prop_spb > avg_spb + (0.1 * avg_spb):
+            space_worth_bed = 0.3
+            if beds > avg_beds:
+                bed_remarks += "more sqft satisfy more bed count"
+            else:
+                bed_remarks += "more sqft gives too much big rooms"
+        else:
+            space_worth_bed = -0.3
+            if beds > avg_beds:
+                bed_remarks += "less sqft not satisfy more bed count"
+            else:
+                bed_remarks += "less sqft makes spacious rooms"
+        bed_final = bed_count_score + space_worth_bed
+
+    bed_final = np.clip(bed_final, -0.8, 0.8)
+
+    return bed_final, bed_count_score, space_worth_bed, bed_remarks
+
+
+def generate_bath_score(
+    baths, beds, area_sqft, price, predicted_price, avg_baths, avg_sqft
+):
+    # Bath Density (-0.7 to 0.7)
+    # Gold Standard (0.7 ratio)
+    bath_price_worth = 0
+    space_worth_bath = 0
+    bath_ratio = baths / beds
+    bath_ratio_score = 0.45 if bath_ratio >= 0.7 else -0.45
+    bath_remarks = (
+        "bed bath ratio > 0.7, " if bath_ratio >= 0.7 else "bed bath ratio < 0.7, "
+    )
+
+    # Bath count
+    if baths == avg_baths:
+        if area_sqft > avg_sqft and price < predicted_price:
+            bath_price_worth = 0.4
+            bath_remarks += "more sqft less price"
+        if area_sqft >= avg_sqft and (
+            (predicted_price * 0.9) <= price <= (predicted_price * 1.1)
+        ):
+            bath_price_worth = 0.2
+            bath_remarks += "more sqft same price"
+        if area_sqft < avg_sqft and (
+            (predicted_price * 0.9) <= price <= (predicted_price * 1.1)
+        ):
+            bath_price_worth = -0.1
+            bath_remarks += "less sqft same price"
+        else:
+            bath_price_worth = -0.4
+            bath_remarks += "more price, sqft discarded"
+        bath_final = bath_ratio_score + bath_price_worth
+    else:
+        # Space Worth
+        prop_spba = area_sqft / baths
+        avg_spba = avg_sqft / avg_baths
+        if prop_spba > avg_spba + (0.1 * avg_spba):
+            space_worth_bath = 0.25
+            bath_remarks += "Bathrooms spacious X total sqft"
+        else:
+            space_worth_bath = -0.25
+            bath_remarks += "Bathrooms cramped X total sqft"
+        bath_final = bath_ratio_score + space_worth_bath
+
+    bath_final = np.clip(bath_final, -0.7, 0.7)
+
+    return (
+        bath_final,
+        bath_ratio_score,
+        space_worth_bath,
+        bath_price_worth,
+        bath_remarks,
+    )
