@@ -200,20 +200,19 @@ def average_prices_beds_baths(compiled_data):
 
 def generate_price_score(price, predicted_price):
     # Price ratio (20% discount = 2.0 | 30% premium = -2.0)
-    diff_pct = (price - predicted_price) / predicted_price
+    diff_pct = (predicted_price - price) / predicted_price
     price_score = 1.4
 
     if diff_pct >= 0:
         price_score += (diff_pct / 0.20) * 0.6
         price_remarks = (
-            f"Listed {abs(round(diff_pct*100, 1))}% above AI predicted price"
-        )
-    else:
-        price_score -= (diff_pct / 0.30) * 0.6
-        price_remarks = (
             f"Listed {abs(round(diff_pct*100, 1))}% below AI predicted price"
         )
-
+    else:
+        price_score += (diff_pct / 0.30) * 0.6
+        price_remarks = (
+            f"Listed {abs(round(diff_pct*100, 1))}% above AI predicted price"
+        )
     price_score = np.clip(price_score, -2.0, 2.0)
     return price_score, price_remarks
 
@@ -221,17 +220,17 @@ def generate_price_score(price, predicted_price):
 def generate_space_efficiency(price, area_sqft, avg_pps):
     # Space efficiency (price per square foot)
     prop_pps = price / area_sqft
-    pps_diff = (prop_pps - avg_pps) / avg_pps
-    pps_score = 0.77
+    pps_diff = (avg_pps - prop_pps) / avg_pps
+    pps_score = 0.84
 
     if pps_diff >= 0:
-        pps_score += (pps_diff / 0.10) * 0.33
-        pps_remarks = f"PPS is {abs(round(pps_diff*100, 1))}% higher than median"
-    else:
-        pps_score -= (pps_diff / 0.15) * 0.33
+        pps_score += (pps_diff / 0.10) * 0.36
         pps_remarks = f"PPS is {abs(round(pps_diff*100, 1))}% lower than median"
+    else:
+        pps_score += (pps_diff / 0.15) * 0.36
+        pps_remarks = f"PPS is {abs(round(pps_diff*100, 1))}% higher than median"
 
-    pps_score = np.clip(pps_score, -1.1, 1.1)
+    pps_score = np.clip(pps_score, -1.2, 1.2)
 
     return pps_score, pps_remarks
 
@@ -254,18 +253,14 @@ def generate_bed_score(beds, area_sqft, price, predicted_price, avg_beds, avg_sq
         bed_remarks = "one less bed, "
 
     if bed_count_score == 0:
-        if area_sqft > avg_sqft and price < predicted_price:
-            bed_final = 0.5
+        if area_sqft >= avg_sqft and price < predicted_price:
+            bed_final = 0.7
             bed_remarks += "more sqft, less price"
-        if area_sqft >= avg_sqft and (
-            (predicted_price * 0.9) <= price <= (predicted_price * 1.1)
-        ):
-            bed_final = 0.3
+        elif (avg_sqft * 0.9) <= area_sqft and price < predicted_price:
+            bed_final = 0.4
             bed_remarks += "more sqft, close to predicted price"
-        if area_sqft < avg_sqft and (
-            (predicted_price * 0.9) <= price <= (predicted_price * 1.1)
-        ):
-            bed_final = -0.2
+        elif (avg_sqft * 0.9) <= area_sqft and price <= (predicted_price * 1.1):
+            bed_final = -0.1
             bed_remarks += "less sqft, close to predicted price"
         else:
             bed_final = -0.5
@@ -298,27 +293,30 @@ def generate_bath_score(
 ):
     # Bath Density (-0.7 to 0.7)
     # Gold Standard (0.7 ratio)
+    # For less than 3 beds using 0.5 ratio
     bath_price_worth = 0
     space_worth_bath = 0
     bath_ratio = baths / beds
-    bath_ratio_score = 0.45 if bath_ratio >= 0.7 else -0.45
-    bath_remarks = (
-        "bed bath ratio > 0.7, " if bath_ratio >= 0.7 else "bed bath ratio < 0.7, "
-    )
+    if beds > 3:
+        bath_ratio_score = 0.45 if bath_ratio >= 0.7 else -0.45
+        bath_remarks = (
+            "bed bath ratio > 0.7, " if bath_ratio >= 0.7 else "bed bath ratio < 0.7, "
+        )
+    else:
+        bath_ratio_score = 0.45 if bath_ratio >= 0.5 else -0.45
+        bath_remarks = (
+            "bed bath ratio > 0.5, " if bath_ratio >= 0.5 else "bed bath ratio < 0.5, "
+        )
 
     # Bath count
     if baths == avg_baths:
-        if area_sqft > avg_sqft and price < predicted_price:
+        if area_sqft >= avg_sqft and price < predicted_price:
             bath_price_worth = 0.4
             bath_remarks += "more sqft less price"
-        if area_sqft >= avg_sqft and (
-            (predicted_price * 0.9) <= price <= (predicted_price * 1.1)
-        ):
+        elif (avg_sqft * 0.9) <= area_sqft and price < predicted_price:
             bath_price_worth = 0.2
             bath_remarks += "more sqft same price"
-        if area_sqft < avg_sqft and (
-            (predicted_price * 0.9) <= price <= (predicted_price * 1.1)
-        ):
+        elif (avg_sqft * 0.9) <= area_sqft and price <= (predicted_price * 1.1):
             bath_price_worth = -0.1
             bath_remarks += "less sqft same price"
         else:

@@ -90,7 +90,7 @@ class InvestmentRegressor:
         # Price Volatility
         pps_series = y / X[:, 0]
         volatility = pps_series.std() / pps_series.mean()
-        market_stability = -0.6 if volatility > 0.15 else 0.3
+        market_stability = -0.4 if volatility > 0.15 else 0.2
 
         # Model layout score
         layout_score = -0.1 if price > predicted_price else 0.1
