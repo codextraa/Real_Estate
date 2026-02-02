@@ -1,6 +1,6 @@
 import time
 import random
-from celery import shared_task, chord
+from celery import shared_task, chord, chain
 from celery.utils.log import get_task_logger
 from celery.exceptions import MaxRetriesExceededError
 from core_db_ai.models import AIReport
@@ -10,8 +10,7 @@ from .regression_model import InvestmentRegressor
 from .utils import (
     split_context,
     clean_properties,
-    average_prices,
-    average_beds_baths,
+    average_prices_beds_baths,
     generate_mock_summary,
     generate_mock_properties,
 )
@@ -41,6 +40,7 @@ logger = get_task_logger(__name__)
 )
 def search_properties(
     self,
+    report_id,
     property_data,
     count,
     seed_index,
@@ -80,6 +80,10 @@ def search_properties(
                     "FATAL: Fork %s exceeded max retries. Providing mock data.",
                     seed_index,
                 )
+                AIReport.objects.get(id=report_id).update(
+                    status=AIReport.Status.FAILED,
+                    ai_insight_summary="Automated data search failed. Please try again later.",
+                )
                 return generate_mock_properties(area_sqft, beds, baths, count)
 
     if final_properties is None:
@@ -101,7 +105,7 @@ def search_properties(
             properties_json, usage = groq_json_formatter(chunk, area, city)
 
             logger.info(
-                "Fork %s Chunk %s: [Groq Search] Prompt Tokens:%s "
+                "Fork %s Chunk %s: [Groq Llama] Prompt Tokens:%s "
                 "| Completion Tokens:%s | Total:%s",
                 seed_index,
                 i,
@@ -125,7 +129,7 @@ def search_properties(
 
             try:
                 raise self.retry(
-                    args=[property_data, count, seed_index],
+                    args=[report_id, property_data, count, seed_index],
                     kwargs={
                         "existing_context": context_text,
                         "final_properties": final_properties,
@@ -137,6 +141,10 @@ def search_properties(
                 logger.error(
                     "FATAL: Fork %s exceeded max retries. Providing mock data.",
                     seed_index,
+                )
+                AIReport.objects.get(id=report_id).update(
+                    status=AIReport.Status.FAILED,
+                    ai_insight_summary="Automated data search failed. Please try again later.",
                 )
                 return generate_mock_properties(area_sqft, beds, baths, count)
 
@@ -172,93 +180,123 @@ def compile_search_data(results, property_data):
     return final_list
 
 
-@shared_task
-def analyze_prices(compiled_data):
-    """Calculates average price and price per sqft."""
-    if not compiled_data:
-        return {}
-
-    avg_price, avg_pps = average_prices(compiled_data)
-
-    logger.info("Market Average Price: %s | Market Average PPS: %s", avg_price, avg_pps)
-    return {"avg_market_price": avg_price, "avg_price_per_sqft": avg_pps}
-
-
-@shared_task
-def analyze_beds_baths(compiled_data):
-    """Calculates average beds and baths."""
-    if not compiled_data:
-        return {}
-
-    avg_beds, avg_baths = average_beds_baths(compiled_data)
-
-    logger.info("Average Beds: %s | Average Baths: %s", avg_beds, avg_baths)
-    return {"avg_beds": avg_beds, "avg_baths": avg_baths}
-
-
-@shared_task
-def analyze_investment_rating(compiled_data, property_data):
-    """
-    Uses InvestmentRegressor to get the 0.0 - 5.0 rating.
-    """
-    regressor = InvestmentRegressor()
-    rating = regressor.calculate_rating(compiled_data, property_data)
-
-    logger.info("Rating: %s", rating)
-    return {"investment_rating": rating}
-
-
 # @shared_task()
-# def analyze_insight(compiled_data, property_data):
-#     """Mocks Groq llama to generate the pros/cons insight summary."""
-#     title = property_data.get("title")
-#     price = property_data.get("price")
-#     beds = property_data.get("beds")
-#     baths = property_data.get("baths")
+# def report_analysis(compiled_data, property_data):
+#     """Mocks Groq GPT to generate the analysis."""
+#     ai_insight_summary = generate_mock_summary(compiled_data, property_data)
+#     return {
+#         "avg_market_price": 0,
+#         "avg_price_per_sqft": 0,
+#         "avg_beds": 0,
+#         "avg_baths": 0,
+#         "investment_rating": 0,
+#         "ai_insight_summary": ai_insight_summary,
+#     }
 
-#     return generate_mock_summary(compiled_data, title, price, beds, baths)
 
-
-@shared_task(rate_limit="15/m")
-def analyze_insight(compiled_data, property_data):
+@shared_task(bind=True, max_retries=3, default_retry_delay=61, rate_limit="8/m")
+def report_analysis(self, compiled_data, report_id, property_data):
     """
-    Uses Groq llama to generate the pros/cons insight summary.
+    Calculates average prices, beds, baths.
+    Calculates investment rating.
+    Produce AI insight summary on them with pros and cons.
+    Using Groq gpt oss 120b
     """
-    if not compiled_data:
-        return {"ai_insight_summary": "No market data available for analysis."}
+    report = AIReport.objects.get(id=report_id)
+    if not compiled_data or report.status == AIReport.Status.FAILED:
+        return {
+            "avg_market_price": 0,
+            "avg_price_per_sqft": 0,
+            "avg_beds": 0,
+            "avg_baths": 0,
+            "investment_rating": 0,
+            "ai_insight_summary": report.ai_insight_summary
+            or "No market data available for analysis.",
+        }
 
-    title = property_data.get("title")
-    price = property_data.get("price")
-    sqft = property_data.get("area_sqft")
-    beds = property_data.get("beds")
-    baths = property_data.get("baths")
+    avg_price, avg_pps, avg_beds, avg_baths = average_prices_beds_baths(compiled_data)
+
+    logger.info(
+        "Market Average Price: %s ||| Market Average PPS: %s"
+        "Average Beds: %s ||| Average Baths: %s",
+        avg_price,
+        avg_pps,
+        avg_beds,
+        avg_baths,
+    )
+
+    regressor = InvestmentRegressor(avg_price, avg_pps, avg_beds, avg_baths)
+    try:
+        rating, breakdown = regressor.calculate_rating(compiled_data, property_data)
+        if not rating or not breakdown or len(breakdown) == 0:
+            raise ValueError("Empty rating or breakdown generated")
+    except Exception as e:
+        logger.error("FATAL: Investment Rating Error: %s", e)
+        return {
+            "avg_market_price": avg_price,
+            "avg_price_per_sqft": avg_pps,
+            "avg_beds": avg_beds,
+            "avg_baths": avg_baths,
+            "investment_rating": 0,
+            "ai_insight_summary": "No market data available for analysis.",
+        }
+
+    logger.info("Investment Rating: %s", rating)
+    logger.info("Investment Breakdown: %s", str(breakdown))
 
     # Small compiled json data to avoid window bloat
-    comps_sample = compiled_data[:20]
+    if len(compiled_data) > 50:
+        comps_sample = compiled_data[:50]
+    else:
+        comps_sample = compiled_data
 
     try:
         json, usage = groq_ai_insight_prompt(
-            comps_sample, title, price, sqft, beds, baths
+            comps_sample, property_data, rating, breakdown
         )
 
         logger.info(
-            "[Groq Search] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
+            "[Groq GPT] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
             usage.prompt_tokens,
             usage.completion_tokens,
             usage.total_tokens,
         )
-        logger.info("Groq llama summary generated successfully")
+        logger.info("Groq GPT summary generated successfully")
 
-        return json
+        return {
+            "avg_market_price": avg_price,
+            "avg_price_per_sqft": avg_pps,
+            "avg_beds": avg_beds,
+            "avg_baths": avg_baths,
+            "investment_rating": rating,
+            "ai_insight_summary": json,
+        }
     except Exception as e:  # pylint: disable=W0718
-        logger.error("Groq llama Summary Error: %s", e)
-        return generate_mock_summary(compiled_data, title, price, beds, baths)
+        logger.warning(
+            "Attempt %s/%s failed Groq Rate Limit/Error: %s. Retrying again",
+            self.request.retries,
+            self.max_retries,
+            e,
+        )
+        try:
+            self.retry(exc=e)
+        except MaxRetriesExceededError as e:
+            logger.error("Groq GPT Summary Error: %s", e)
+            ai_insight_summary = generate_mock_summary(compiled_data, property_data)
+            return {
+                "avg_market_price": avg_price,
+                "avg_price_per_sqft": avg_pps,
+                "avg_beds": avg_beds,
+                "avg_baths": avg_baths,
+                "investment_rating": rating,
+                "ai_insight_summary": ai_insight_summary,
+            }
 
 
 @shared_task
-def report_finalizer(analysis_results, compiled_data, report_id):
+def report_finalizer(analysis_result, compiled_data, report_id):
     """
-    analysis_results: [price_stats, bed_bath_stats, rating_stats, ai_summary_text]
+    analysis_results: price_stats, bed_bath_stats, rating_stats, ai_summary_text
     Map results to the AIReport model
     """
     report = AIReport.objects.get(id=report_id)
@@ -266,22 +304,23 @@ def report_finalizer(analysis_results, compiled_data, report_id):
     try:  # pylint: disable=R1702
         report.comparable_data = compiled_data
 
-        # Map results from parallel workers
-        for result in analysis_results:
-            if isinstance(result, dict):
-                if "investment_summary" in result:
-                    # Groq Summary
-                    summary = (
-                        f"{result['investment_summary']}\n\nPROS:\n- "
-                        + "\n- ".join(result["pros"])
-                        + "\n\nCONS:\n- "
-                        + "\n- ".join(result["cons"])
-                    )
-                    report.ai_insight_summary = summary
-                else:
-                    for key, value in result.items():
-                        if hasattr(report, key):
-                            setattr(report, key, value)
+        for key, value in analysis_result.items():
+            if hasattr(report, key) and key != "ai_insight_summary":
+                setattr(report, key, value)
+            else:
+                if key == "ai_insight_summary":
+                    if isinstance(value, dict):
+                        insight = analysis_result["ai_insight_summary"]
+
+                        summary_text = (
+                            f"{insight.get('investment_summary', '')}\n\n"
+                            f"SCORE BREAKDOWN:\n{insight.get('weighted_analysis', '')}\n\n"
+                            f"PROS:\n- "
+                            + "\n- ".join(insight.get("pros", []))
+                            + f"\n\nCONS:\n- "
+                            + "\n- ".join(insight.get("cons", []))
+                        )
+                        report.ai_insight_summary = summary_text
 
         report.status = AIReport.Status.COMPLETED
         report.save()
@@ -291,30 +330,21 @@ def report_finalizer(analysis_results, compiled_data, report_id):
     except Exception as e:  # pylint: disable=W0718
         logger.error("Finalizer failed: %s", e)
         report.status = AIReport.Status.FAILED
-        report.ai_insight_summary = "Analysis failed"
+        report.ai_insight_summary = "Report analysis failed"
         report.save()
         return f"Report {report_id} Failed"
 
 
 @shared_task
-def run_analysis_group(compiled_data, report_id, property_data):
-    """
-    Triggers the 4-way parallel analysis.
-    """
-    analysis_header = [
-        analyze_prices.s(compiled_data),
-        analyze_beds_baths.s(compiled_data),
-        analyze_investment_rating.s(compiled_data, property_data),
-        analyze_insight.s(compiled_data, property_data),
-    ]
-
-    # Merging the results
-    return chord(analysis_header)(
-        report_finalizer.s(
+def analysis(compiled_data, report_id, property_data):
+    return chain(
+        report_analysis.s(
             compiled_data=compiled_data,
             report_id=report_id,
-        )
-    )
+            property_data=property_data,
+        ),
+        report_finalizer.s(compiled_data=compiled_data, report_id=report_id),
+    ).apply_async()
 
 
 @shared_task
@@ -322,11 +352,16 @@ def parallel_report_generator(report_id, property_data):
     """
     Parallel Report generator using searching and then analysis
     """
-    AIReport.objects.filter(id=report_id).update(status="PROCESSING")
+    report = AIReport.objects.filter(id=report_id)
+
+    if not report.exists():
+        return
+    else:
+        report.update(status="IN_PROGRESS")
 
     # Define 4 parallel chunks (25 properties each = 100 total)
     search_tasks = [
-        search_properties.s(property_data, 25, i).set(countdown=i * 20)
+        search_properties.s(report_id, property_data, 25, i).set(countdown=i * 20)
         for i in range(4)
     ]
 
@@ -335,9 +370,7 @@ def parallel_report_generator(report_id, property_data):
 
     # Linking the tasks so that search_tasks ends then callback is called
     workflow_result = chord(search_tasks)(
-        finalizer
-        | run_analysis_group.s(report_id=report_id, property_data=property_data)
+        finalizer | analysis.s(report_id=report_id, property_data=property_data)
     )
 
-    # Return the ID
     return workflow_result.id
