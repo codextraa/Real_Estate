@@ -108,7 +108,8 @@ def groq_ai_insight_prompt(
         "understand this means the algorithm penalized the property for poor price-to-space "
         "efficiency. Translate this to: 'Premium pricing relative to square footage utility'.\n"
         "2. PRICE SENSITIVITY: If price_score is high, emphasize equity capture.\n"
-        "3. TONE: Professional, objective, and data-driven. Do not use phrases like 'The algorithm says'.\n"
+        "3. TONE: Professional, objective, and data-driven. "
+        "Do not use phrases like 'The algorithm says'.\n"
         "4. DO NOT use internal developer terms like 'bed_final', 'pps_score', or 'remarks'."
     )
 
@@ -123,7 +124,8 @@ def groq_ai_insight_prompt(
         "  'weighted_analysis': 'A single string where each line represents a score adjustment. "
         "Start each line with the raw score and a professional description. "
         "Example: +1.4 Exceptional Price-to-Value Gap\\n-0.5 Square Footage Utility Penalty',\n"
-        "  'investment_summary': 'A professional 3-sentence executive summary explaining the rating.',\n"
+        "  'investment_summary': 'A professional 3-sentence "
+        "executive summary explaining the rating.',\n"
         "  'pros': ['Detailed strength 1', 'Detailed strength 2'],\n"
         "  'cons': ['Detailed risk 1', 'Detailed risk 2']\n"
         "}"

@@ -235,7 +235,9 @@ def generate_space_efficiency(price, area_sqft, avg_pps):
     return pps_score, pps_remarks
 
 
-def generate_bed_score(beds, area_sqft, price, predicted_price, avg_beds, avg_sqft):
+def generate_bed_score(
+    beds, area_sqft, price, predicted_price, avg_beds, avg_sqft
+):  # pylint: disable=R0912, R0913, R0917
     # Room Factors (-0.8 to 0.8)
     # Bed counts
     space_worth_bed = 0
@@ -290,7 +292,7 @@ def generate_bed_score(beds, area_sqft, price, predicted_price, avg_beds, avg_sq
 
 def generate_bath_score(
     baths, beds, area_sqft, price, predicted_price, avg_baths, avg_sqft
-):
+):  # pylint: disable=R0913, R0917
     # Bath Density (-0.7 to 0.7)
     # Gold Standard (0.7 ratio)
     # For less than 3 beds using 0.5 ratio
@@ -337,6 +339,7 @@ def generate_bath_score(
 
     bath_final = np.clip(bath_final, -0.7, 0.7)
 
+    # pylint: disable=R0801
     return (
         bath_final,
         bath_ratio_score,
@@ -344,3 +347,4 @@ def generate_bath_score(
         bath_price_worth,
         bath_remarks,
     )
+    # pylint: enable=R0801

@@ -10,8 +10,10 @@ from .utils import (
 )
 
 
-class InvestmentRegressor:
-    def __init__(self, avg_price, avg_pps, avg_beds, avg_baths, min_samples=10):
+class InvestmentRegressor:  # pylint: disable=R0902
+    def __init__(
+        self, avg_price, avg_pps, avg_beds, avg_baths, min_samples=10
+    ):  # pylint: disable=R0913, R0917
         self.avg_price = avg_price
         self.avg_pps = avg_pps
         self.avg_beds = avg_beds
@@ -71,6 +73,7 @@ class InvestmentRegressor:
             beds, area_sqft, price, predicted_price, self.avg_beds, self.avg_sqft
         )
 
+        # pylint: disable=R0801
         (
             bath_final,
             bath_ratio_score,
@@ -86,6 +89,7 @@ class InvestmentRegressor:
             self.avg_baths,
             self.avg_sqft,
         )
+        # pylint: enable=R0801
 
         # Price Volatility
         pps_series = y / X[:, 0]

@@ -195,7 +195,9 @@ def compile_search_data(results, property_data):
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=61, rate_limit="8/m")
-def report_analysis(self, compiled_data, report_id, property_data):
+def report_analysis(
+    self, compiled_data, report_id, property_data
+):  # pylint: disable=R0914, R1710
     """
     Calculates average prices, beds, baths.
     Calculates investment rating.
@@ -230,7 +232,7 @@ def report_analysis(self, compiled_data, report_id, property_data):
         rating, breakdown = regressor.calculate_rating(compiled_data, property_data)
         if not rating or not breakdown or len(breakdown) == 0:
             raise ValueError("Empty rating or breakdown generated")
-    except Exception as e:
+    except Exception as e:  # pylint: disable=W0718
         logger.error("FATAL: Investment Rating Error: %s", e)
         return {
             "avg_market_price": avg_price,
@@ -251,7 +253,7 @@ def report_analysis(self, compiled_data, report_id, property_data):
         comps_sample = compiled_data
 
     try:
-        json, usage = groq_ai_insight_prompt(
+        ai_json, usage = groq_ai_insight_prompt(
             comps_sample, property_data, rating, breakdown
         )
 
@@ -269,7 +271,7 @@ def report_analysis(self, compiled_data, report_id, property_data):
             "avg_beds": avg_beds,
             "avg_baths": avg_baths,
             "investment_rating": rating,
-            "ai_insight_summary": json,
+            "ai_insight_summary": ai_json,
         }
     except Exception as e:  # pylint: disable=W0718
         logger.warning(
@@ -280,8 +282,8 @@ def report_analysis(self, compiled_data, report_id, property_data):
         )
         try:
             self.retry(exc=e)
-        except MaxRetriesExceededError as e:
-            logger.error("Groq GPT Summary Error: %s", e)
+        except MaxRetriesExceededError as err:
+            logger.error("Groq GPT Summary Error: %s", err)
             ai_insight_summary = generate_mock_summary(compiled_data, property_data)
             return {
                 "avg_market_price": avg_price,
@@ -291,6 +293,8 @@ def report_analysis(self, compiled_data, report_id, property_data):
                 "investment_rating": rating,
                 "ai_insight_summary": ai_insight_summary,
             }
+
+    return None
 
 
 @shared_task
@@ -315,9 +319,9 @@ def report_finalizer(analysis_result, compiled_data, report_id):
                         summary_text = (
                             f"{insight.get('investment_summary', '')}\n\n"
                             f"SCORE BREAKDOWN:\n{insight.get('weighted_analysis', '')}\n\n"
-                            f"PROS:\n- "
+                            "PROS:\n- "
                             + "\n- ".join(insight.get("pros", []))
-                            + f"\n\nCONS:\n- "
+                            + "\n\nCONS:\n- "
                             + "\n- ".join(insight.get("cons", []))
                         )
                         report.ai_insight_summary = summary_text
@@ -355,9 +359,8 @@ def parallel_report_generator(report_id, property_data):
     report = AIReport.objects.filter(id=report_id)
 
     if not report.exists():
-        return
-    else:
-        report.update(status="IN_PROGRESS")
+        return None
+    report.update(status="IN_PROGRESS")
 
     # Define 4 parallel chunks (25 properties each = 100 total)
     search_tasks = [
