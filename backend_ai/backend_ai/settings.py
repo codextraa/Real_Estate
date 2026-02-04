@@ -50,6 +50,8 @@ APP_NAME = os.getenv("APP_NAME")
 
 INSTALLED_APPS = [
     "core_db_ai",
+    "chat_api",
+    "report_api",
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
