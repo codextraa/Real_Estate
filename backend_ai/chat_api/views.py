@@ -25,14 +25,12 @@ class ChatSessionView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # 2. Check if the Report actually exists in the database (404 Not Found)
         if not AIReport.objects.filter(pk=report_id).exists():
             return Response(
                 {"error": f"Report with ID {report_id} does not exist."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # 3. Handle Staff Permission (403 Forbidden)
         if current_user.is_staff and not current_user.is_superuser:
             return Response(
                 {"error": "You do not have permission to view this chat session."},
