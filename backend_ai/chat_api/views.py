@@ -1,88 +1,114 @@
-# from django.shortcuts import get_object_or_404
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework import status
-# from rest_framework_simplejwt.authentication import JWTAuthentication
-# from rest_framework.permissions import IsAuthenticated
-# from core_db_ai.models import ChatSession
-# from .serializers import ChatSessionSerializer, ChatMessageSerializer
-# from backend.renderers import viewrenderer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from backend_ai.renderers import ViewRenderer
+from core_db_ai.models import ChatSession, AIReport
+from .serializers import ChatSessionSerializer
 
-# class ChatSessionView(APIView):
-#     """
-#     Handles operations for a specific session: Retrieve and Delete.
-#     URL Pattern: /chat-sessions/<int:pk>/
-#     """
 
-#     renderer_classes = [viewrenderer]
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [IsAuthenticated]
+class ChatSessionView(APIView):
+    """
+    Handles operations for a specific session: Retrieve and Delete.
+    URL Pattern: /chat-sessions/<int:pk>/
+    """
 
-#     def get(self, request, pk):
-#         """
-#         Retrieve chat session by ID with custom error handling.
-#         """
-#         current_user = request.user
+    renderer_classes = [ViewRenderer]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-#         # 2. Handle 400 Bad Request (Example: checking if PK is a valid integer)
-#         if not str(pk).isdigit():
-#             return Response(
-#                 {"error": "Invalid Session ID format. Must be an integer."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
+    def check_request_data(self, report_id, current_user):
+        if not str(report_id).isdigit():
+            return Response(
+                {"error": "Invalid Report ID format. Must be an integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-#         # 3. Handle 403 Forbidden (Logic-based permission check)
-#         # Example: Staff members are blocked from viewing user chats
-#         if current_user.is_staff and not current_user.is_superuser:
-#             return Response(
-#                 {"error": "You do not have permission to view this chat session."},
-#                 status=status.HTTP_403_FORBIDDEN
-#             )
+        # 2. Check if the Report actually exists in the database (404 Not Found)
+        if not AIReport.objects.filter(pk=report_id).exists():
+            return Response(
+                {"error": f"Report with ID {report_id} does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
-#         try:
-#             # 4. Handle 404 Not Found (Checking existence and ownership)
-#             # We fetch strictly by ID first to see if it exists at all
-#             session = ChatSession.objects.prefetch_related('messages').get(pk=pk)
+        # 3. Handle Staff Permission (403 Forbidden)
+        if current_user.is_staff and not current_user.is_superuser:
+            return Response(
+                {"error": "You do not have permission to view this chat session."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return None
 
-#             # Additional 403 check: If session exists but doesn't belong to the user
-#             if session.user != current_user:
-#                 return Response(
-#                     {"error": "Access denied. This session belongs to another user."},
-#                     status=status.HTTP_403_FORBIDDEN
-#                 )
+    def get(self, request, report_id):
+        current_user = request.user
 
-#         except ChatSession.DoesNotExist:
-#             return Response(
-#                 {"error": f"Chat session with ID {pk} not found."},
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
+        check_integrity = self.check_request_data(report_id, current_user)
 
-#         # 5. Handle 200 OK (Success)
-#         serializer = ChatSessionSerializer(session)
-#         return Response(
-#             {
-#                 "success": "Chat history retrieved successfully.",
-#                 "data": serializer.data
-#             },
-#             status=status.HTTP_200_OK
-#         )
+        if check_integrity:
+            return check_integrity
 
-#     def post(self, request):
-#         """
-#         Logic: Create a new chat session.
-#         """
-#         #user and report id input to model directly
+        session, created = ChatSession.objects.get_or_create(
+            report=report_id,
+            user=current_user.id,
+        )
 
-#     def delete(self, request, pk):
-#         """
-#         Logic: Delete a specific session.
-#         """
-#         session = get_object_or_404(ChatSession, pk=pk, user=request.user)
+        if session.user != current_user:
+            return Response(
+                {"error": "Access denied. This session belongs to another user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
-#         # This deletes the session and all related ChatMessages via CASCADE
-#         session.delete()
+        # 4. If it already existed, make sure we have the messages
+        if not created:
+            session = ChatSession.objects.prefetch_related("messages").get(
+                pk=session.pk
+            )
 
-#         return Response(
-#             {"detail": "Session deleted successfully."},
-#             status=status.HTTP_204_NO_CONTENT
-#         )
+        # 6. Success (200 OK)
+        serializer = ChatSessionSerializer(session)
+        return Response(
+            {
+                "success": "Chat history retrieved successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def delete(self, request, report_id):
+        """
+        Logic: Delete a specific session by its associated Report ID.
+        Returns 200 OK to confirm message delivery.
+        """
+        current_user = request.user
+
+        check_integrity = self.check_request_data(report_id, current_user)
+
+        if check_integrity:
+            return check_integrity
+
+        # 4. Fetch the session or return 404 if no session exists
+        try:
+            # Look up by report_id to keep logic consistent with GET
+            session = ChatSession.objects.get(report_id=report_id)
+
+            # Check Ownership
+            if session.user != current_user:
+                return Response(
+                    {"error": "Access denied. This session belongs to another user."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Perform deletion
+            session.delete()
+
+            return Response(
+                {"success": "Chat history deleted successfully."},
+                status=status.HTTP_200_OK,
+            )
+
+        except ChatSession.DoesNotExist:
+            return Response(
+                {"error": f"No chat session exists for Report {report_id}."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
