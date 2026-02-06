@@ -99,6 +99,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Agent(models.Model):
+    "Custom Agent Class"
+
+    class Meta:
+        ordering = ["user__email"]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company_name = models.CharField(max_length=255)
     bio = models.CharField(max_length=150, blank=True, null=True)

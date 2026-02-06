@@ -62,6 +62,14 @@ class ChatMessageFactory(factory.django.DjangoModelFactory):
 
     session = factory.SubFactory(ChatSessionFactory)
     role = FuzzyChoice([ChatMessage.Role.USER, ChatMessage.Role.AI])
+    status = FuzzyChoice(
+        [
+            ChatMessage.Status.PENDING,
+            ChatMessage.Status.PROCESSING,
+            ChatMessage.Status.COMPLETED,
+            ChatMessage.Status.FAILED,
+        ]
+    )
     content = factory.Faker("paragraph", nb_sentences=3)
 
     @factory.post_generation

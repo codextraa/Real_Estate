@@ -106,12 +106,21 @@ class ChatMessage(models.Model):
         USER = "user", "User"
         AI = "ai", "AI"
 
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        PROCESSING = "PROCESSING", "Processing"
+        COMPLETED = "COMPLETED", "Completed"
+        FAILED = "FAILED", "Failed"
+
     session = models.ForeignKey(
         ChatSession, on_delete=models.CASCADE, related_name="messages"
     )
     role = models.CharField(max_length=10, choices=Role.choices)
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING
+    )
+    content = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         ordering = ["timestamp"]
