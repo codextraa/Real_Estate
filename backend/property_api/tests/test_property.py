@@ -86,7 +86,7 @@ class PropertyViewSetTests(APITestCase):
             "address": "123 Sky Tower",
         }
 
-    #### --- List -----------
+    #### ---- LIST ----
 
     def test_list_properties_authenticated_user_allowed(self):
         """Test that any authenticated user can view the property list."""
@@ -115,7 +115,7 @@ class PropertyViewSetTests(APITestCase):
         response = self.client.get(PROPERTY_LIST_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    ###  ---retrieve ----
+    ###  ---- Retrieve ----
 
     def test_retrieve_authenticated_user_allowed(self):
         """Test that any authenticated user can retrieve a property."""
@@ -149,7 +149,7 @@ class PropertyViewSetTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    ### ---- Create -----
+    ### ---- CREATE -----
 
     def test_create_property_as_agent_success(self):
         self._authenticate(self.agent_user)
@@ -180,7 +180,7 @@ class PropertyViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("Forbidden fields cannot be updated.", response.data["error"])
 
-    #### ----update-----
+    #### ---- UPDATE -----
 
     def test_agent_can_update_own_property(self):
         """Test that an agent can patch their own property."""
