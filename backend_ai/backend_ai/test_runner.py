@@ -7,8 +7,12 @@ class ShadowModelTestRunner(DiscoverRunner):
     so that the test database creates the tables for shadow models.
     """
 
+    def __init__(self, *args, **kwargs):
+        self.unmanaged_models = []
+        super().__init__(*args, **kwargs)
+
     def setup_test_environment(self, *args, **kwargs):
-        from django.apps import apps
+        from django.apps import apps  # pylint: disable=C0415
 
         all_models = apps.get_models()
 
