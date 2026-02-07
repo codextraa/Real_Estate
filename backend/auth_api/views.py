@@ -858,8 +858,8 @@ class UserViewSet(ModelViewSet):
                 description="Unauthorized. User is not authenticated.",
             ),
             status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
-            status.HTTP_405_METHOD_NOT_ALLOWED: ErrorResponseSerializer,
             status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
+            status.HTTP_405_METHOD_NOT_ALLOWED: ErrorResponseSerializer,
         },
         examples=[
             OpenApiExample(

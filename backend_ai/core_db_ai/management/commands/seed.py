@@ -1,11 +1,12 @@
+import random
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from core_db_ai.models import Property, AIReport, User
-from core_db_ai.factories import AIReportFactory
+from core_db_ai.models import Property, AIReport, User, ChatSession, ChatMessage
+from core_db_ai.factories import AIReportFactory, ChatSessionFactory, ChatMessageFactory
 
 
 class Command(BaseCommand):
-    help = "Seeds AI Reports by linking properties to random users"
+    help = "Seeds AI Reports and Chat Sessions."
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.WARNING("Cleaning up old AI Reports..."))
@@ -47,3 +48,27 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(f"✅ Created {count} AI reports successfully.")
         )
+
+        self.stdout.write(self.style.WARNING("Cleaning up old Chat data..."))
+        ChatSession.objects.all().delete()
+
+        self.stdout.write(self.style.NOTICE("Seeding Chat Sessions..."))
+
+        try:
+            with transaction.atomic():
+                # Create 20 random chat sessions
+                for _ in range(20):
+                    session = ChatSessionFactory()
+
+                    # Create a random string of messages (1 to 10)
+                    num_messages = random.randint(1, 10)
+                    for _ in range(num_messages):
+                        # Ensure the user doesn't exceed 10 'user' roles
+                        # (handled by our loop and model logic)
+                        ChatMessageFactory(session=session)
+
+            self.stdout.write(
+                self.style.SUCCESS(f"✅ Created 20 Chat Sessions with random messages.")
+            )
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"❌ Chat seeding failed: {e}"))

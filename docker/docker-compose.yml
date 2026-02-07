@@ -22,7 +22,6 @@ services:
     command: ["chmod +x /app/run.sh && /app/run.sh"]
     volumes:
       - ../backend:/app
-      - ./backend/run.sh:/app/run.sh
     networks:
       - web-app-network
 
@@ -41,7 +40,6 @@ services:
     command: ["chmod +x /app/run.sh && /app/run.sh"]
     volumes:
       - ../backend_ai:/app
-      - ./backend_ai/run.sh:/app/run.sh
     environment:
       - SERVICE_TYPE=ai-api
     depends_on:
@@ -65,7 +63,6 @@ services:
     command: ["chmod +x /app/run.sh && /app/run.sh"]
     volumes:
       - ../backend_ai:/app
-      - ./backend_ai/run.sh:/app/run.sh
     environment:
       - SERVICE_TYPE=ai-workers
     depends_on:
@@ -91,7 +88,6 @@ services:
     command: ["chmod +x /app/run.sh && /app/run.sh"]
     volumes:
       - ../frontend:/app
-      - ./frontend/run.sh:/app/run.sh
       - frontend_node_modules:/app/node_modules
     extra_hosts:
       - "real-estate.dev:host-gateway"
