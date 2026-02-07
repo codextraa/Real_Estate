@@ -1,7 +1,30 @@
+import sys
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    PermissionsMixin,
+    BaseUserManager,
+)
+
+# Determine if we are running tests
+IS_TESTING = "test" in sys.argv
+ON_DELETE = models.CASCADE if IS_TESTING else models.DO_NOTHING
+
+
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        return self.create_user(email, password, **extra_fields)
 
 
 # Shadow models
@@ -21,10 +44,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         db_table = "core_db_user"
 
     USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username", "first_name", "last_name"]
+
+    objects = UserManager()
 
 
 class Agent(models.Model):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, on_delete=ON_DELETE)
     company_name = models.CharField(max_length=255)
     bio = models.CharField(max_length=150)
 
@@ -34,7 +60,7 @@ class Agent(models.Model):
 
 
 class Property(models.Model):
-    agent = models.ForeignKey(Agent, on_delete=models.DO_NOTHING)
+    agent = models.ForeignKey(Agent, on_delete=ON_DELETE)
     title = models.CharField(max_length=150)
     description = models.TextField()
     beds = models.IntegerField()

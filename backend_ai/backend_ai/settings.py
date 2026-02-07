@@ -252,6 +252,9 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
 
+# Test Runner for Shadow Models
+TEST_RUNNER = "backend_ai.test_runner.ShadowModelTestRunner"
+
 # Monitoring
 
 # LOGGING = {
