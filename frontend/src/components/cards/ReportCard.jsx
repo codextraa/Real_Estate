@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { getReportAction } from "@/actions/reportActions";
 import DeleteModal from "../modals/DeleteModal";
 import { DeleteButton } from "../buttons/Buttons";
@@ -6,9 +7,11 @@ import { useState } from "react";
 import styles from "./ReportCard.module.css";
 
 export default function ReportCard({ report }) {
+  const botIcon = "/assets/Robot-Head-icon.svg";
+  const closeIcon = "/assets/cross-icon.svg";
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false); // New State
-  const [details, setDetails] = useState(null); // New State
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const rating = parseFloat(report.investment_rating);
@@ -38,53 +41,54 @@ export default function ReportCard({ report }) {
 
   return (
     <div className={styles.card}>
-      <div className={styles.header}>
-        <h3>Report #{report.id}</h3>
-        <span
-          className={`${styles.statusBadge} ${styles[report.status.toLowerCase()]}`}
-        >
-          {report.status}
-        </span>
-      </div>
-
-      <div className={styles.body}>
-        <div className={styles.infoRow}>
-          <span>Average Price:</span>{" "}
-          <strong>${report.avg_market_price}</strong>
+      <div className={styles.cardContent}>
+        <div className={styles.reportId}>
+          Report #{report.id}
         </div>
         <div className={styles.infoRow}>
-          <span>Price Per Sqft:</span>{" "}
-          <strong>${report.avg_price_per_sqft}</strong>
+          Average Price: ${report.avg_price}
         </div>
         <div className={styles.infoRow}>
-          <span>Area:</span>{" "}
-          <strong>
-            {report.extracted_area}, {report.extracted_city}
-          </strong>
+          Price Per sqft: ${report.avg_price_per_sqft}
         </div>
-
+        <div className={styles.infoRow}>
+          Area: {report.extracted_area} sqft
+        </div>
         <div className={styles.ratingSection}>
-          <span>Investment Rating: {rating}/5.0</span>
+          <span>Investment Rating: {rating.toFixed(2)}/5.0</span>
           <div className={styles.stars}>
-            {[...Array(5)].map((_, i) => (
-              <span
-                key={i}
-                className={
-                  i < Math.floor(rating) ? styles.starFilled : styles.starEmpty
-                }
-              >
-                ★
-              </span>
-            ))}
+            {[...Array(5)].map((_, i) => {
+              const starValue = i + 1;
+
+              if (rating >= starValue) {
+                return <span key={i} className={styles.starFilled}>★</span>;
+              }
+              else if (rating > i && rating < starValue) {
+                return <span key={i} className={styles.starHalf}>★</span>;
+              }
+              else {
+                return <span key={i} className={styles.starEmpty}>★</span>;
+              }
+            })}
           </div>
         </div>
       </div>
-
       <div className={styles.actions}>
-        <button className={styles.detailsBtn} onClick={handleOpenDetails}>
-          Details
-        </button>
-        <div className={styles.deleteProfileButton}>
+        <div className={styles.aiButton}>
+          <button className={styles.aiBtn}>
+            <Image
+              src={botIcon}
+              width={30}
+              height={30}
+              alt="AI Assistant Icon"
+            />
+            Smart Assistant
+          </button>
+        </div>
+        <div className={styles.buttons}>
+          <button className={styles.detailsBtn} onClick={handleOpenDetails}>
+            Details
+          </button>
           <DeleteButton
             text="Delete"
             type="button"
@@ -92,69 +96,75 @@ export default function ReportCard({ report }) {
             className={styles.deleteButton}
           />
         </div>
+
       </div>
       {isDetailsModalOpen && (
         <div className={styles.overlay}>
           <div className={styles.modalContent}>
             <button className={styles.closeCircle} onClick={closeDetails}>
-              X
+              <Image
+                src={closeIcon}
+                width={20}
+                height={20}
+                alt="Close" />
             </button>
-
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalMainTitle}>Details</h2>
-              <span className={styles.modalStatus}>
-                Status: {report.status}
-              </span>
-            </div>
-
-            <p className={styles.modalReportId}>Report ID: #{report.id}</p>
-
-            <section className={styles.modalSection}>
-              <h4 className={styles.sectionUnderline}>Property Details:</h4>
-              <p>
-                Property Title: <strong>{details?.title || "Something"}</strong>
-              </p>
-              <p>
-                Area: <strong>{report.extracted_area}</strong>
-              </p>
-              <p>
-                City: <strong>{report.extracted_city}</strong>
-              </p>
-              <p>
-                Average beds: <strong>{details?.beds || 2}</strong>
-              </p>
-              <p>
-                Average Baths: <strong>{details?.baths || 2}</strong>
-              </p>
-            </section>
-
-            <section className={styles.modalSection}>
-              <h4 className={styles.sectionUnderline}>Market Details:</h4>
-              <p>
-                Average Market Price:{" "}
-                <strong>${report.avg_market_price}</strong>
-              </p>
-              <p>
-                Average Price Per sqft:{" "}
-                <strong>${report.avg_price_per_sqft}</strong>
-              </p>
-              <p>
-                Investment Rating: <strong>{rating}/5.00</strong>
-              </p>
-            </section>
-
-            <section className={styles.modalSection}>
-              <h4 className={styles.sectionUnderline}>AI Summary:</h4>
-              <div className={styles.aiSummaryBox}>
-                {loading
-                  ? "Analyzing data..."
-                  : details?.ai_summary || "No summary available."}
+            <div className={styles.modalBody}>
+              <div className={styles.modalHeader}>
+                <div className={styles.modalMainTitle}>Details</div>
+                <div className={styles.modalStatus}>
+                  Status: {report.status}
+                </div>
               </div>
-            </section>
 
-            <div className={styles.modalFooter}>
-              <span>Created By: {details?.username || "username"}</span>
-              <span>Created At: {report.created_at || "12/12/2012"}</span>
+              <div className={styles.modalReportId}>Report ID: #{report.id}</div>
+
+              <div className={styles.modalSection}>
+                <div className={styles.sectionUnderline}>Property Details:</div>
+                <div>
+                  Property Title: <strong>{details?.title || "Something"}</strong>
+                </div>
+                <div>
+                  Area: <strong>{report.extracted_area}</strong>
+                </div>
+                <div>
+                  City: <strong>{report.extracted_city}</strong>
+                </div>
+                <div>
+                  Average beds: <strong>{details?.beds || 2}</strong>
+                </div>
+                <div>
+                  Average Baths: <strong>{details?.baths || 2}</strong>
+                </div>
+              </div>
+
+              <div className={styles.modalSection}>
+                <div className={styles.sectionUnderline}>Market Details:</div>
+                <div>
+                  Average Market Price:{" "}
+                  <strong>${report.avg_market_price}</strong>
+                </div>
+                <div>
+                  Average Price Per sqft:{" "}
+                  <strong>${report.avg_price_per_sqft}</strong>
+                </div>
+                <div>
+                  Investment Rating: <strong>{rating}/5.00</strong>
+                </div>
+              </div>
+
+              <div className={styles.modalSection}>
+                <div className={styles.sectionUnderline}>AI Summary:</div>
+                <div className={styles.aiSummaryBox}>
+                  {loading
+                    ? "Analyzing data..."
+                    : details?.ai_summary || "No summary available."}
+                </div>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <span>Created By: {details?.username || "username"}</span>
+                <span>Created At: {report.created_at || "12/12/2012"}</span>
+              </div>
             </div>
           </div>
         </div>
