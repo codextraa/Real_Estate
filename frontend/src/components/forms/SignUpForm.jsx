@@ -1,14 +1,16 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import styles from "./SignUpForm.module.css";
 import { EyeButton, FormButton } from "@/components/buttons/Buttons";
 import { createUserAction } from "@/actions/userActions";
 import Form from "next/form";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function SignUpForm({ userType }) {
+  //const router = useRouter();
+
   const initialState = {
     errors: {},
     success: "",
@@ -41,8 +43,29 @@ export default function SignUpForm({ userType }) {
     }, 1500);
   }
 
+  //   useEffect(() => {
+  //     if (state.success) {
+  //       const timer = setTimeout(() => {
+  //         if (userType === "Superuser") {
+  //           router.push("/dashboard");
+  //         } else {
+  //           router.push("/auth/login");
+  //         }
+  //       }, 1500);
+  //       return () => clearTimeout(timer);
+  //     }
+  //   }, [state.success, userType, router]);
+
+
   return (
     <Form action={formAction} className={styles.form}>
+      {/* {userType === "Superuser" ? (
+        <h1 className={styles.title}>Create Admin</h1>
+      ) : (
+        <h1 className={styles.title}>Estate</h1>
+        <div className={styles.mainContainer}>
+          <h2 className={styles.subTitle}>Welcome!</h2>
+      )} */}
       <h1 className={styles.title}>Estate</h1>
       <div className={styles.mainContainer}>
         <h2 className={styles.subTitle}>Welcome!</h2>
@@ -197,6 +220,13 @@ export default function SignUpForm({ userType }) {
               type="submit"
               className={styles.signUpFormButton}
             />
+            //) : {userType === "Superuser" ? (
+            //   <FormButton
+            //     text="Create Admin"
+            //     pendingText="Creating Admin..."
+            //     type="submit"
+            //     className={styles.signUpFormButton}
+            //   />
           ) : (
             <FormButton
               text="Create Customer Account"
@@ -206,6 +236,20 @@ export default function SignUpForm({ userType }) {
             />
           )}
         </div>
+
+
+        {/* <div className={styles.signUpLast}>
+          {userType !== "Superuser" ? (
+            <>
+              Already have an account?
+              <Link href="/auth/login" className={styles.signUpLink}>
+                Login
+              </Link>
+            </>
+          ) : null}
+            </div> */}
+
+
         <div className={styles.signUpLast}>
           Already have an account?
           <Link href="/auth/login" className={styles.signUpLink}>
