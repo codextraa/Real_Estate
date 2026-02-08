@@ -1,6 +1,11 @@
-import { getListings, getReports, getMyReports } from "@/libs/api";
+import {
+  getProperties,
+  getListings,
+  getReports,
+  getMyReports,
+} from "@/libs/api";
 import { getUserIdAction, getUserRoleAction } from "@/actions/authActions";
-import { redirect, notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import Searchbar from "@/components/searchbar/Searchbar";
 import PropertyCard from "@/components/cards/PropertyCard";
 import DashboardTabs from "@/components/dashboardTabs/DashboardTabs";
@@ -20,13 +25,14 @@ export default async function DashboardPage({ searchParams }) {
   if (!userId || !userRole) {
     redirect(DEFAULT_LOGIN_REDIRECT);
   }
-  if (userRole !== "Agent") {
-    return notFound();
-  }
   const urlSearchParams = await searchParams;
   const currentTab =
     urlSearchParams.tab ||
-    (userRole === "Default" ? "my-reports" : "my-listings");
+    (userRole === "Default"
+      ? "my-reports"
+      : userRole === "Agent"
+        ? "my-listings"
+        : "all-listings");
   const currentPage = parseInt(urlSearchParams.page) || 1;
   const currentStatus = urlSearchParams.status || "PENDING";
 
@@ -34,6 +40,11 @@ export default async function DashboardPage({ searchParams }) {
 
   if (currentTab === "my-listings") {
     response = await getListings({
+      page: currentPage,
+      ...urlSearchParams,
+    });
+  } else if (currentTab === "all-listings") {
+    response = await getProperties({
       page: currentPage,
       ...urlSearchParams,
     });
@@ -67,7 +78,7 @@ export default async function DashboardPage({ searchParams }) {
       <div className={styles.tabs}>
         <DashboardTabs currentTab={currentTab} userRole={userRole} />
       </div>
-      {currentTab === "my-listings" ? (
+      {currentTab === "my-listings" || currentTab === "all-listings" ? (
         <div className={styles.propertiesContainer}>
           <div className={styles.searchbar}>
             <Searchbar />
@@ -119,9 +130,8 @@ export default async function DashboardPage({ searchParams }) {
       ) : (
         <div className={styles.reportsWrapper}>
           <div className={styles.reportHeader}>
-            <div className={styles.propertiesTitle}>Reports</div>
-            {/* Status Filtering Tabs */}
             <ReportFilterTabs currentStatus={currentStatus} />
+            <div className={styles.propertiesTitle}>Reports</div>
           </div>
 
           <div className={styles.reportGrid}>

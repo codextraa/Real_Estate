@@ -2,7 +2,7 @@ import LoginForm from "@/components/forms/LoginForm";
 import styles from "@/styles/LoginPage.module.css";
 import Image from "next/image";
 
-export default function LoginPage() {
+export default async function LoginPage() {
   const imageUrl = "/real-estate/real-estate.jpg";
 
   return (

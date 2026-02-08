@@ -2,7 +2,7 @@ import random
 import factory
 import numpy as np
 from factory.fuzzy import FuzzyInteger, FuzzyDecimal, FuzzyChoice
-from .models import User, AIReport, Property
+from .models import User, AIReport, Property, ChatMessage, ChatSession
 
 
 class AIReportFactory(factory.django.DjangoModelFactory):
@@ -45,3 +45,40 @@ class AIReportFactory(factory.django.DjangoModelFactory):
     investment_rating = FuzzyChoice(np.arange(0.0, 5.5, 0.5))
 
     ai_insight_summary = factory.Faker("paragraph", nb_sentences=3)
+
+
+class ChatSessionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ChatSession
+
+    user = factory.LazyAttribute(lambda _: random.choice(User.objects.all()))
+    report = factory.LazyAttribute(lambda _: random.choice(AIReport.objects.all()))
+    user_message_count = 0
+
+
+class ChatMessageFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ChatMessage
+
+    session = factory.SubFactory(ChatSessionFactory)
+    role = FuzzyChoice([ChatMessage.Role.USER, ChatMessage.Role.AI])
+    status = FuzzyChoice(
+        [
+            ChatMessage.Status.PENDING,
+            ChatMessage.Status.PROCESSING,
+            ChatMessage.Status.COMPLETED,
+            ChatMessage.Status.FAILED,
+        ]
+    )
+    content = factory.Faker("paragraph", nb_sentences=3)
+
+    @factory.post_generation
+    def update_session_counter(
+        self, create, extracted, **kwargs
+    ):  # pylint: disable=unused-argument
+        if not create:
+            return
+
+        if self.role == ChatMessage.Role.USER:
+            self.session.user_message_count += 1
+            self.session.save()

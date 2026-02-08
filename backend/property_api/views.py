@@ -420,6 +420,7 @@ class PropertyViewSet(ModelViewSet):
                 ),
             ),
             status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
+            status.HTTP_405_METHOD_NOT_ALLOWED: ErrorResponseSerializer,
         },
         examples=[
             OpenApiExample(
