@@ -121,36 +121,33 @@ export default function ReportCard({ report }) {
 
               <div className={styles.modalSection}>
                 <div className={styles.sectionUnderline}>Property Details:</div>
-                <div>
-                  Property Title:{" "}
-                  <strong>{details?.title || "Something"}</strong>
+                <div className={styles.insideSection}>
+                  Property Title: {details?.title || "Something"}
                 </div>
-                <div>
-                  Area: <strong>{report.extracted_area}</strong>
+                <div className={styles.insideSection}>
+                  Area: {report.extracted_area}
                 </div>
-                <div>
-                  City: <strong>{report.extracted_city}</strong>
+                <div className={styles.insideSection}>
+                  City: {report.extracted_city}
                 </div>
-                <div>
-                  Average beds: <strong>{details?.beds || 2}</strong>
+                <div className={styles.insideSection}>
+                  Average beds: {details?.beds || 2}
                 </div>
-                <div>
-                  Average Baths: <strong>{details?.baths || 2}</strong>
+                <div className={styles.insideSection}>
+                  Average Baths: {details?.baths || 2}
                 </div>
               </div>
 
               <div className={styles.modalSection}>
                 <div className={styles.sectionUnderline}>Market Details:</div>
-                <div>
-                  Average Market Price:{" "}
-                  <strong>${report.avg_market_price}</strong>
+                <div className={styles.insideSection}>
+                  Average Market Price: {report.avg_market_price}
                 </div>
-                <div>
-                  Average Price Per sqft:{" "}
-                  <strong>${report.avg_price_per_sqft}</strong>
+                <div className={styles.insideSection}>
+                  Average Price Per sqft: {report.avg_price_per_sqft}
                 </div>
-                <div>
-                  Investment Rating: <strong>{rating}/5.00</strong>
+                <div className={styles.insideSection}>
+                  Investment Rating: {rating}/5.00
                 </div>
               </div>
 

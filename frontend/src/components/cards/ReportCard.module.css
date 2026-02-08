@@ -151,10 +151,14 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   z-index: 1000;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 40px 0;
 }
 
 .ratingSection {
@@ -212,18 +216,17 @@
 
 .modalContent {
   width: 751px;
-  max-height: 90vh;
-
+  max-height: none;
   position: relative;
+  margin: 0 auto;
 }
 
 .modalBody {
   width: 100%;
-  height: 100%;
   background: #f7f7f7;
   border-radius: 15px;
   padding: 40px;
-  overflow-y: auto;
+  overflow: visible;
   box-shadow:
     -2px -2px 14px 4px #415261,
     2px 2px 14px 4px #415261;
@@ -240,23 +243,55 @@
   padding: 10px;
 }
 
-.modalMainTitle {
-  font-size: 40px;
-  text-align: center;
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
+  gap: 50px;
+}
+
+.modalMainTitle {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 40px;
+  color: #13252e;
 }
 
 .modalStatus {
-  position: absolute;
-  top: 40px;
-  right: 40px;
+  font-family: var(--font-old-standard-tt);
+  font-size: 20px;
   font-weight: 700;
 }
 
+.modalReportId {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 25px;
+  color: #13252e;
+  margin-bottom: 15px;
+}
+
+.modalSection {
+  margin-bottom: 25px;
+  font-family: var(--font-old-standard-tt);
+  font-size: 18px;
+  color: #13252e;
+  line-height: 1.6;
+}
+
 .sectionUnderline {
-  text-decoration: underline;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
   font-size: 22px;
-  margin: 15px 0 5px 0;
+  text-decoration: underline;
+  margin-bottom: 10px;
+}
+
+.insideSection {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 20px;
 }
 
 .aiSummaryBox {
@@ -265,7 +300,9 @@
   border: 2px solid #13252e;
   border-radius: 10px;
   padding: 15px;
-  margin-top: 10px;
+  font-family: var(--font-old-standard-tt);
+  font-size: 18px;
+  line-height: 1.4;
 }
 
 .modalFooter {
@@ -282,12 +319,18 @@
 }
 
 @media (max-width: 900px) {
+  .modalContent {
+    margin: 60px;
+  }
+
   .card {
     margin: 15px 40px 30px 40px;
   }
+
   .ratingSection {
     flex-direction: column;
   }
+
   .stars {
     gap: 5px;
   }
@@ -307,11 +350,59 @@
     font-size: 30px;
   }
 
+  .modalContent {
+    width: 90%;
+  }
+
   .modalStatus {
     position: static;
     display: block;
     text-align: center;
     margin-bottom: 15px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .modalReportId {
+    font-size: 17px;
+    color: #13252e;
+    margin-bottom: 15px;
+  }
+
+  .modalSection {
+    font-size: 14px;
+    color: #13252e;
+  }
+
+  .sectionUnderline {
+    font-weight: 700;
+    font-size: 17px;
+    text-decoration: underline;
+    margin-bottom: 10px;
+  }
+
+  .insideSection {
+    font-size: 15px;
+  }
+
+  .modalFooter {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    font-weight: 700;
+  }
+
+  .overlay {
+    padding: 20px 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .modalFooter {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    text-align: center;
   }
 }
 
@@ -319,6 +410,11 @@
   .card {
     margin: 15px 20px 30px 20px;
     flex-direction: column;
+  }
+
+  .modalHeader {
+    flex-direction: column;
+    gap: 10px;
   }
 
   .actions {
@@ -338,6 +434,13 @@
 }
 
 @media (max-width: 480px) {
+  .overlay {
+    align-items: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 10px;
+  }
+
   .reportId {
     font-size: 20px;
   }
@@ -362,9 +465,6 @@
     gap: 10px;
     align-items: center;
     text-align: center;
-  }
-
-  .closeCircle {
   }
 
   .buttons {
