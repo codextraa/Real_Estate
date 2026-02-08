@@ -33,8 +33,7 @@ export default async function DashboardPage({ searchParams }) {
       ? "my-reports"
       : userRole === "Agent"
         ? "my-listings"
-        : "all-listings"
-      );
+        : "all-listings");
   const currentPage = parseInt(urlSearchParams.page) || 1;
   const currentStatus = urlSearchParams.status || "PENDING";
 
@@ -61,7 +60,7 @@ export default async function DashboardPage({ searchParams }) {
       ...urlSearchParams,
     });
   }
-  
+
   return (
     <div className={styles.background}>
       <div className={styles.image}>
@@ -81,7 +80,7 @@ export default async function DashboardPage({ searchParams }) {
       <div className={styles.tabs}>
         <DashboardTabs currentTab={currentTab} userRole={userRole} />
       </div>
-      {(currentTab === "my-listings" || currentTab === "all-listings") ? (
+      {currentTab === "my-listings" || currentTab === "all-listings" ? (
         <div className={styles.propertiesContainer}>
           <div className={styles.searchbar}>
             <Searchbar />
@@ -130,9 +129,9 @@ export default async function DashboardPage({ searchParams }) {
             )}
           </div>
         </div>
-      ) : (currentTab === "create-admin") ? (
+      ) : currentTab === "create-admin" ? (
         <div className={styles.createAdminForm}>
-          <SignUpForm userType="Superuser" />
+          <SignUpForm userType="admin" />
         </div>
       ) : (
         <div className={styles.reportsWrapper}>
