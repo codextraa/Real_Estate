@@ -11,8 +11,6 @@
   margin: 20px 80px;
 }
 
-
-
 .filterBtn {
   background: none;
   border: none;
@@ -25,7 +23,7 @@
   font-weight: 400;
   font-size: 25px;
   line-height: 31px;
-  color:#666;
+  color: #666;
   transition: font-weight 0.2s ease-in-out;
 }
 

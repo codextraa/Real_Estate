@@ -79,7 +79,7 @@
   text-align: left;
 }
 
-.propertiesTitle{
+.propertiesTitle {
   font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 50px;
@@ -91,7 +91,7 @@
   font-weight: 700;
   font-size: 50px;
   color: #13252e;
-  margin : 0 80px;
+  margin: 0 80px;
 }
 
 .propertiesDescription {
@@ -219,7 +219,7 @@
 
   .reportTitle {
     margin: 0 30px;
-    font-size: 40px;  
+    font-size: 40px;
   }
 
   .content,

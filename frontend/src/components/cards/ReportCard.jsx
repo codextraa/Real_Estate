@@ -42,18 +42,12 @@ export default function ReportCard({ report }) {
   return (
     <div className={styles.card}>
       <div className={styles.cardContent}>
-        <div className={styles.reportId}>
-          Report #{report.id}
-        </div>
-        <div className={styles.infoRow}>
-          Average Price: ${report.avg_price}
-        </div>
+        <div className={styles.reportId}>Report #{report.id}</div>
+        <div className={styles.infoRow}>Average Price: ${report.avg_price}</div>
         <div className={styles.infoRow}>
           Price Per sqft: ${report.avg_price_per_sqft}
         </div>
-        <div className={styles.infoRow}>
-          Area: {report.extracted_area} sqft
-        </div>
+        <div className={styles.infoRow}>Area: {report.extracted_area} sqft</div>
         <div className={styles.ratingSection}>
           <span>Investment Rating: {rating.toFixed(2)}/5.0</span>
           <div className={styles.stars}>
@@ -61,13 +55,23 @@ export default function ReportCard({ report }) {
               const starValue = i + 1;
 
               if (rating >= starValue) {
-                return <span key={i} className={styles.starFilled}>★</span>;
-              }
-              else if (rating > i && rating < starValue) {
-                return <span key={i} className={styles.starHalf}>★</span>;
-              }
-              else {
-                return <span key={i} className={styles.starEmpty}>★</span>;
+                return (
+                  <span key={i} className={styles.starFilled}>
+                    ★
+                  </span>
+                );
+              } else if (rating > i && rating < starValue) {
+                return (
+                  <span key={i} className={styles.starHalf}>
+                    ★
+                  </span>
+                );
+              } else {
+                return (
+                  <span key={i} className={styles.starEmpty}>
+                    ★
+                  </span>
+                );
               }
             })}
           </div>
@@ -96,17 +100,12 @@ export default function ReportCard({ report }) {
             className={styles.deleteButton}
           />
         </div>
-
       </div>
       {isDetailsModalOpen && (
         <div className={styles.overlay}>
           <div className={styles.modalContent}>
             <button className={styles.closeCircle} onClick={closeDetails}>
-              <Image
-                src={closeIcon}
-                width={20}
-                height={20}
-                alt="Close" />
+              <Image src={closeIcon} width={20} height={20} alt="Close" />
             </button>
             <div className={styles.modalBody}>
               <div className={styles.modalHeader}>
@@ -116,12 +115,15 @@ export default function ReportCard({ report }) {
                 </div>
               </div>
 
-              <div className={styles.modalReportId}>Report ID: #{report.id}</div>
+              <div className={styles.modalReportId}>
+                Report ID: #{report.id}
+              </div>
 
               <div className={styles.modalSection}>
                 <div className={styles.sectionUnderline}>Property Details:</div>
                 <div>
-                  Property Title: <strong>{details?.title || "Something"}</strong>
+                  Property Title:{" "}
+                  <strong>{details?.title || "Something"}</strong>
                 </div>
                 <div>
                   Area: <strong>{report.extracted_area}</strong>
