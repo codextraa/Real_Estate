@@ -16,6 +16,7 @@ import ReportFilterTabs from "@/components/reportTabs/ReportTabs";
 import styles from "@/styles/PropertyPage.module.css";
 import Image from "next/image";
 import { DEFAULT_LOGIN_REDIRECT } from "@/route";
+import SignUpForm from "@/components/forms/SignUpForm";
 
 const imageUrl = "/real-estate/real-estate.jpg";
 
@@ -59,6 +60,7 @@ export default async function DashboardPage({ searchParams }) {
       ...urlSearchParams,
     });
   }
+
   return (
     <div className={styles.background}>
       <div className={styles.image}>
@@ -126,6 +128,10 @@ export default async function DashboardPage({ searchParams }) {
               </div>
             )}
           </div>
+        </div>
+      ) : currentTab === "create-admin" ? (
+        <div className={styles.createAdminForm}>
+          <SignUpForm userType="admin" />
         </div>
       ) : (
         <div className={styles.reportsWrapper}>

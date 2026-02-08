@@ -136,6 +136,7 @@ export const createUserAction = async (userRole, prevState, formData) => {
     ...(username && { username }),
     ...(company_name && { company_name }),
     ...(userRole === "agent" && { is_agent: true }),
+    ...(userRole === "admin" && { is_staff: true }),
   };
 
   try {

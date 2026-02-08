@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import styles from "./SignUpForm.module.css";
+import styles2 from "./CreateAdminForm.module.css";
 import { EyeButton, FormButton } from "@/components/buttons/Buttons";
 import { createUserAction } from "@/actions/userActions";
 import Form from "next/form";
@@ -37,15 +38,30 @@ export default function SignUpForm({ userType }) {
 
   if (state.success) {
     setTimeout(() => {
-      redirect("/auth/login");
+      if (userType === "admin") {
+        redirect("/dashboard");
+      } else {
+        redirect("/auth/login");
+      }
     }, 1500);
   }
 
   return (
-    <Form action={formAction} className={styles.form}>
-      <h1 className={styles.title}>Estate</h1>
-      <div className={styles.mainContainer}>
-        <h2 className={styles.subTitle}>Welcome!</h2>
+    <Form
+      action={formAction}
+      className={userType === "admin" ? styles2.form : styles.form}
+    >
+      {userType === "admin" ? (
+        <h1 className={styles2.title}>Create Admin</h1>
+      ) : (
+        <h1 className={styles.title}>Estate</h1>
+      )}
+      <div
+        className={
+          userType === "admin" ? styles2.mainContainer : styles.mainContainer
+        }
+      >
+        {userType !== "admin" && <h2 className={styles.subTitle}>Welcome!</h2>}
 
         {Object.keys(state.errors).length > 0 && state.errors.general && (
           <div className={styles.errorContainer}>{state.errors.general}</div>
@@ -197,6 +213,13 @@ export default function SignUpForm({ userType }) {
               type="submit"
               className={styles.signUpFormButton}
             />
+          ) : userType === "admin" ? (
+            <FormButton
+              text="Create Admin"
+              pendingText="Creating Admin..."
+              type="submit"
+              className={styles.signUpFormButton}
+            />
           ) : (
             <FormButton
               text="Create Customer Account"
@@ -206,12 +229,15 @@ export default function SignUpForm({ userType }) {
             />
           )}
         </div>
-        <div className={styles.signUpLast}>
-          Already have an account?
-          <Link href="/auth/login" className={styles.signUpLink}>
-            Login
-          </Link>
-        </div>
+
+        {userType !== "admin" && (
+          <div className={styles.signUpLast}>
+            Already have an account?
+            <Link href="/auth/login" className={styles.signUpLink}>
+              Login
+            </Link>
+          </div>
+        )}
       </div>
     </Form>
   );
