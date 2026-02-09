@@ -1,11 +1,29 @@
-.model {
-  position: fixed;
-  top: 0;
-  left: 0;
+.form{
   width: 100%;
-  height: 100%;
+  height: 92%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.5);
+  gap: 1.5rem;
+}
+
+.title{
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 50px;
+  color: #13252e;
+  line-height: 1;
+  text-align: center;
+  opacity: 1;
+  margin-bottom: -20px;
+}
+
+.signUpFormButton {
+  width: 100%;
+  height: 45px;
+  border-radius: 37px;
+  background: #13252e;
+  color: #f7f7f7;
+  font-size: 18px;
 }

@@ -218,7 +218,7 @@ export default function SignUpForm({ userType }) {
               text="Create Admin"
               pendingText="Creating Admin..."
               type="submit"
-              className={styles.signUpFormButton}
+              className={styles2.signUpFormButton}
             />
           ) : (
             <FormButton
