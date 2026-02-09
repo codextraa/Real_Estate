@@ -205,7 +205,13 @@ export default function SignUpForm({ userType }) {
               )}
           </div>
         </div>
-        <div className={styles.buttonContainer}>
+        <div
+          className={
+            userType === "admin"
+              ? styles2.buttonContainer
+              : styles.buttonContainer
+          }
+        >
           {userType === "agent" ? (
             <FormButton
               text="Create Agent Account"
