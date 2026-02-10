@@ -137,30 +137,30 @@ export default async function DashboardPage({ searchParams }) {
         <div className={styles.reportsWrapper}>
           <div className={styles.reportHeader}>
             <ReportFilterTabs currentStatus={currentStatus} />
+          </div>
+          <div className={styles.reportContent}>
             <div className={styles.reportTitle}>Reports</div>
-          </div>
+            <div className={styles.reportGrid}>
+              {(() => {
+                const safeResults = response.results;
 
-          <div className={styles.reportGrid}>
-            {(() => {
-              const safeResults = response.results;
-
-              const filteredReports = safeResults.filter(
-                (r) => r?.status === currentStatus,
-              );
-
-              if (filteredReports.length === 0) {
-                return (
-                  <div className={styles.noResultsContainer}>
-                    No {currentStatus} Reports Found
-                  </div>
+                const filteredReports = safeResults.filter(
+                  (r) => r?.status === currentStatus,
                 );
-              }
-              return filteredReports.map((report) => (
-                <ReportCard key={report.id} report={report} />
-              ));
-            })()}
-          </div>
 
+                if (filteredReports.length === 0) {
+                  return (
+                    <div className={styles.noResultsContainer}>
+                      No {currentStatus} Reports Found
+                    </div>
+                  );
+                }
+                return filteredReports.map((report) => (
+                  <ReportCard key={report.id} report={report} />
+                ));
+              })()}
+            </div>
+          </div>
           <div className={styles.paginationContainer}>
             <Pagination
               currentPage={currentPage}

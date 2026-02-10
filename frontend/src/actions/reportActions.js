@@ -39,7 +39,7 @@ export const getReportAction = async (id) => {
       return { error: response.error };
     }
 
-    return { data: response.data };
+    return response;
   } catch (error) {
     console.error(error);
     return { error: error.message || "An unexpected error occurred" };

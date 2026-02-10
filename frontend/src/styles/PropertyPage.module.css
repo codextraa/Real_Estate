@@ -85,6 +85,14 @@
   font-size: 50px;
   color: #13252e;
 }
+.reportsWrapper {
+  display: flex;
+  flex-direction: column;
+}
+.reportContent {
+  display: flex;
+  flex-direction: column;
+}
 
 .reportTitle {
   font-family: var(--font-old-standard-tt);
