@@ -164,7 +164,7 @@ class AIReportViewSet(ModelViewSet):
         tags=["AI Reports"],
         request=None,
         responses={
-            status.HTTP_200_OK: AIReportSerializer,
+            status.HTTP_200_OK: AIReportRetrieveSerializer,
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
             status.HTTP_404_NOT_FOUND: OpenApiResponse(
                 response=ErrorResponseSerializer,

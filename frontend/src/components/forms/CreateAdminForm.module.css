@@ -11,6 +11,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  /* where is the max width */
+  max-width: 836px;
 }
 
 .title {
@@ -19,6 +21,31 @@
   font-size: 50px;
   color: #13252e;
   text-align: center;
+}
+
+/* who will fix the height and font size */
+.inputAdmin {
+  height: 50px;
+  font-size: 20px;
+}
+
+/* who will fix the gap between the input and the hint */
+.inputHintAdminUsername {
+  margin-top: 6px;
+}
+
+.inputHintAdminPassword {
+  margin-top: 8px;
+}
+
+.errorContainerAdmin {
+  margin-bottom: 5px;
+  max-width: 416px;
+}
+
+.successContainerAdmin {
+  margin-bottom: 5px;
+  max-width: 416px;
 }
 
 .signUpFormButton {
@@ -61,6 +88,11 @@
     padding: 12px 80px 12px 80px;
     font-size: 18px;
   }
+
+  .inputAdmin {
+    height: 40px;
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 500px) {
@@ -71,5 +103,18 @@
   .signUpFormButton {
     padding: 12px 50px 12px 50px;
     font-size: 18px;
+  }
+
+  .inputAdmin {
+    height: 35px;
+    font-size: 14px;
+  }
+
+  .inputHintAdminUsername {
+    margin-top: -15px;
+  }
+
+  .inputHintAdminPassword {
+    margin-top: -20px;
   }
 }

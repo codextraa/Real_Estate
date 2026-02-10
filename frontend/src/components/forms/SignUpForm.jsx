@@ -64,10 +64,18 @@ export default function SignUpForm({ userType }) {
         {userType !== "admin" && <h2 className={styles.subTitle}>Welcome!</h2>}
 
         {Object.keys(state.errors).length > 0 && state.errors.general && (
-          <div className={styles.errorContainer}>{state.errors.general}</div>
+          <div
+            className={`${styles.errorContainer} ${userType === "admin" && styles2.errorContainerAdmin}`}
+          >
+            {state.errors.general}
+          </div>
         )}
         {state.success && (
-          <div className={styles.successContainer}>{state.success}</div>
+          <div
+            className={`${styles.successContainer} ${userType === "admin" && styles2.successContainerAdmin}`}
+          >
+            {state.success}
+          </div>
         )}
 
         <div className={styles.formInputContainer}>
@@ -79,7 +87,7 @@ export default function SignUpForm({ userType }) {
               placeholder="Email*"
               disabled={isPending}
               defaultValue={state.formEmail}
-              className={styles.input}
+              className={`${styles.input} ${userType === "admin" && styles2.inputAdmin}`}
             />
             {Object.keys(state.errors).length > 0 && state.errors.email && (
               <span className={styles.errorText}>{state.errors.email}</span>
@@ -93,7 +101,7 @@ export default function SignUpForm({ userType }) {
               placeholder="First Name"
               disabled={isPending}
               defaultValue={state.formFirstName}
-              className={styles.input}
+              className={`${styles.input} ${userType === "admin" && styles2.inputAdmin}`}
             />
             {Object.keys(state.errors).length > 0 &&
               state.errors.first_name && (
@@ -110,7 +118,7 @@ export default function SignUpForm({ userType }) {
               placeholder="Last Name"
               disabled={isPending}
               defaultValue={state.formLastName}
-              className={styles.input}
+              className={`${styles.input} ${userType === "admin" && styles2.inputAdmin}`}
             />
             {Object.keys(state.errors).length > 0 && state.errors.last_name && (
               <span className={styles.errorText}>{state.errors.last_name}</span>
@@ -122,7 +130,7 @@ export default function SignUpForm({ userType }) {
                 type="text"
                 id="company_name"
                 name="company_name"
-                placeholder="Company Name"
+                placeholder="Company Name*"
                 disabled={isPending}
                 defaultValue={state.formCompanyName}
                 className={styles.input}
@@ -141,15 +149,22 @@ export default function SignUpForm({ userType }) {
               type="text"
               id="username"
               name="username"
-              placeholder="Username"
+              placeholder="Username*"
               disabled={isPending}
               defaultValue={state.formUsername}
-              className={styles.input}
+              className={`${styles.input} ${userType === "admin" && styles2.inputAdmin}`}
             />
-            <span className={styles.inputHint}>
-              Username must be at least 6 characters long, and cannot contain
-              spaces. Username can only contain letters, numbers, periods,
-              underscores, hyphens, and @ signs.
+            <span
+              className={`${styles.inputHint} ${userType === "admin" && styles2.inputHintAdminUsername}`}
+            >
+              <div>
+                Username must be at least 6 characters long, and cannot contain
+                spaces.
+              </div>
+              <div>
+                Username can only contain letters, numbers, periods,
+                underscores, hyphens, and @ signs.
+              </div>
             </span>
             {Object.keys(state.errors).length > 0 && state.errors.username && (
               <span className={styles.errorText}>{state.errors.username}</span>
@@ -164,7 +179,7 @@ export default function SignUpForm({ userType }) {
                 name="password"
                 placeholder="Password*"
                 disabled={isPending}
-                className={styles.input}
+                className={`${styles.input} ${userType === "admin" && styles2.inputAdmin}`}
               />
               <EyeButton
                 action={toggleShowPassword}
@@ -172,10 +187,12 @@ export default function SignUpForm({ userType }) {
                 isPending={isPending}
               />
             </div>
-            <span className={styles.inputHint}>
-              Password must be at least 8 characters. Must include at least one
-              uppercase letter, one lowercase letter, one number, one special
-              character.
+            <span
+              className={`${styles.inputHint} ${userType === "admin" && styles2.inputHintAdminPassword}`}
+            >
+              Password must be at least 8 characters. Password must include at
+              least one uppercase letter, one lowercase letter, one number, one
+              special character.
             </span>
             {Object.keys(state.errors).length > 0 && state.errors.password && (
               <span className={styles.errorText}>{state.errors.password}</span>
@@ -189,7 +206,7 @@ export default function SignUpForm({ userType }) {
                 name="c_password"
                 placeholder="Confirm Password*"
                 disabled={isPending}
-                className={styles.input}
+                className={`${styles.input} ${userType === "admin" && styles2.inputAdmin}`}
               />
               <EyeButton
                 action={toggleShowConfirmPassword}
