@@ -5,10 +5,10 @@
   align-items: center;
   gap: 100px;
   padding: 10px 0;
-
+  max-width: 1200px;
   border-top: 2px solid #13252e;
   border-bottom: 2px solid #13252e;
-  margin: 5px 80px 20px 80px;
+  margin: 5px 0px 20px 0px;
 }
 
 .filterBtn {
@@ -82,16 +82,12 @@
   }
 
   .filterBtn {
-    font-size: 16px;
+    font-size: 14px;
   }
 }
 
 @media (max-width: 350px) {
   .filterContainer {
     gap: 15px;
-  }
-
-  .filterBtn {
-    font-size: 14px;
   }
 }

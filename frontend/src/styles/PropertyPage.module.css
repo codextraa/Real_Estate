@@ -85,10 +85,16 @@
   font-size: 50px;
   color: #13252e;
 }
+
 .reportsWrapper {
-  display: flex;
-  flex-direction: column;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px 20px 40px;
+  position: relative;
+  margin-top: 25px;
+  z-index: 10;
 }
+
 .reportContent {
   display: flex;
   flex-direction: column;
@@ -99,7 +105,6 @@
   font-weight: 700;
   font-size: 50px;
   color: #13252e;
-  margin: 0 80px;
 }
 
 .propertiesDescription {
@@ -236,7 +241,8 @@
     letter-spacing: -1px;
   }
 
-  .propertiesContainer {
+  .propertiesContainer,
+  .reportsWrapper {
     margin-top: 10px;
     padding: 0 20px;
   }
@@ -291,5 +297,8 @@
   }
   .reportTitle {
     font-size: 32px;
+  }
+  .reportsWrapper {
+    padding: 0px;
   }
 }

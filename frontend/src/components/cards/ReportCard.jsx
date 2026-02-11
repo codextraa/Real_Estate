@@ -76,8 +76,9 @@ export default function ReportCard({ report }) {
           <button className={styles.aiBtn}>
             <Image
               src={botIcon}
-              width={30}
-              height={30}
+              width={50}
+              height={50}
+              className={styles.aiIcon}
               alt="AI Assistant Icon"
             />
             Smart Assistant
