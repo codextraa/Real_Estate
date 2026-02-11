@@ -35,7 +35,7 @@ export default async function DashboardPage({ searchParams }) {
         ? "my-listings"
         : "all-listings");
   const currentPage = parseInt(urlSearchParams.page) || 1;
-  const currentStatus = urlSearchParams.status || "PENDING";
+  const currentStatus = urlSearchParams.status || "ALL";
 
   let response = { results: [], total_pages: 0, count: 0 };
 
@@ -144,9 +144,15 @@ export default async function DashboardPage({ searchParams }) {
               {(() => {
                 const safeResults = response.results;
 
-                const filteredReports = safeResults.filter(
-                  (r) => r?.status === currentStatus,
-                );
+                const filteredReports =
+                  currentStatus === "ALL"
+                    ? safeResults
+                    : safeResults.filter((r) => r?.status === currentStatus);
+
+                console.log("Filtered Reports:", filteredReports);
+                console.log("Current Status:", currentStatus);
+                console.log("Response Results:", response.results);
+                console.log("Safe Results:", safeResults);
 
                 if (filteredReports.length === 0) {
                   return (
