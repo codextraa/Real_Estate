@@ -50,11 +50,19 @@ export default async function DashboardPage({ searchParams }) {
       ...urlSearchParams,
     });
   } else if (currentTab === "my-reports") {
+    let statusFilter = urlSearchParams.status;
+    if (statusFilter === "ALL") {
+      delete urlSearchParams.status;
+    }
     response = await getMyReports({
       page: currentPage,
       ...urlSearchParams,
     });
   } else if (currentTab === "all-reports") {
+    let statusFilter = urlSearchParams.status;
+    if (statusFilter === "ALL") {
+      delete urlSearchParams.status;
+    }
     response = await getReports({
       page: currentPage,
       ...urlSearchParams,
@@ -142,26 +150,14 @@ export default async function DashboardPage({ searchParams }) {
             <div className={styles.reportTitle}>Reports</div>
             <div className={styles.reportGrid}>
               {(() => {
-                const safeResults = response.results;
-
-                const filteredReports =
-                  currentStatus === "ALL"
-                    ? safeResults
-                    : safeResults.filter((r) => r?.status === currentStatus);
-
-                console.log("Filtered Reports:", filteredReports);
-                console.log("Current Status:", currentStatus);
-                console.log("Response Results:", response.results);
-                console.log("Safe Results:", safeResults);
-
-                if (filteredReports.length === 0) {
+                if (response.results.length === 0) {
                   return (
                     <div className={styles.noResultsContainer}>
                       No {currentStatus} Reports Found
                     </div>
                   );
                 }
-                return filteredReports.map((report) => (
+                return response.results.map((report) => (
                   <ReportCard key={report.id} report={report} />
                 ));
               })()}
