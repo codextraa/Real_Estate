@@ -78,6 +78,7 @@ export default function Pagination({ currentPage, totalPages }) {
   const renderButton = (page) => (
     <button
       key={page}
+      type="button"
       onClick={() => handlePageChange(page)}
       className={`${styles.pageButton} ${page === currentPage ? styles.active : ""}`}
       disabled={page === currentPage}

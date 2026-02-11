@@ -16,6 +16,7 @@ import ReportFilterTabs from "@/components/reportTabs/ReportTabs";
 import styles from "@/styles/PropertyPage.module.css";
 import Image from "next/image";
 import { DEFAULT_LOGIN_REDIRECT } from "@/route";
+import SignUpForm from "@/components/forms/SignUpForm";
 
 const imageUrl = "/real-estate/real-estate.jpg";
 
@@ -34,7 +35,7 @@ export default async function DashboardPage({ searchParams }) {
         ? "my-listings"
         : "all-listings");
   const currentPage = parseInt(urlSearchParams.page) || 1;
-  const currentStatus = urlSearchParams.status || "PENDING";
+  const currentStatus = urlSearchParams.status || "ALL";
 
   let response = { results: [], total_pages: 0, count: 0 };
 
@@ -49,16 +50,25 @@ export default async function DashboardPage({ searchParams }) {
       ...urlSearchParams,
     });
   } else if (currentTab === "my-reports") {
+    let statusFilter = urlSearchParams.status;
+    if (statusFilter === "ALL") {
+      delete urlSearchParams.status;
+    }
     response = await getMyReports({
       page: currentPage,
       ...urlSearchParams,
     });
   } else if (currentTab === "all-reports") {
+    let statusFilter = urlSearchParams.status;
+    if (statusFilter === "ALL") {
+      delete urlSearchParams.status;
+    }
     response = await getReports({
       page: currentPage,
       ...urlSearchParams,
     });
   }
+
   return (
     <div className={styles.background}>
       <div className={styles.image}>
@@ -127,34 +137,32 @@ export default async function DashboardPage({ searchParams }) {
             )}
           </div>
         </div>
+      ) : currentTab === "create-admin" ? (
+        <div className={styles.createAdminForm}>
+          <SignUpForm userType="admin" />
+        </div>
       ) : (
         <div className={styles.reportsWrapper}>
           <div className={styles.reportHeader}>
             <ReportFilterTabs currentStatus={currentStatus} />
-            <div className={styles.propertiesTitle}>Reports</div>
           </div>
-
-          <div className={styles.reportGrid}>
-            {(() => {
-              const safeResults = response.results;
-
-              const filteredReports = safeResults.filter(
-                (r) => r?.status === currentStatus,
-              );
-
-              if (filteredReports.length === 0) {
-                return (
-                  <div className={styles.noResultsContainer}>
-                    No {currentStatus} Reports Found
-                  </div>
-                );
-              }
-              return filteredReports.map((report) => (
-                <ReportCard key={report.id} report={report} />
-              ));
-            })()}
+          <div className={styles.reportContent}>
+            <div className={styles.reportTitle}>Reports</div>
+            <div className={styles.reportGrid}>
+              {(() => {
+                if (response.results.length === 0) {
+                  return (
+                    <div className={styles.noResultsContainer}>
+                      No {currentStatus} Reports Found
+                    </div>
+                  );
+                }
+                return response.results.map((report) => (
+                  <ReportCard key={report.id} report={report} />
+                ));
+              })()}
+            </div>
           </div>
-
           <div className={styles.paginationContainer}>
             <Pagination
               currentPage={currentPage}

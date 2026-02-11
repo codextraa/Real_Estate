@@ -1,7 +1,30 @@
+import sys
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    PermissionsMixin,
+    BaseUserManager,
+)
+
+# Determine if we are running tests
+IS_TESTING = "test" in sys.argv
+ON_DELETE = models.CASCADE if IS_TESTING else models.DO_NOTHING
+
+
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        return self.create_user(email, password, **extra_fields)
 
 
 # Shadow models
@@ -21,10 +44,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         db_table = "core_db_user"
 
     USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username", "first_name", "last_name"]
+
+    objects = UserManager()
 
 
 class Agent(models.Model):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, on_delete=ON_DELETE)
     company_name = models.CharField(max_length=255)
     bio = models.CharField(max_length=150)
 
@@ -34,7 +60,7 @@ class Agent(models.Model):
 
 
 class Property(models.Model):
-    agent = models.ForeignKey(Agent, on_delete=models.DO_NOTHING)
+    agent = models.ForeignKey(Agent, on_delete=ON_DELETE)
     title = models.CharField(max_length=150)
     description = models.TextField()
     beds = models.IntegerField()
@@ -66,36 +92,52 @@ class AIReport(models.Model):
         max_length=20, choices=Status.choices, default=Status.PENDING
     )
 
-    extracted_area = models.CharField(max_length=100, blank=True)
-    extracted_city = models.CharField(max_length=100, blank=True)
-    comparable_data = models.JSONField(null=True, blank=True)
-    avg_beds = models.IntegerField(null=True)
-    avg_baths = models.IntegerField(null=True)
-    avg_market_price = models.DecimalField(max_digits=15, decimal_places=2, null=True)
-    avg_price_per_sqft = models.DecimalField(max_digits=12, decimal_places=2, null=True)
+    extracted_area = models.CharField(max_length=100, blank=True, null=True)
+    extracted_city = models.CharField(max_length=100, blank=True, null=True)
+    comparable_data = models.JSONField(blank=True, null=True)
+    avg_beds = models.IntegerField(blank=True, null=True)
+    avg_baths = models.IntegerField(blank=True, null=True)
+    avg_market_price = models.DecimalField(
+        max_digits=15, decimal_places=2, blank=True, null=True
+    )
+    avg_price_per_sqft = models.DecimalField(
+        max_digits=12, decimal_places=2, blank=True, null=True
+    )
     investment_rating = models.DecimalField(
         max_digits=2,
         decimal_places=1,
-        null=True,
         blank=True,
+        null=True,
         validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
         help_text="Rating from 0.0 to 5.0 based on analysis",
     )
 
-    ai_insight_summary = models.TextField(blank=True)
+    ai_insight_summary = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        """Running Validators before saving"""
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Analysis for {self.property.title} ({self.status})"
 
 
 class ChatSession(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chat_sessions"
+    )
     report = models.ForeignKey(
-        AIReport, on_delete=models.SET_NULL, null=True, blank=True
+        AIReport, on_delete=models.CASCADE, related_name="chat_sessions"
     )
     user_message_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        """Running Validators before saving"""
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Chat with {self.user.username}"
@@ -121,6 +163,11 @@ class ChatMessage(models.Model):
     )
     content = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        """Running Validators before saving"""
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["timestamp"]

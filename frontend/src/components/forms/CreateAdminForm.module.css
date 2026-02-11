@@ -1,0 +1,120 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0px 30px;
+}
+
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* where is the max width */
+  max-width: 836px;
+}
+
+.title {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 50px;
+  color: #13252e;
+  text-align: center;
+}
+
+/* who will fix the height and font size */
+.inputAdmin {
+  height: 50px;
+  font-size: 20px;
+}
+
+/* who will fix the gap between the input and the hint */
+.inputHintAdminUsername {
+  margin-top: 6px;
+}
+
+.inputHintAdminPassword {
+  margin-top: 8px;
+}
+
+.errorContainerAdmin {
+  margin-bottom: 5px;
+  max-width: 416px;
+}
+
+.successContainerAdmin {
+  margin-bottom: 5px;
+  max-width: 416px;
+}
+
+.signUpFormButton {
+  padding: 12px 153px 12px 153px;
+  background: #13252e;
+  border-radius: 37px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 18px;
+  color: #f7f7f7;
+  margin: 15px 0px;
+  transition: all 0.3s ease;
+}
+
+.signUpFormButton:hover {
+  background: #1a3340;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.signUpFormButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1000px) {
+  .title {
+    font-size: 40px;
+  }
+}
+
+@media (max-width: 800px) {
+  .title {
+    font-size: 35px;
+  }
+
+  .signUpFormButton {
+    padding: 12px 80px 12px 80px;
+    font-size: 18px;
+  }
+
+  .inputAdmin {
+    height: 40px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 500px) {
+  .title {
+    font-size: 30px;
+  }
+
+  .signUpFormButton {
+    padding: 12px 50px 12px 50px;
+    font-size: 18px;
+  }
+
+  .inputAdmin {
+    height: 35px;
+    font-size: 14px;
+  }
+
+  .inputHintAdminUsername {
+    margin-top: -15px;
+  }
+
+  .inputHintAdminPassword {
+    margin-top: -20px;
+  }
+}
