@@ -228,6 +228,7 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       errors,
       success: "",
       formUserData: newUserFormData,
+      initialUserData: prevState.initialUserData,
     };
   }
 
@@ -255,27 +256,55 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
 
       response = await updateUser(id, formData, userRole, true);
     } else {
-      const data = {
-        ...(first_name &&
-          prevState.formUserData.user.first_name !== first_name && {
-            first_name,
-          }),
-        ...(last_name &&
-          prevState.formUserData.user.last_name !== last_name && { last_name }),
-        ...(username &&
-          prevState.formUserData.user.username !== username && { username }),
-        ...(password &&
-          prevState.formUserData.user.password !== password && { password }),
-        ...(c_password &&
-          prevState.formUserData.user.c_password !== c_password && {
-            c_password,
-          }),
-        ...(bio && prevState.formUserData.bio !== bio && { bio }),
-        ...(company_name &&
-          prevState.formUserData.company_name !== company_name && {
-            company_name,
-          }),
-      };
+      const data =
+        userRole === "Agent"
+          ? {
+              ...(first_name &&
+                prevState.initialUserData.user.first_name !== first_name && {
+                  first_name,
+                }),
+              ...(last_name &&
+                prevState.initialUserData.user.last_name !== last_name && {
+                  last_name,
+                }),
+              ...(username &&
+                prevState.initialUserData.user.username !== username && {
+                  username,
+                }),
+              ...(bio && prevState.initialUserData.bio !== bio && { bio }),
+              ...(company_name &&
+                prevState.initialUserData.company_name !== company_name && {
+                  company_name,
+                }),
+            }
+          : {
+              ...(first_name &&
+                prevState.initialUserData.first_name !== first_name && {
+                  first_name,
+                }),
+              ...(last_name &&
+                prevState.initialUserData.last_name !== last_name && {
+                  last_name,
+                }),
+              ...(username &&
+                prevState.initialUserData.username !== username && {
+                  username,
+                }),
+            };
+
+      if (Object.keys(data).length === 0) {
+        errors.general = "No changes were made";
+
+        return {
+          errors,
+          success: "",
+          formUserData: newUserFormData,
+          initialUserData: prevState.initialUserData,
+        };
+      }
+
+      console.log("backend_data: ", data);
+
       response = await updateUser(id, data, userRole);
     }
 
@@ -285,6 +314,7 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
         errors: backend_errors,
         success: "",
         formUserData: newUserFormData,
+        initialUserData: prevState.initialUserData,
       };
     }
 
@@ -297,6 +327,7 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       errors,
       success: response.success,
       formUserData: response.data,
+      initialUserData: response.data,
     };
   } catch (error) {
     console.error(error);
@@ -305,6 +336,7 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       errors,
       success: "",
       formUserData: newUserFormData,
+      initialUserData: prevState.initialUserData,
     };
   }
 };

@@ -23,6 +23,7 @@ export default function ProfileForm({
     errors: {},
     success: "",
     formUserData: userData,
+    initialUserData: userData,
   };
 
   const [state, formActions, isPending] = useActionState(
@@ -194,12 +195,12 @@ export default function ProfileForm({
     }
   }, [isPending]);
 
-  // If the server returns an image error, reset the local preview and file input
-  useEffect(() => {
-    if (state.errors && state.errors.image_url) {
-      resetImageInput();
-    }
-  }, [state.errors]);
+  // // If the server returns an image error, reset the local preview and file input
+  // useEffect(() => {
+  //   if (state.errors && state.errors.image_url) {
+  //     resetImageInput();
+  //   }
+  // }, [state.errors]);
 
   useEffect(() => {
     if (state.success) {
@@ -380,7 +381,7 @@ export default function ProfileForm({
                     <input
                       type="email"
                       id="email"
-                      disabled={isPending}
+                      disabled={true}
                       defaultValue={state.formUserData.user.email || ""}
                       className={styles.storedContent}
                     />

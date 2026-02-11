@@ -123,7 +123,9 @@ class Agent(models.Model):
 class Property(models.Model):
     agent = models.ForeignKey(Agent, on_delete=models.CASCADE)
     title = models.CharField(max_length=150)
-    description = models.TextField()
+    description = (
+        models.TextField()
+    )  # Don't use textfield if charfield can do max length
     beds = models.IntegerField()
     baths = models.IntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)

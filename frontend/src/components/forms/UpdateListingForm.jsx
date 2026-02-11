@@ -170,7 +170,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   useEffect(() => {
     if (state.success) {
       setTimeout(() => {
-        router.push(`/properties`);
+        router.push(`/`);
       }, 1000);
       setLocalImageError("");
     }
