@@ -1,7 +1,7 @@
 "use server";
 
 import { createUser, updateUser, deleteUser } from "@/libs/api";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 const userError = (response) => {
   if (typeof response.error === "object") {
@@ -186,6 +186,9 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
   const bio = formData.get("bio");
   const company_name = formData.get("company_name");
   const profile_image = formData.get("profile_image");
+  const client_preview_url = formData.get("client_preview_url");
+  const isNewImageUploaded =
+    profile_image && profile_image instanceof File && profile_image.size > 0;
 
   const newUserFormData =
     userRole === "Agent"
@@ -234,8 +237,6 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
 
   try {
     let response;
-    const isNewImageUploaded =
-      profile_image && profile_image instanceof File && profile_image.size > 0;
 
     if (isNewImageUploaded) {
       const keys_to_delete = [];
@@ -244,7 +245,11 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
           key.startsWith("$") ||
           key === "" ||
           (key === "password" && value === "") ||
-          (key === "c_password" && value === "")
+          (key === "c_password" && value === "") ||
+          ((value === prevState.initialUserData[key] ||
+            value === prevState.initialUserData.user[key]) &&
+            key !== "password" &&
+            key !== "c_password")
         ) {
           keys_to_delete.push(key);
         }
@@ -253,6 +258,9 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       for (const key of keys_to_delete) {
         formData.delete(key);
       }
+      formData.delete("client_preview_url");
+
+      console.log("formData: ", formData);
 
       response = await updateUser(id, formData, userRole, true);
     } else {
@@ -276,6 +284,8 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
                 prevState.initialUserData.company_name !== company_name && {
                   company_name,
                 }),
+              ...(password && { password }),
+              ...(c_password && { c_password }),
             }
           : {
               ...(first_name &&
@@ -290,6 +300,8 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
                 prevState.initialUserData.username !== username && {
                   username,
                 }),
+              ...(password && { password }),
+              ...(c_password && { c_password }),
             };
 
       if (Object.keys(data).length === 0) {
@@ -303,13 +315,17 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
         };
       }
 
-      console.log("backend_data: ", data);
-
       response = await updateUser(id, data, userRole);
     }
 
     if (response.error) {
       const backend_errors = userError(response);
+
+      if (isNewImageUploaded && !backend_errors["image_url"]) {
+        revalidateTag(`user-${id}`);
+        newUserFormData.image_url = client_preview_url;
+      }
+
       return {
         errors: backend_errors,
         success: "",
@@ -318,10 +334,7 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       };
     }
 
-    const updatedSlug =
-      userRole === "Agent" ? response.data.user.slug : response.data.slug;
-
-    revalidatePath(`/profile/${updatedSlug}/edit`);
+    revalidateTag(`user-${id}`);
 
     return {
       errors,
