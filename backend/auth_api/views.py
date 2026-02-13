@@ -125,7 +125,7 @@ def check_update_request_data(user_instance, request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        c_password = request.data.pop("c_password")
+        c_password = request.data.get("c_password")
         if password != c_password:
             return Response(
                 {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
@@ -1321,7 +1321,6 @@ class AgentViewSet(ModelViewSet):
 
     def update(self, request, *args, **kwargs):  # pylint: disable=R0914
         """Update Agent Profile and User Profile"""
-
         not_allowed_method = self.http_method_not_allowed(request)
 
         if not_allowed_method:
@@ -1336,6 +1335,7 @@ class AgentViewSet(ModelViewSet):
             return check_integrity
 
         request_data = request.data.copy()
+        del request_data["c_password"]
         agent_keys = ["company_name", "bio", "profile_image"]
         user_request_data = {}
         agent_request_data = {}
@@ -1366,11 +1366,7 @@ class AgentViewSet(ModelViewSet):
                 os.remove(old_image_path)
 
         partial = kwargs.pop("partial", False)
-        import logging
 
-        logging.basicConfig(level=logging.INFO)
-        logger = logging.getLogger(__name__)
-        logger.info("User Request Data: %s", user_request_data)
         user_serializer = UserSerializer(
             user_instance, data=user_request_data, partial=partial
         )
