@@ -1335,7 +1335,7 @@ class AgentViewSet(ModelViewSet):
             return check_integrity
 
         request_data = request.data.copy()
-        del request_data["c_password"]
+        request_data.pop("c_password", None)
         agent_keys = ["company_name", "bio", "profile_image"]
         user_request_data = {}
         agent_request_data = {}
