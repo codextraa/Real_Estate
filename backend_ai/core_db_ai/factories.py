@@ -42,7 +42,7 @@ class AIReportFactory(factory.django.DjangoModelFactory):
     avg_baths = FuzzyInteger(1, 10)
     avg_market_price = FuzzyDecimal(15000.00, 60000.00, 2)
     avg_price_per_sqft = FuzzyDecimal(50.00, 300.00, 2)
-    investment_rating = FuzzyChoice(np.arange(0.0, 5.5, 0.5))
+    investment_rating = FuzzyChoice(np.arange(0.0, 5.5, 0.5).tolist())
 
     ai_insight_summary = factory.Faker("paragraph", nb_sentences=3)
 

@@ -1346,13 +1346,6 @@ class AgentViewSet(ModelViewSet):
             else:
                 user_request_data[key] = request_data[key]
 
-        partial = kwargs.pop("partial", False)
-        user_serializer = UserSerializer(
-            user_instance, data=user_request_data, partial=partial
-        )
-        user_serializer.is_valid(raise_exception=True)
-        user_serializer.save()
-
         profile_image = agent_request_data.pop("profile_image", None)
         old_image_path = None
 
@@ -1371,6 +1364,18 @@ class AgentViewSet(ModelViewSet):
 
             if old_image_path and os.path.exists(old_image_path):
                 os.remove(old_image_path)
+
+        partial = kwargs.pop("partial", False)
+        import logging
+
+        logging.basicConfig(level=logging.INFO)
+        logger = logging.getLogger(__name__)
+        logger.info("User Request Data: %s", user_request_data)
+        user_serializer = UserSerializer(
+            user_instance, data=user_request_data, partial=partial
+        )
+        user_serializer.is_valid(raise_exception=True)
+        user_serializer.save()
 
         agent_serializer = self.get_serializer(
             agent, data=agent_request_data, partial=partial
