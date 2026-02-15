@@ -6,6 +6,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from backend_ai.renderers import ViewRenderer
 from core_db_ai.models import ChatSession, AIReport, ChatMessage
 from .serializers import ChatSessionSerializer, ChatMessageSerializer
+from .tasks import generate_ai_response_task
 
 
 def check_request_data(report_id, current_user):
@@ -181,6 +182,13 @@ class ChatMessageView(APIView):
 
         ai_message = ChatMessage.objects.create(
             session=session, role=ChatMessage.Role.AI
+        )
+
+        # 3. Trigger Celery Task
+        generate_ai_response_task.delay(
+            ai_message.id, 
+            session.report_id,
+            user_content
         )
 
         # 3. Generate and Save AI Message
