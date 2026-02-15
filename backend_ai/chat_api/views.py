@@ -6,7 +6,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from backend_ai.renderers import ViewRenderer
 from core_db_ai.models import ChatSession, AIReport, ChatMessage
 from .serializers import ChatSessionSerializer, ChatMessageSerializer
-from .tasks import generate_ai_response_task
+from .tasks import generate_ai_chat_response
 
 
 def check_request_data(report_id, current_user):
@@ -161,11 +161,18 @@ class ChatMessageView(APIView):
         user_content = request.data.get("content")
 
         try:
-            session = ChatSession.objects.get(pk=session_id)
+            session = ChatSession.objects.select_related("report").get(pk=session_id)
+
             if session.user != current_user:
                 return Response(
                     {"error": "Access denied. This session belongs to another user."},
                     status=status.HTTP_403_FORBIDDEN,
+                )
+
+            if session.report.status == AIReport.Status.FAILED:
+                return Response(
+                    {"error": "Report has failed. Please create a new report."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
         except ChatSession.DoesNotExist:
             return Response(
@@ -184,18 +191,8 @@ class ChatMessageView(APIView):
             session=session, role=ChatMessage.Role.AI
         )
 
-        # 3. Trigger Celery Task
-        generate_ai_response_task.delay(
-            ai_message.id, 
-            session.report_id,
-            user_content
-        )
+        generate_ai_chat_response.delay(ai_message.id, session.report_id, user_content)
 
-        # 3. Generate and Save AI Message
-        # Note: Replace 'generate_ai_content' with your actual LLM logic/API call
-        # ai_response_text = self.generate_ai_content(user_content)
-
-        # 4. Return both messages
         return Response(
             {
                 "success": "Message is currently processing.",
