@@ -1,35 +1,202 @@
 from celery import shared_task, chain
 from celery.utils.log import get_task_logger
-from django.utils import timezone
-from core_db_ai.models import ChatMessage, AIReport
-from .agents import groq_chat_agent, generate_qwen_insight
+from celery.exceptions import MaxRetriesExceededError
 from report_api.regression_model import InvestmentRegressor
+from report_api.agents import groq_ai_insight_prompt
+from core_db_ai.models import ChatMessage, AIReport
+from .agents import chat_json_extractor_agent
 
 logger = get_task_logger(__name__)
 
-@shared_task(bind=True, max_retries=3)
-def generate_ai_chat_response(self, message_id, report_id, user_query):
-    try:
-        # One query to rule them all: SQL JOIN between AIReport and Property
-        report = AIReport.objects.select_related('property').get(id=report_id)
-        
-        # This no longer hits the database; the data is already in memory
-        property_obj = report.property 
 
-        # Fetch the message
+@shared_task(
+    bind=True,
+    max_retries=3,
+    default_retry_delay=61,
+    rate_limit="8/m",
+    retry_jitter=False,
+)
+def ai_message_extractor(self, message_id, property_details, user_query):
+    """
+    Worker Task: Calls Groq GPT for extraction.
+    """
+    try:
+        property_json, usage = chat_json_extractor_agent(property_details, user_query)
+
+        # pylint: disable=R0801
+        logger.info(
+            "[Groq GPT] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
+            usage.prompt_tokens,
+            usage.completion_tokens,
+            usage.total_tokens,
+        )
+        logger.info("Groq Json extraction complete.")
+        # pylint: enable=R0801
+
+        error = property_json.get("error")
+        if error:
+            self.request.chain = None
+            message = ChatMessage.objects.get(id=message_id)
+            message.update(status=ChatMessage.Status.FAILED, content=error)
+            return "Stopped"
+
+        property_json["title"] = property_details["title"]
+        return property_json
+    except Exception as e:  # pylint: disable=W0718
+        # pylint: disable=R0801
+        logger.warning(
+            "Attempt %s/%s failed Groq Rate Limit/Error: %s. Retrying again",
+            self.request.retries,
+            self.max_retries,
+            e,
+        )
+        # pylint: enable=R0801
+        try:
+            return self.retry(exc=e)
+        except MaxRetriesExceededError as err:
+            logger.error("Groq GPT Summary Error: %s", err)
+            self.request.chain = None
+            message = ChatMessage.objects.get(id=message_id)
+            message.update(
+                status=ChatMessage.Status.FAILED,
+                content="Agent failed to respond. Please try again.",
+            )
+            return "Stopped"
+
+
+@shared_task(
+    bind=True,
+    max_retries=3,
+    default_retry_delay=61,
+    rate_limit="8/m",
+    retry_jitter=False,
+    autoretry_for=(),
+)
+def ai_message_analysis(
+    self,
+    property_json,
+    message_id,
+    report_details,
+    user_query,
+    rating=None,
+    breakdown=None,
+):  # pylint: disable=R0913, R0917
+    """
+    Passes the json to Investment Regressor for rating.
+    Then Calls Groq Qwen for AI Insight Summary.
+    """
+    compiled_data = report_details.get("comparable_data", [])
+
+    if rating and len(breakdown) > 0:
+        logger.info(
+            "Retrying Groq Qwen only. Skipping Investment Regressor for rating and breakdown."
+        )
+    else:
+        regressor = InvestmentRegressor(
+            avg_price=float(report_details["avg_market_price"]),
+            avg_pps=float(report_details["avg_price_per_sqft"]),
+            avg_beds=float(report_details["avg_beds"]),
+            avg_baths=float(report_details["avg_baths"]),
+        )
+
+        compiled_data = report_details.get("comparable_data", [])
+        try:
+            rating, breakdown = regressor.calculate_rating(compiled_data, property_json)
+            if not rating or not breakdown or len(breakdown) == 0:
+                raise ValueError("Empty rating or breakdown generated")
+        except Exception as e:  # pylint: disable=W0718
+            logger.error("FATAL: Investment Rating Error: %s", e)
+            self.request.chain = None
+            message = ChatMessage.objects.get(id=message_id)
+            message.update(
+                status=ChatMessage.Status.FAILED,
+                content="Agent failed to respond. Please try again.",
+            )
+            return "Stopped"
+
+    # pylint: disable=R0801
+    logger.info("Investment Rating: %s", rating)
+    logger.info("Investment Breakdown: %s", str(breakdown))
+
+    if len(compiled_data) > 50:
+        comps_sample = compiled_data[:50]
+    else:
+        comps_sample = compiled_data
+    # pylint: enable=R0801
+
+    try:
+        final_insight, usage = groq_ai_insight_prompt(
+            comps_sample, property_json, rating, breakdown, "Qwen"
+        )
+
+        # pylint: disable=R0801
+        logger.info(
+            "[Groq Qwen] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
+            usage.prompt_tokens,
+            usage.completion_tokens,
+            usage.total_tokens,
+        )
+        logger.info("Groq Qwen chat answer generated successfully")
+        # pylint: enable=R0801
+
+        return {
+            "message_id": message_id,
+            "text": final_insight,
+            "rating": rating,
+        }
+    except Exception as e:  # pylint: disable=W0718
+        # pylint: disable=R0801
+        logger.warning(
+            "Attempt %s/%s failed Groq Rate Limit/Error: %s. Retrying again",
+            self.request.retries,
+            self.max_retries,
+            e,
+        )
+        # pylint: enable=R0801
+        try:
+            return self.retry(
+                args=[
+                    property_json,
+                    message_id,
+                    report_details,
+                    user_query,
+                ],
+                kwargs={
+                    "rating": rating,
+                    "breakdown": breakdown,
+                },
+                exc=e,
+            )
+        except MaxRetriesExceededError as err:
+            logger.error("Groq GPT Summary Error: %s", err)
+            self.request.chain = None
+            message = ChatMessage.objects.get(id=message_id)
+            message.update(
+                status=ChatMessage.Status.FAILED,
+                content="Agent failed to respond. Please try again.",
+            )
+            return "Stopped"
+
+
+@shared_task(bind=True)
+def finalizer_task(self, analysis_result, message_id):  # pylint: disable=W0613
+    pass
+
+
+@shared_task(max_retries=3)
+def generate_ai_chat_response(message_id, report_id, user_query):
+    try:
+        report = AIReport.objects.select_related("property").get(id=report_id)
+        property_obj = report.property
         ai_message = ChatMessage.objects.get(id=message_id)
-        
-        # Use update_fields for efficiency if using .save(), 
-        # or use the queryset update method:
         ai_message.update(status=ChatMessage.Status.PROCESSING)
 
-        # Dictionary construction (data is already loaded)
         property_details = {
             "title": property_obj.title,
             "beds": property_obj.beds,
             "baths": property_obj.baths,
             "area_sqft": property_obj.area_sqft,
-            "price": float(property_obj.price), # Ensure JSON serializable
+            "price": float(property_obj.price),
         }
 
         report_details = {
@@ -42,70 +209,20 @@ def generate_ai_chat_response(self, message_id, report_id, user_query):
         }
 
         return chain(
-            ai_message_analysis.s(
-                message_id,
-                property_details,
-                report_details,
-                user_query
-            ),
-            finalizer_task.s(message_id)
+            ai_message_extractor.s(message_id, property_details, user_query),
+            ai_message_analysis.s(message_id, report_details, user_query),
+            finalizer_task.s(message_id),
         ).apply_async()
-    
     except AIReport.DoesNotExist:
         logger.error(f"Abort: Report {report_id} does not exist.")
         return None
     except ChatMessage.DoesNotExist:
         logger.error(f"Abort: Message {message_id} does not exist.")
         return None
-    except Exception as e:
+    except Exception as e:  # pylint: disable=W0718
         logger.error(f"Unexpected error: {str(e)}")
-        if 'ai_message' in locals():
-            ChatMessage.objects.filter(id=message_id).update(status=ChatMessage.Status.FAILED)
+        if "ai_message" in locals():
+            ChatMessage.objects.filter(id=message_id).update(
+                status=ChatMessage.Status.FAILED
+            )
         return None
-    
-
-@shared_task(bind=True)
-def ai_message_analysis(self, message_id, property_details, report_details, user_query):
-    # --- PHASE 1: GPT 20B (JSON Convert) ---
-    # Extracts updated property_json from user_message + property_details
-    property_json = groq_chat_agent(property_details, user_query)
-    
-    if property_json.get("answer") == "Invalid Request":
-        self.request.chain = None
-        return "Stopped"
-
-    # --- PHASE 2: Investment Regressor ---
-    # Uses report_details for market context (averages)
-    regressor = InvestmentRegressor(
-        avg_price=float(report_details['avg_market_price']),
-        avg_pps=float(report_details['avg_price_per_sqft']),
-        avg_beds=float(report_details['avg_beds']),
-        avg_baths=float(report_details['avg_baths'])
-    )
-    
-    # Produces the breakdown json
-    rating, breakdown_json = regressor.calculate_rating(
-        compiled_data=report_details.get("comparable_data", []),
-        property_data=property_json
-    )
-
-    # --- PHASE 3: Qwen Agent (Insight Generation) ---
-    # Give breakdown_json to the final agent to generate 'insight in text'
-    # This mirrors your teammate's 'groq_ai_insight_prompt'
-    final_insight, usage = generate_qwen_insight(
-        breakdown_json, 
-        property_json, 
-        rating
-    )
-
-    # --- PHASE 4: Return for Finalizer ---
-    # Finalizer catches this to update the AI message
-    return {
-        "message_id": message_id,
-        "text": final_insight['investment_summary'],
-        "rating": rating
-    }
-
-@shared_task(bind=True)
-def finalizer_task(self, analysis_result, message_id):
-    pass
