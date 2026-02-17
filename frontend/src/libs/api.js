@@ -31,13 +31,13 @@ export const logout = async () => {
 
 export const getUser = async (id) => {
   return apiClient.get(`/auth-api/users/${id}/`, {
-    next: { revalidate: 60, tags: [`user-${id}`] },
+    next: { revalidate: 3600, tags: [`user-${id}`] },
   });
 };
 
 export const getAgent = async (id) => {
   return apiClient.get(`/auth-api/agents/${id}/`, {
-    next: { revalidate: 60, tags: [`user-${id}`] },
+    next: { revalidate: 3600, tags: [`user-${id}`] },
   });
 };
 

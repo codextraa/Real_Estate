@@ -260,8 +260,6 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       }
       formData.delete("client_preview_url");
 
-      console.log("formData: ", formData);
-
       response = await updateUser(id, formData, userRole, true);
     } else {
       const data =
