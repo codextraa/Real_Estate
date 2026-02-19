@@ -10,8 +10,8 @@ export default function PropertyCard({ property }) {
             <Image
               src={property.image_url}
               alt={property.title}
-              width={100}
-              height={100}
+              width={339}
+              height={444}
               className={styles.propertyImage}
             />
           </div>

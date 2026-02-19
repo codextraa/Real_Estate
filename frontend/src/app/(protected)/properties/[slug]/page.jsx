@@ -44,7 +44,6 @@ export default async function PropertyPage({ params }) {
           <Dropdown />
         </div>
         <div className={styles.recommendationTitle}>Recommendation</div>
-        <div className={styles.recommendationCards}></div>
         <div className={styles.recommendationGrid}>
           {recommendedProperties.results.slice(0, 6).map((property) => (
             <PropertyCard key={property.id} property={property} />

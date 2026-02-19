@@ -99,12 +99,6 @@
   margin-top: 80px;
 }
 
-.recommendationCards {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
 .recommendationGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

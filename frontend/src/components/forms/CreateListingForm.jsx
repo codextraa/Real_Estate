@@ -106,7 +106,18 @@ export default function ListingForm() {
       if (value === "") {
         newValue = "";
       } else {
-        newValue = Math.max(0, parseFloat(value)).toString();
+        const limits = {
+          price: /^\d{0,13}(\.\d{0,2})?$/,
+          area_sqft: /^\d{0,10}(\.\d{0,4})?$/,
+          beds: /^\d{0,10}$/,
+          baths: /^\d{0,10}$/,
+        };
+
+        if (limits[name] && !limits[name].test(value)) {
+          return;
+        }
+
+        newValue = value;
       }
     }
     setFormData((prev) => ({ ...prev, [name]: newValue }));
