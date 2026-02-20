@@ -1,10 +1,5 @@
 from rest_framework import serializers
-
-
-class AIReportRequestSerializer(serializers.Serializer):  # pylint: disable=W0223
-    """AI Report request serializer for report creation."""
-
-    property_id = serializers.IntegerField(required=True)
+from chat_api.serializers import ChatSessionSerializer, ChatMessageSerializer
 
 
 class ErrorResponseSerializer(serializers.Serializer):  # pylint: disable=W0223
@@ -13,3 +8,44 @@ class ErrorResponseSerializer(serializers.Serializer):  # pylint: disable=W0223
     error = serializers.CharField(
         help_text="A descriptive error message explaining the failure or status."
     )
+
+
+class AIReportRequestSerializer(serializers.Serializer):  # pylint: disable=W0223
+    """AI Report request serializer for report creation."""
+
+    property_id = serializers.IntegerField(required=True)
+
+
+class ChatMessageGETResponseSerializer(serializers.Serializer):
+    """
+    Standard success response for a Chat Message.
+    Wraps the ChatMessage data and includes a success message.
+    """
+
+    success = serializers.CharField(default="Message retrieved successfully.")
+    data = ChatMessageSerializer()
+
+    class Meta:
+        fields = ["success", "data"]
+
+
+class ChatMessageRequestSerializer(serializers.Serializer):
+    """Request body for creating a new chat message."""
+
+    session = serializers.IntegerField(help_text="The ID of the Chat Session.")
+    content = serializers.CharField(help_text="The message content from the user.")
+
+
+class ChatMessageAIMessageSerializer(serializers.Serializer):
+    """The data object returned upon successful message acceptance."""
+
+    ai_message_id = serializers.IntegerField(
+        help_text="The ID of the generated AI message placeholder."
+    )
+
+
+class ChatMessagePOSTResponseSerializer(serializers.Serializer):
+    """Wrapper for a 202 ACCEPTED response."""
+
+    success = serializers.CharField(default="Message is currently processing.")
+    data = ChatMessageAIMessageSerializer()
