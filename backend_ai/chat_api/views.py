@@ -430,12 +430,17 @@ class ChatMessageCreateView(APIView):
         request=ChatMessageRequestSerializer,
         responses={
             status.HTTP_202_ACCEPTED: ChatMessagePOSTResponseSerializer,
-            status.HTTP_400_BAD_REQUEST: ErrorResponseSerializer,
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
             status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
         },
         examples=[
+            OpenApiExample(
+                name="Unauthorized Access",
+                response_only=True,
+                status_codes=["401"],
+                value={"error": "You are not authenticated."},
+            ),
             OpenApiExample(
                 name="Session Not Found",
                 response_only=True,

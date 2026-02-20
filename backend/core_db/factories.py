@@ -66,7 +66,7 @@ class PropertyFactory(factory.django.DjangoModelFactory):
 
     agent = factory.SubFactory(AgentFactory)
     title = factory.Faker("catch_phrase")
-    description = factory.Faker("paragraph")
+    description = factory.Faker("text", max_nb_chars=150)
     beds = FuzzyInteger(1, 10)
     baths = FuzzyInteger(1, 10)
     price = FuzzyDecimal(10000.00, 50000.00, 2)

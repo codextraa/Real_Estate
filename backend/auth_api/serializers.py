@@ -52,7 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
         password = attrs.get("password")
 
         if password:
-            errors = validate_password_complexity(attrs.get("password"))
+            errors = validate_password_complexity(password)
             if len(errors["password"]) > 0:
                 raise serializers.ValidationError(errors)
 
