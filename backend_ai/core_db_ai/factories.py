@@ -1,4 +1,5 @@
 import random
+import datetime
 import factory
 import numpy as np
 from factory.fuzzy import FuzzyInteger, FuzzyDecimal, FuzzyChoice
@@ -71,6 +72,7 @@ class ChatMessageFactory(factory.django.DjangoModelFactory):
         ]
     )
     content = factory.Faker("paragraph", nb_sentences=3)
+    timestamp = factory.Faker("date_time_ad", tzinfo=datetime.timezone.utc)
 
     @factory.post_generation
     def update_session_counter(
