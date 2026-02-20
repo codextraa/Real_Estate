@@ -53,8 +53,18 @@ class ChatSessionFactory(factory.django.DjangoModelFactory):
         model = ChatSession
 
     user = factory.LazyAttribute(lambda _: random.choice(User.objects.all()))
-    report = factory.LazyAttribute(lambda _: random.choice(AIReport.objects.all()))
     user_message_count = 0
+
+    @factory.lazy_attribute
+    def report(self):
+        eligible_reports = AIReport.objects.filter(
+            user=self.user, status=AIReport.Status.COMPLETED
+        )
+
+        if eligible_reports.exists():
+            return random.choice(eligible_reports)
+
+        return AIReportFactory(user=self.user, status=AIReport.Status.COMPLETED)
 
 
 class ChatMessageFactory(factory.django.DjangoModelFactory):
