@@ -163,6 +163,11 @@
   justify-content: space-between;
   align-items: center;
 }
+.agentNameContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
 .agentName {
   font-family: var(--font-old-standard-tt);
@@ -171,10 +176,27 @@
 }
 
 .agentContact {
-  color: #648aa2;
-  font-size: 14px;
-  text-decoration: underline;
-  cursor: pointer;
+  display: flex; /* Added to center the text easily */
+  align-items: center;
+  justify-content: center;
+  text-decoration: none; /* Removes the default link underline */
+  box-sizing: border-box;
+
+  background: #f7f7f7;
+  border: 1px solid #415261;
+  border-radius: 38px;
+
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 20px;
+  color: #13252e;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Optional: Add a hover state so it feels like a real button */
+.agentContact:hover {
+  background: #13252e;
+  color: #f7f7f7;
 }
 
 .agentImage {

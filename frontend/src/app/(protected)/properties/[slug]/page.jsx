@@ -6,9 +6,14 @@ import PropertyImageCard from "@/components/cards/PropertyImageCard";
 import PropertyDetailCard from "@/components/cards/PropertyDetailCard";
 import styles from "@/styles/PropertySlugPage.module.css";
 
-export default async function ProfileCard({ searchParams }) {
-  const urlSearchParams = await searchParams;
-  const propertyId = urlSearchParams.id;
+export default async function PropertyPage({ params }) {
+  const { slug } = await params;
+  const propertyId = slug.split("-").pop();
+
+  if (!propertyId || isNaN(propertyId)) {
+    return notFound();
+  }
+
   const response = await getProperty(propertyId);
 
   if (response.error) {
@@ -38,13 +43,11 @@ export default async function ProfileCard({ searchParams }) {
         <div className={styles.propertyDetailDropdowns}>
           <Dropdown />
         </div>
-        <div className={styles.recommendationSection}>
-          <div className={styles.recommendationTitle}>Recommendation</div>
-          <div className={styles.recommendationGrid}>
-            {recommendedProperties.results.slice(0, 6).map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
+        <div className={styles.recommendationTitle}>Recommendation</div>
+        <div className={styles.recommendationGrid}>
+          {recommendedProperties.results.slice(0, 6).map((property) => (
+            <PropertyCard key={property.id} property={property} />
+          ))}
         </div>
       </div>
     </div>

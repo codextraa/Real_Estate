@@ -2,17 +2,20 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import ImageModal from "@/components/modals/ImageModal";
 import styles from "./PropertyImageCard.module.css";
 
-const crossIcon = "/assets/cross-icon.svg";
 export default function PropertyImageCard({ image }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  if (isModalOpen) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "auto";
+  }
 
   return (
     <>
-      <div className={styles.imageCard} onClick={openModal}>
+      <div className={styles.imageCard} onClick={() => setIsModalOpen(true)}>
         <Image
           src={image}
           alt="Property Image"
@@ -22,32 +25,11 @@ export default function PropertyImageCard({ image }) {
         />
       </div>
 
-      {isModalOpen && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className={styles.closeButton} onClick={closeModal}>
-              <Image
-                src={crossIcon}
-                alt="Close Icon"
-                width={100}
-                height={100}
-                className={styles.crossIcon}
-              />
-            </button>
-            <Image
-              src={image}
-              alt="Enlarged Property Image"
-              layout="responsive"
-              width={2400}
-              height={1200}
-              className={styles.modalImage}
-            />
-          </div>
-        </div>
-      )}
+      <ImageModal
+        image={image}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 }
