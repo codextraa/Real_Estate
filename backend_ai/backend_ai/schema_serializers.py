@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from chat_api.serializers import ChatSessionSerializer, ChatMessageSerializer
+from chat_api.serializers import ChatMessageSerializer
 
 
 class ErrorResponseSerializer(serializers.Serializer):  # pylint: disable=W0223
@@ -16,7 +16,7 @@ class AIReportRequestSerializer(serializers.Serializer):  # pylint: disable=W022
     property_id = serializers.IntegerField(required=True)
 
 
-class ChatMessageGETResponseSerializer(serializers.Serializer):
+class ChatMessageGETResponseSerializer(serializers.Serializer):  # pylint: disable=W0223
     """
     Standard success response for a Chat Message.
     Wraps the ChatMessage data and includes a success message.
@@ -29,14 +29,14 @@ class ChatMessageGETResponseSerializer(serializers.Serializer):
         fields = ["success", "data"]
 
 
-class ChatMessageRequestSerializer(serializers.Serializer):
+class ChatMessageRequestSerializer(serializers.Serializer):  # pylint: disable=W0223
     """Request body for creating a new chat message."""
 
     session = serializers.IntegerField(help_text="The ID of the Chat Session.")
     content = serializers.CharField(help_text="The message content from the user.")
 
 
-class ChatMessageAIMessageSerializer(serializers.Serializer):
+class ChatMessageAIMessageSerializer(serializers.Serializer):  # pylint: disable=W0223
     """The data object returned upon successful message acceptance."""
 
     ai_message_id = serializers.IntegerField(
@@ -44,7 +44,9 @@ class ChatMessageAIMessageSerializer(serializers.Serializer):
     )
 
 
-class ChatMessagePOSTResponseSerializer(serializers.Serializer):
+class ChatMessagePOSTResponseSerializer(
+    serializers.Serializer
+):  # pylint: disable=W0223
     """Wrapper for a 202 ACCEPTED response."""
 
     success = serializers.CharField(default="Message is currently processing.")

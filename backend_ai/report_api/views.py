@@ -8,11 +8,11 @@ from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from backend_ai.mixins import http_method_mixin
 from backend_ai.renderers import ViewRenderer
-from core_db_ai.models import AIReport, Property
 from backend_ai.schema_serializers import (
     AIReportRequestSerializer,
     ErrorResponseSerializer,
 )
+from core_db_ai.models import AIReport, Property
 from .serializers import (
     AIReportSerializer,
     AIReportListSerializer,
