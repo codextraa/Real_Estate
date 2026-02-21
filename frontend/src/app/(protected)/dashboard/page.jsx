@@ -27,6 +27,7 @@ export default async function DashboardPage({ searchParams }) {
     redirect(DEFAULT_LOGIN_REDIRECT);
   }
   const urlSearchParams = await searchParams;
+  const validSearchParams = { ...urlSearchParams };
   const currentTab =
     urlSearchParams.tab ||
     (userRole === "Default"
@@ -42,30 +43,30 @@ export default async function DashboardPage({ searchParams }) {
   if (currentTab === "my-listings") {
     response = await getListings({
       page: currentPage,
-      ...urlSearchParams,
+      ...validSearchParams,
     });
   } else if (currentTab === "all-listings") {
     response = await getProperties({
       page: currentPage,
-      ...urlSearchParams,
+      ...validSearchParams,
     });
   } else if (currentTab === "my-reports") {
     let statusFilter = urlSearchParams.status;
     if (statusFilter === "ALL") {
-      delete urlSearchParams.status;
+      delete validSearchParams.status;
     }
     response = await getMyReports({
       page: currentPage,
-      ...urlSearchParams,
+      ...validSearchParams,
     });
   } else if (currentTab === "all-reports") {
     let statusFilter = urlSearchParams.status;
     if (statusFilter === "ALL") {
-      delete urlSearchParams.status;
+      delete validSearchParams.status;
     }
     response = await getReports({
       page: currentPage,
-      ...urlSearchParams,
+      ...validSearchParams,
     });
   }
 

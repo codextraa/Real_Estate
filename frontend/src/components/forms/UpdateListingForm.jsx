@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, useActionState, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useActionState,
+  useRef,
+  useCallback,
+} from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -41,8 +47,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   const [displaySuccess, setDisplaySuccess] = useState("");
 
   const [state, formAction, isPending] = useActionState(
-    (prevState, formData) =>
-      updatePropertyAction(propertyId, prevState, formData),
+    updatePropertyAction.bind(null, propertyId),
     {
       errors: {},
       success: "",
@@ -80,6 +85,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
     String(formData.baths) !== String(currentInitialData?.baths || "") ||
     String(formData.area_sqft) !== String(currentInitialData?.area_sqft || "");
 
+  //works needs to be done
   const hasUnsavedChanges =
     formData.title !== currentInitialData?.title ||
     formData.description !== currentInitialData?.description ||
@@ -111,12 +117,12 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   const isImageComplete =
     previewUrl !== null && previewUrl !== currentInitialData?.image_url;
 
-  const resetImageInput = () => {
+  const resetImageInput = useCallback(() => {
     setPreviewUrl(state.formPropertyData.image_url);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
+  }, [state.formPropertyData.image_url]);
 
   const handleInputChange = (e) => {
     const { type, name, value } = e.target;
@@ -128,9 +134,9 @@ export default function UpdateListingClient({ propertyId, initialData }) {
       } else {
         const limits = {
           price: /^\d{0,13}(\.\d{0,2})?$/,
-          area_sqft: /^\d{0,10}(\.\d{0,4})?$/,
-          beds: /^\d{0,10}$/,
-          baths: /^\d{0,10}$/,
+          area_sqft: /^\d{0,10}$/,
+          beds: /^\d{0,5}$/,
+          baths: /^\d{0,5}$/,
         };
 
         if (limits[name] && !limits[name].test(value)) {
@@ -165,7 +171,6 @@ export default function UpdateListingClient({ propertyId, initialData }) {
       }
 
       setPreviewUrl(URL.createObjectURL(file));
-      setFormData((prev) => ({ ...prev, property_image: file }));
     }
   };
 
@@ -193,23 +198,17 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   }, []);
 
   useEffect(() => {
-    return () => {
-      if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  useEffect(() => {
     if (state.errors && state.errors.image_url) {
       resetImageInput();
     }
-  }, [state.errors]);
+  }, [state.errors, resetImageInput]);
 
   useEffect(() => {
     if (state.success) {
       setDisplaySuccess(state.success);
       setLocalImageError("");
 
-      setCurrentInitialData({
+      setCurrentInitialData(() => ({
         title: formData.title,
         description: formData.description,
         beds: formData.beds,
@@ -226,7 +225,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
           house_no: formData.house_no,
           flat_no: formData.flat_no,
         },
-      });
+      }));
 
       const timer = setTimeout(() => {
         setDisplaySuccess("");
@@ -235,7 +234,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
       return () => clearTimeout(timer);
     }
-  }, [state.success, router]);
+  }, [state.success, router, formData, previewUrl]);
 
   return (
     <div className={styles.container}>

@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, useActionState, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useActionState,
+  useRef,
+  useCallback,
+} from "react";
 import { useRouter } from "next/navigation";
 import Form from "next/form";
 import Image from "next/image";
@@ -59,12 +65,12 @@ export default function ListingForm() {
     property_image: null,
   });
 
-  const resetImageInput = () => {
+  const resetImageInput = useCallback(() => {
     setPreviewUrl(state.formPropertyData.image_url);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
+  }, [state.formPropertyData.image_url]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -108,7 +114,7 @@ export default function ListingForm() {
       } else {
         const limits = {
           price: /^\d{0,13}(\.\d{0,2})?$/,
-          area_sqft: /^\d{0,10}(\.\d{0,4})?$/,
+          area_sqft: /^\d{0,10}$/,
           beds: /^\d{0,10}$/,
           baths: /^\d{0,10}$/,
         };
@@ -150,7 +156,7 @@ export default function ListingForm() {
     if (state.errors && state.errors.image_url) {
       resetImageInput();
     }
-  }, [state.errors]);
+  }, [state.errors, resetImageInput]);
 
   useEffect(() => {
     if (state.success) {
