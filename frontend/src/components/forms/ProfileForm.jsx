@@ -3,7 +3,13 @@
 import Form from "next/form";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useRef, useActionState, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useActionState,
+  useState,
+  useCallback,
+} from "react";
 import {
   FormButton,
   EyeButton,
@@ -79,37 +85,36 @@ export default function ProfileForm({
   /**
    * Checks if any client-side form state differs from the initial server data.
    */
-  const checkForChanges = (
-    currentData,
-    initialData,
-    currentBio,
-    initialBio,
-    currentImage,
-    initialImage,
-    currentPassword,
-    currentConfirmPassword,
-  ) => {
-    // Check text/input fields
-    const fieldsChanged = Object.keys(currentData).some((key) => {
-      return currentData[key] !== initialData[key];
-    });
+  const checkForChanges = useCallback(
+    (
+      currentData,
+      initialData,
+      currentBio,
+      initialBio,
+      currentImage,
+      initialImage,
+      currentPassword,
+      currentConfirmPassword,
+    ) => {
+      const fieldsChanged = Object.keys(currentData).some((key) => {
+        return currentData[key] !== initialData[key];
+      });
 
-    // Check password fields
-    const passwordFieldsChanged =
-      currentPassword.length > 0 || currentConfirmPassword.length > 0;
+      const passwordFieldsChanged =
+        currentPassword.length > 0 || currentConfirmPassword.length > 0;
 
-    if (userRole === "Agent") {
-      // Check bio and image
-      const bioChanged = currentBio !== initialBio;
-      const imageChanged = currentImage !== initialImage;
+      if (userRole === "Agent") {
+        const bioChanged = currentBio !== initialBio;
+        const imageChanged = currentImage !== initialImage;
+        return (
+          fieldsChanged || passwordFieldsChanged || bioChanged || imageChanged
+        );
+      }
 
-      return (
-        fieldsChanged || passwordFieldsChanged || bioChanged || imageChanged
-      );
-    }
-
-    return fieldsChanged || passwordFieldsChanged;
-  };
+      return fieldsChanged || passwordFieldsChanged;
+    },
+    [userRole],
+  );
 
   // Input change handlers
   const handleInputChange = (e) => {
@@ -133,12 +138,12 @@ export default function ProfileForm({
   };
 
   // Reset previewUrl back to server image and file input to empty
-  const resetImageInput = () => {
+  const resetImageInput = useCallback(() => {
     setPreviewUrl(state.formUserData.image_url);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
+  }, [state.formUserData.image_url]);
 
   /**
    * Handles file selection and creates a temporary Blob URL for immediate preview.
@@ -200,14 +205,13 @@ export default function ProfileForm({
     if (state.errors && state.errors.image_url) {
       resetImageInput();
     }
-  }, [state.errors]);
+  }, [state.errors, resetImageInput]);
 
   useEffect(() => {
     if (state.success) {
       setDisplaySuccess(state.success);
       const timer = setTimeout(() => {
         setDisplaySuccess("");
-        state.success = "";
       }, 2000);
 
       // RESET ALL CLIENT-SIDE FORM STATES to match the new, successful data.
@@ -224,7 +228,7 @@ export default function ProfileForm({
 
       return () => clearTimeout(timer);
     }
-  }, [state.success]);
+  }, [state, userRole, resetImageInput]);
 
   useEffect(() => {
     // Get the original data from the props (which is re-fetched/re-rendered
@@ -254,6 +258,8 @@ export default function ProfileForm({
     confirmPassword,
     userData,
     userRole,
+    state.formUserData.image_url,
+    checkForChanges,
   ]);
 
   // Textarea resize logic

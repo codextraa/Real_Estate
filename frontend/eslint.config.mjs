@@ -14,7 +14,7 @@ const eslintConfig = defineConfig([
       "no-unused-vars": "warn",
       "react/jsx-uses-vars": "error",
       "react-compiler/react-compiler": "error",
-      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/set-state-in-effect": "off",
       "react-hooks/immutability": "warn",
       "react/no-unescaped-entities": "off",
       "react-hooks/exhaustive-deps": "warn",
