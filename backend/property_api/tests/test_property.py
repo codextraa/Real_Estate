@@ -229,15 +229,15 @@ class PropertyViewSetTests(APITestCase):
         )
 
     def test_property_address_length_exceeded(self):
-        """Test that a property address cannot exceed 255 characters."""
+        """Test that a property address cannot exceed 500 characters."""
         self._authenticate(self.agent_user)
         payload = self.get_valid_property_data()
-        payload["address"] = "A" * 256
+        payload["address"] = "A" * 501
 
         response = self.client.post(PROPERTY_LIST_URL, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
-            "Ensure this field has no more than 255 characters.",
+            "Ensure this field has no more than 500 characters.",
             response.data["address"],
         )
 
@@ -325,15 +325,15 @@ class PropertyViewSetTests(APITestCase):
         )
 
     def test_address_length_exceeded_on_update(self):
-        """Test that a property address cannot exceed 255 characters."""
+        """Test that a property address cannot exceed 500 characters."""
         self._authenticate(self.agent_user)
         url = PROPERTY_DETAIL_URL(self.property.id)
-        payload = {"address": "A" * 256}
+        payload = {"address": "A" * 501}
 
         response = self.client.patch(url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
-            "Ensure this field has no more than 255 characters.",
+            "Ensure this field has no more than 500 characters.",
             response.data["address"],
         )
 

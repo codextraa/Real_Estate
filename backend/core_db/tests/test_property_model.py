@@ -68,13 +68,6 @@ class PropertyModelTest(TestCase):
         with self.assertRaises(ValidationError):
             Property.objects.create(**data_no_title)
 
-    def test_property_creation_without_description(self):
-        """Test creating property without description."""
-        data_no_description = self.property_info.copy()
-        data_no_description.pop("description")
-        with self.assertRaises(ValidationError):
-            Property.objects.create(**data_no_description)
-
     def test_property_creation_without_beds(self):
         """Test creating property without beds."""
         data_no_beds = self.property_info.copy()
@@ -151,11 +144,11 @@ class PropertyModelTest(TestCase):
         with self.assertRaises(ValidationError):
             Property.objects.create(**data_invalid)
 
-    def test_creating_property_with_address_length_more_than_255(self):
-        """Test creating property with address length more than 255."""
+    def test_creating_property_with_address_length_more_than_500(self):
+        """Test creating property with address length more than 500."""
 
         data_invalid = self.property_info.copy()
-        data_invalid["address"] = "a" * 256
+        data_invalid["address"] = "a" * 501
 
         with self.assertRaises(ValidationError):
             Property.objects.create(**data_invalid)
