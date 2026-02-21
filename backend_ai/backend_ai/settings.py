@@ -24,6 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "XXXXXX")
 PUBLIC_KEY = os.getenv("public_key")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "XXXXXX")
+GROQ_API_KEY2 = os.getenv("GROQ_API_KEY2", "XXXXXX")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "XXXXXX")
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -251,6 +252,9 @@ CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
+
+# Test Runner for Shadow Models
+TEST_RUNNER = "backend_ai.test_runner.ShadowModelTestRunner"
 
 # Monitoring
 

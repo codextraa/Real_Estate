@@ -23,6 +23,7 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
+    path("server-api-ai/chat-api/", include("chat_api.urls")),
     path("server-api-ai/report-api/", include("report_api.urls")),
     path("swagger-api-ai/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(

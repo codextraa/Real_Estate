@@ -56,19 +56,21 @@ class Command(BaseCommand):
 
         try:
             with transaction.atomic():
-                # Create 20 random chat sessions
                 for _ in range(20):
                     session = ChatSessionFactory()
-
-                    # Create a random string of messages (1 to 10)
                     num_messages = random.randint(1, 10)
-                    for _ in range(num_messages):
-                        # Ensure the user doesn't exceed 10 'user' roles
-                        # (handled by our loop and model logic)
-                        ChatMessageFactory(session=session)
+
+                    for i in range(num_messages):
+                        current_role = (
+                            ChatMessage.Role.USER if i % 2 == 0 else ChatMessage.Role.AI
+                        )
+
+                        ChatMessageFactory(session=session, role=current_role)
 
             self.stdout.write(
-                self.style.SUCCESS(f"✅ Created 20 Chat Sessions with random messages.")
+                self.style.SUCCESS(
+                    f"✅ Created 20 Chat Sessions with alternating messages."
+                )
             )
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ Chat seeding failed: {e}"))

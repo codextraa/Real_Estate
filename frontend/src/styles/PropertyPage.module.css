@@ -86,6 +86,27 @@
   color: #13252e;
 }
 
+.reportsWrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px 20px 40px;
+  position: relative;
+  margin-top: 25px;
+  z-index: 10;
+}
+
+.reportContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.reportTitle {
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 50px;
+  color: #13252e;
+}
+
 .propertiesDescription {
   font-family: var(--font-old-standard-tt);
   font-weight: 400;
@@ -148,7 +169,8 @@
 .propertyGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 49px;
+  gap: 30px;
+  justify-items: center;
 }
 
 .paginationContainer {
@@ -180,46 +202,37 @@
 
   .propertyGrid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
   }
 
   .propertiesContainer {
-    padding: 0 30px 40px 30px;
+    padding: 0px 30px 20px 30px;
   }
 }
 
-@media (max-width: 1150px) {
-  .propertiesContent {
-    margin-top: 20px;
-  }
-
-  .content {
-    font-size: 140px;
-  }
-
-  .content2 {
-    font-size: 120px;
-  }
-
-  .propertyGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
-  }
-
-  .propertiesContainer {
-    padding: 0 30px 40px 30px;
+@media (max-width: 1000px) {
+  .reportTitle {
+    margin: 0 60px;
+    font-size: 48px;
   }
 }
-
 @media (max-width: 900px) {
   .content2 {
     font-size: 90px;
   }
+  .reportTitle {
+    margin: 0 40px;
+    font-size: 45px;
+  }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   .image {
     height: 350px;
+  }
+
+  .reportTitle {
+    margin: 0 30px;
+    font-size: 40px;
   }
 
   .content,
@@ -228,9 +241,10 @@
     letter-spacing: -1px;
   }
 
-  .propertiesContainer {
+  .propertiesContainer,
+  .reportsWrapper {
     margin-top: 10px;
-    padding: 0 20px;
+    padding: 0px 20px 20px 20px;
   }
 
   .dropdowns {
@@ -248,13 +262,19 @@
 
   .propertyGrid {
     grid-template-columns: 1fr;
-    gap: 20px;
   }
 
   .searchbar,
   .dropdowns {
     width: 100%;
     overflow-x: hidden;
+  }
+}
+
+@media (max-width: 650px) {
+  .reportTitle {
+    margin: 0 20px;
+    font-size: 36px;
   }
 }
 
@@ -273,5 +293,11 @@
     max-width: 100%;
     font-size: 16px;
     padding: 8px 15px;
+  }
+  .reportTitle {
+    font-size: 32px;
+  }
+  .reportsWrapper {
+    padding: 0px;
   }
 }

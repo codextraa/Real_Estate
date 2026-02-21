@@ -125,7 +125,7 @@ def check_update_request_data(user_instance, request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        c_password = request.data.pop("c_password")
+        c_password = request.data.get("c_password")
         if password != c_password:
             return Response(
                 {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
@@ -1321,7 +1321,6 @@ class AgentViewSet(ModelViewSet):
 
     def update(self, request, *args, **kwargs):  # pylint: disable=R0914
         """Update Agent Profile and User Profile"""
-
         not_allowed_method = self.http_method_not_allowed(request)
 
         if not_allowed_method:
@@ -1336,6 +1335,7 @@ class AgentViewSet(ModelViewSet):
             return check_integrity
 
         request_data = request.data.copy()
+        request_data.pop("c_password", None)
         agent_keys = ["company_name", "bio", "profile_image"]
         user_request_data = {}
         agent_request_data = {}
@@ -1345,13 +1345,6 @@ class AgentViewSet(ModelViewSet):
                 agent_request_data[key] = request_data[key]
             else:
                 user_request_data[key] = request_data[key]
-
-        partial = kwargs.pop("partial", False)
-        user_serializer = UserSerializer(
-            user_instance, data=user_request_data, partial=partial
-        )
-        user_serializer.is_valid(raise_exception=True)
-        user_serializer.save()
 
         profile_image = agent_request_data.pop("profile_image", None)
         old_image_path = None
@@ -1371,6 +1364,14 @@ class AgentViewSet(ModelViewSet):
 
             if old_image_path and os.path.exists(old_image_path):
                 os.remove(old_image_path)
+
+        partial = kwargs.pop("partial", False)
+
+        user_serializer = UserSerializer(
+            user_instance, data=user_request_data, partial=partial
+        )
+        user_serializer.is_valid(raise_exception=True)
+        user_serializer.save()
 
         agent_serializer = self.get_serializer(
             agent, data=agent_request_data, partial=partial

@@ -14,6 +14,7 @@ export default async function ProfileRedirectPage() {
   }
 
   if (response.error) {
+    console.error(response.error);
     throw new Error(response.error);
   }
 

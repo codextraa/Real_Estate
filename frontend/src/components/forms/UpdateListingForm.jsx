@@ -6,8 +6,9 @@ import Image from "next/image";
 import Link from "next/link";
 import Form from "next/form";
 import { updatePropertyAction } from "@/actions/propertyActions";
-import styles from "./CreateListingForm.module.css";
+import UpdateAlert from "@/components/alerts/UpdateAlert";
 import { FormButton } from "@/components/buttons/Buttons";
+import styles from "./CreateListingForm.module.css";
 
 const uploadIcon = "/assets/upload-icon.svg";
 const doneIcon = "/assets/done.svg";
@@ -34,8 +35,10 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   const [localImageError, setLocalImageError] = useState("");
   const fileInputRef = useRef(null);
   const textAreaRef = useRef(null);
-
   const router = useRouter();
+
+  const [currentInitialData, setCurrentInitialData] = useState(initialData);
+  const [displaySuccess, setDisplaySuccess] = useState("");
 
   const [state, formAction, isPending] = useActionState(
     (prevState, formData) =>
@@ -43,40 +46,55 @@ export default function UpdateListingClient({ propertyId, initialData }) {
     {
       errors: {},
       success: "",
-      formPropertyData: formData,
+      formPropertyData: initialData,
     },
   );
 
-  const resetImageInput = () => {
-    setPreviewUrl(state.formPropertyData.image_url);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+  const slugify = (text) => {
+    return text
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w-]+/g, "")
+      .replace(/--+/g, "-");
   };
 
-  // Check completion status - compare with initial data
+  const isTitleChanged = formData.title !== currentInitialData?.title;
+  const activeTitle = isTitleChanged
+    ? formData.title
+    : currentInitialData?.title;
+  const currentSlug = `${slugify(activeTitle || "")}-${propertyId}`;
+
   const addressChanged =
-    formData.country !== initialData?.address?.country ||
-    formData.state !== initialData?.address?.state ||
-    formData.city !== initialData?.address?.city ||
-    formData.area !== initialData?.address?.area ||
-    formData.street !== initialData?.address?.street ||
-    formData.house_no !== initialData?.address?.house_no ||
-    formData.flat_no !== initialData?.address?.flat_no;
+    formData.country !== currentInitialData?.address?.country ||
+    formData.state !== currentInitialData?.address?.state ||
+    formData.city !== currentInitialData?.address?.city ||
+    formData.area !== currentInitialData?.address?.area ||
+    formData.street !== currentInitialData?.address?.street ||
+    formData.house_no !== currentInitialData?.address?.house_no ||
+    formData.flat_no !== (currentInitialData?.address?.flat_no || "");
 
-  // Helper to check if detail fields changed (using String() to avoid type mismatch)
   const detailsChanged =
-    String(formData.beds) !== String(initialData?.beds) ||
-    String(formData.baths) !== String(initialData?.baths) ||
-    String(formData.area_sqft) !== String(initialData?.area_sqft);
+    String(formData.beds) !== String(currentInitialData?.beds || "") ||
+    String(formData.baths) !== String(currentInitialData?.baths || "") ||
+    String(formData.area_sqft) !== String(currentInitialData?.area_sqft || "");
 
-  // Completion Logic: Must be non-empty AND different from initial data
+  const hasUnsavedChanges =
+    formData.title !== currentInitialData?.title ||
+    formData.description !== currentInitialData?.description ||
+    addressChanged ||
+    detailsChanged ||
+    String(formData.price) !== String(currentInitialData?.price || "") ||
+    previewUrl !== currentInitialData?.image_url;
+
   const isTitleComplete =
-    formData.title.trim() !== "" && formData.title !== initialData?.title;
+    formData.title.trim() !== "" &&
+    formData.title !== currentInitialData?.title;
 
   const isDescriptionComplete =
     formData.description.trim() !== "" &&
-    formData.description !== initialData?.description;
+    formData.description !== currentInitialData?.description;
 
   const isAddressComplete =
     formData.country.trim() !== "" &&
@@ -88,18 +106,38 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
   const isPricingComplete =
     formData.price !== "" &&
-    String(formData.price) !== String(initialData?.price);
+    String(formData.price) !== String(currentInitialData?.price || "");
+
   const isImageComplete =
-    previewUrl !== null && previewUrl !== initialData.image_url;
+    previewUrl !== null && previewUrl !== currentInitialData?.image_url;
+
+  const resetImageInput = () => {
+    setPreviewUrl(state.formPropertyData.image_url);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleInputChange = (e) => {
     const { type, name, value } = e.target;
     let newValue = value;
+
     if (type === "number") {
       if (value === "") {
         newValue = "";
       } else {
-        newValue = Math.max(0, parseFloat(value)).toString();
+        const limits = {
+          price: /^\d{0,13}(\.\d{0,2})?$/,
+          area_sqft: /^\d{0,10}(\.\d{0,4})?$/,
+          beds: /^\d{0,10}$/,
+          baths: /^\d{0,10}$/,
+        };
+
+        if (limits[name] && !limits[name].test(value)) {
+          return;
+        }
+
+        newValue = value;
       }
     }
     setFormData((prev) => ({ ...prev, [name]: newValue }));
@@ -119,7 +157,6 @@ export default function UpdateListingClient({ propertyId, initialData }) {
           : "Image size should not exceed 2MB.";
 
         setLocalImageError(msg);
-        resetImageInput();
         return;
       }
 
@@ -157,7 +194,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
   useEffect(() => {
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
@@ -169,15 +206,40 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
   useEffect(() => {
     if (state.success) {
-      setTimeout(() => {
-        router.push(`/properties`);
-      }, 1000);
+      setDisplaySuccess(state.success);
       setLocalImageError("");
+
+      setCurrentInitialData({
+        title: formData.title,
+        description: formData.description,
+        beds: formData.beds,
+        baths: formData.baths,
+        area_sqft: formData.area_sqft,
+        price: formData.price,
+        image_url: previewUrl,
+        address: {
+          country: formData.country,
+          state: formData.state,
+          city: formData.city,
+          area: formData.area,
+          street: formData.street,
+          house_no: formData.house_no,
+          flat_no: formData.flat_no,
+        },
+      });
+
+      const timer = setTimeout(() => {
+        setDisplaySuccess("");
+        router.refresh();
+      }, 3000);
+
+      return () => clearTimeout(timer);
     }
   }, [state.success, router]);
 
   return (
     <div className={styles.container}>
+      <UpdateAlert hasUnsavedChanges={hasUnsavedChanges} />
       <div className={styles.sidebar}>
         <div className={styles.sidebarContent}>
           <div className={styles.sidebarHeader}>
@@ -476,8 +538,8 @@ export default function UpdateListingClient({ propertyId, initialData }) {
             ) : null}
           </div>
 
-          {state.success && (
-            <div className={styles.successBox}>{state.success}</div>
+          {displaySuccess && (
+            <div className={styles.successBox}>{displaySuccess}</div>
           )}
           {Object.keys(state.errors).length > 0 && state.errors.general && (
             <div className={styles.errorBox2}>{state.errors.general}</div>
@@ -485,7 +547,10 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
           <div className={styles.buttonGroup}>
             <div className={styles.cancelProfileButton}>
-              <Link href={`/`} className={styles.cancelProfileButtonLink}>
+              <Link
+                href={`/properties/${currentSlug}`}
+                className={styles.cancelProfileButtonLink}
+              >
                 Cancel
               </Link>
             </div>

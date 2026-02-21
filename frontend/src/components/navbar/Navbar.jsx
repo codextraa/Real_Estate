@@ -14,7 +14,7 @@ export default async function Navbar() {
   const loggedInBaseButtons = [
     { text: "Dashboard", href: "/dashboard" },
     { text: "Profile", href: "/profile" },
-    { text: "Logout", onClick: logoutAction },
+    { text: "Log Out", onClick: logoutAction },
   ];
 
   let navButtons = [];

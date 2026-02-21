@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
 from core_db.models import Agent, Property
+from backend.validators import validate_property_integers
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -32,6 +33,14 @@ class PropertySerializer(serializers.ModelSerializer):
         """Validate all data"""
 
         attrs = super().validate(attrs)
+
+        beds = attrs.get("beds")
+        baths = attrs.get("baths")
+        area_sqft = attrs.get("area_sqft")
+
+        errors = validate_property_integers(beds, baths, area_sqft)
+        if errors:
+            raise serializers.ValidationError(errors)
 
         title = attrs.get("title")
 

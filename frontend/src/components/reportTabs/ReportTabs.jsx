@@ -6,12 +6,12 @@ import styles from "./ReportTabs.module.css";
 export default function ReportFilterTabs({ currentStatus }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const statuses = ["PENDING", "PROCESSING", "COMPLETED", "FAILED"];
+  const statuses = ["ALL", "PENDING", "PROCESSING", "COMPLETED", "FAILED"];
 
   const handleStatusChange = (status) => {
     const params = new URLSearchParams(searchParams);
     params.set("status", status);
-    params.set("page", "1"); // Reset pagination on filter change
+    params.set("page", "1");
     router.push(`/dashboard?${params.toString()}`);
   };
 

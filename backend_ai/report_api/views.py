@@ -8,13 +8,15 @@ from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from backend_ai.mixins import http_method_mixin
 from backend_ai.renderers import ViewRenderer
+from backend_ai.schema_serializers import (
+    AIReportRequestSerializer,
+    ErrorResponseSerializer,
+)
 from core_db_ai.models import AIReport, Property
 from .serializers import (
     AIReportSerializer,
     AIReportListSerializer,
     AIReportRetrieveSerializer,
-    AIReportRequestSerializer,
-    ErrorResponseSerializer,
 )
 from .paginations import AIReportPagination
 from .filters import AIReportFilter
@@ -164,7 +166,7 @@ class AIReportViewSet(ModelViewSet):
         tags=["AI Reports"],
         request=None,
         responses={
-            status.HTTP_200_OK: AIReportSerializer,
+            status.HTTP_200_OK: AIReportRetrieveSerializer,
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
             status.HTTP_404_NOT_FOUND: OpenApiResponse(
                 response=ErrorResponseSerializer,

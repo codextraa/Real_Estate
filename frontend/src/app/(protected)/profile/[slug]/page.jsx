@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getUser, getAgent } from "@/libs/api";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { getUserIdAction, getUserRoleAction } from "@/actions/authActions";
 import ProfileCard from "@/components/cards/ProfileCard";
 import styles from "@/styles/ProfilePage.module.css";
@@ -28,8 +29,13 @@ export default async function ProfilePage({ params, searchParams }) {
     response_slug = response.slug;
   }
 
-  if (response.error || slug !== response_slug) {
+  if (response.error) {
+    console.error(response.error);
     return notFound();
+  }
+
+  if (slug !== response_slug) {
+    redirect(`/profile/${response_slug}`);
   }
 
   const containerClassStyle = `${styles.profileCardContainer} ${

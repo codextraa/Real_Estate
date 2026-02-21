@@ -1,189 +1,287 @@
+/* card */
 .card {
-  width: 100%;
-  max-width: 1118px;
   background: rgba(50, 75, 89, 0.4);
   border-radius: 15px;
-  padding: 20px 30px;
+  padding: 10px 0px 10px 10px;
   position: relative;
-  font-family: "Old Standard TT", serif;
-  margin-bottom: 20px;
+  font-family: var(--font-old-standard-tt);
+  margin: 10px 0px 30px 0px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
-/* Smart Assistant Box */
-.smartAssistant {
-  position: absolute;
-  top: 15px;
-  right: 30px;
-  width: 264px;
-  height: 45px;
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.reportId {
+  font-family: var(--font-old-standard-tt);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 25px;
+  color: #13252e;
+}
+
+.infoRow {
+  font-family: var(--font-old-standard-tt);
+  font-size: 20px;
+  font-weight: 700;
+  color: #13252e;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.aiButton {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0px 10px 10px 0px;
+}
+
+.aiBtn {
+  padding: 9px 24px 5px 24px;
   background: #f7f7f7;
   border: 1px solid #415261;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   border-radius: 28px;
+
   display: flex;
+  flex-direction: row;
+  justify-content: center;
   align-items: center;
-  padding: 0 20px;
-  gap: 15px;
-}
+  gap: 12px;
+  cursor: pointer;
 
-.assistantText {
+  font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 25px;
   color: #13252e;
+  transition: all 0.3s ease;
 }
 
-.reportTitle {
+.aiIcon {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 4px;
+}
+
+.aiBtn:hover {
+  background: #ffffff;
+  border-color: #13252e;
+  box-shadow: 0px 6px 10px rgba(19, 37, 46, 0.2);
+  transform: translateY(-1px);
+}
+
+.aiBtn:hover img {
+  filter: drop-shadow(0px 0px 5px rgba(19, 37, 46, 0.3));
+  transform: rotate(-10deg) scale(1.1);
+}
+
+.aiBtn:active {
+  transform: translateY(1px);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 20px;
+  padding: 10px 10px 0px 0px;
+}
+
+.detailsBtn {
+  padding: 6px 24px 3px 24px;
+  background: #f7f7f7;
+  border-radius: 28px;
+  border: none;
+  cursor: pointer;
+
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
   font-size: 25px;
-  font-weight: 700;
   color: #13252e;
-  margin-bottom: 15px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  filter: drop-shadow(0px 3px 5px rgba(19, 37, 46, 0.51));
+  transition: all 0.3s ease;
 }
 
-.infoRow {
-  font-size: 20px;
+.detailsBtn:hover {
+  background: #13252e;
+  color: #f7f7f7;
+  filter: drop-shadow(0px 6px 8px rgba(19, 37, 46, 0.75));
+  transform: translateY(-2px);
+}
+
+.deleteButton {
+  padding: 6px 24px 3px 24px;
+  background: #b70000;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.34);
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+
+  font-family: var(--font-old-standard-tt);
+  font-style: normal;
   font-weight: 700;
-  color: #13252e;
-  margin-bottom: 8px;
+  font-size: 25px;
+  color: #f7f7f7;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.deleteButton:hover {
+  background: #d40000;
+  box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.45);
+  transform: translateY(-2px);
 }
 
 .ratingSection {
   display: flex;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
   gap: 15px;
-  margin-top: 10px;
-}
 
-.ratingText {
-  font-size: 20px;
+  font-family: var(--font-old-standard-tt);
   font-weight: 700;
+  font-size: 20px;
+  color: #13252e;
 }
 
 .stars {
-  color: #13252e;
-  font-size: 24px;
-}
-
-/* Buttons */
-.actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 20px;
-  margin-top: -20px;
-}
-
-.detailsBtn {
-  width: 127px;
-  height: 40px;
-  background: #f7f7f7;
-  border-radius: 28px;
-  border: none;
-  font-family: "Old Standard TT";
-  font-weight: 700;
-  font-size: 25px;
-  color: #13252e;
-  cursor: pointer;
-  box-shadow: 0px 3px 5px rgba(19, 37, 46, 0.51);
-}
-
-/* Overlay Styles */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
+  flex-direction: row;
   align-items: center;
-  z-index: 1000;
+  gap: 10px;
 }
 
-.modalContent {
-  width: 751px;
-  max-height: 90vh;
-  background: #f7f7f7;
-  border-radius: 15px;
-  padding: 40px;
-  position: relative;
-  overflow-y: auto;
-  box-shadow:
-    -2px -2px 14px 4px #415261,
-    2px 2px 14px 4px #415261;
+@media (max-width: 1000px) {
+  .card {
+    margin: 15px 60px 30px 60px;
+  }
 }
 
-.closeCircle {
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 40px;
-  height: 40px;
-  background: #13252e;
-  border: 2px solid #13252e;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@media (max-width: 900px) {
+  .modalContent {
+    margin: 60px;
+  }
+
+  .card {
+    margin: 15px 40px 30px 40px;
+  }
+
+  .ratingSection {
+    flex-direction: column;
+  }
+
+  .stars {
+    gap: 5px;
+  }
 }
 
-.modalMainTitle {
-  font-size: 40px;
-  text-align: center;
-  margin-bottom: 20px;
-}
-.modalStatus {
-  position: absolute;
-  top: 40px;
-  right: 40px;
-  font-weight: 700;
-}
-.sectionUnderline {
-  text-decoration: underline;
-  font-size: 22px;
-  margin: 15px 0 5px 0;
+@media (max-width: 800px) {
+  .card {
+    margin: 15px 30px 30px 30px;
+  }
+
+  .actions {
+    align-items: end;
+  }
+
+  .infoRow {
+    font-size: 18px;
+  }
 }
 
-.aiSummaryBox {
-  width: 100%;
-  min-height: 200px;
-  border: 2px solid #13252e;
-  border-radius: 10px;
-  padding: 15px;
-  margin-top: 10px;
+@media (max-width: 650px) {
+  .card {
+    margin: 15px 20px 30px 20px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .actions {
+    justify-content: center;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .buttons {
+    flex-direction: row-reverse;
+    align-items: center;
+  }
+
+  .aiButton {
+    justify-content: flex-start;
+  }
+
+  .buttons {
+    padding: 0px;
+  }
+
+  .aiButton {
+    padding: 0px;
+  }
 }
 
-.modalFooter {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 30px;
-  font-weight: 700;
-}
+@media (max-width: 480px) {
+  .reportId {
+    font-size: 20px;
+  }
 
-.deleteButton {
-  box-sizing: border-box;
-  width: 150px;
-  /* Fixed width for consistent pill shape */
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50px;
-  /* High value creates the pill shape seen in the image */
-  font-family: var(--font-old-standard-tt), serif;
-  font-weight: 700;
-  font-size: 18px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: #980000;
-  color: #ffffff;
-  border: none;
-  width: 150px;
-}
+  .infoRow,
+  .ratingSection {
+    font-size: 16px;
+  }
 
-.deleteButton:hover {
-  opacity: 0.8;
-  transform: translateY(-1px);
-  /* Subtle lift effect */
+  .stars {
+    gap: 5px;
+  }
+
+  .starFilled,
+  .starEmpty,
+  .starHalf {
+    font-size: 18px;
+  }
+
+  .buttons {
+    gap: 8px;
+  }
+
+  .aiBtn {
+    padding: 6px 22px 3px 9px;
+    font-size: 20px;
+  }
+
+  .aiIcon {
+    width: 25px;
+    height: 25px;
+  }
+
+  .detailsBtn {
+    padding: 4px 22px 2px 22px;
+    font-size: 20px;
+  }
+
+  .deleteButton {
+    padding: 4px 22px 2px 22px;
+    font-size: 20px;
+  }
 }
