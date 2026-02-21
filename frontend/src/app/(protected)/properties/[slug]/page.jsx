@@ -10,7 +10,7 @@ export default async function PropertyPage({ params }) {
   const { slug } = await params;
   const propertyId = slug.split("-").pop();
 
-  if (!propertyId || isNaN(propertyId)) {
+  if (!propertyId) {
     return notFound();
   }
 
@@ -19,6 +19,11 @@ export default async function PropertyPage({ params }) {
   if (response.error) {
     return notFound();
   }
+
+  if (response.slug !== slug) {
+    redirect(`/properties/${response.slug}`);
+  }
+
   const recommendedProperties = await getProperties();
 
   return (

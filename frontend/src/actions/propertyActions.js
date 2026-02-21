@@ -1,6 +1,7 @@
 "use server";
 
 import { createProperty, updateProperty, deleteProperty } from "@/libs/api";
+import { revalidateTag } from "next/cache";
 const propertyError = (response) => {
   if (typeof response.error === "object") {
     const errorMessages = {};
@@ -331,6 +332,9 @@ export const updatePropertyAction = async (id, prevState, formData) => {
         formPropertyData: newPropertyData,
       };
     }
+
+    revalidateTag(`property-${id}`);
+
     return {
       errors,
       success: response.success,

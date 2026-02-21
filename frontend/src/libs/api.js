@@ -75,7 +75,9 @@ export const createProperty = async (data, isImage = false) => {
 };
 
 export const getProperty = async (id) => {
-  return apiClient.get(`/property-api/properties/${id}/`);
+  return apiClient.get(`/property-api/properties/${id}/`, {
+    next: { revalidate: 3600, tags: [`property-${id}`] },
+  });
 };
 
 export const updateProperty = async (id, data, isImage = false) => {
