@@ -1,31 +1,32 @@
-import nextPlugin from "@next/eslint-plugin-next";
-import globals from "globals";
-import js from "@eslint/js";
-import react from "eslint-plugin-react";
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import prettier from "eslint-config-prettier/flat";
+import reactCompiler from "eslint-plugin-react-compiler";
 
-export default [
-  js.configs.recommended, // Standard JavaScript rules
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  prettier,
   {
-    files: ["**/*.js", "**/*.mjs", "**/*.jsx", "**/*.ts", "**/*.tsx"],
     plugins: {
-      "@next/next": nextPlugin,
-      react,
+      "react-compiler": reactCompiler,
     },
     rules: {
-      ...nextPlugin.configs.recommended.rules, // Next.js recommended rules
-      "no-unused-vars": "warn", // Custom rule for unused variables
+      "no-unused-vars": "warn",
       "react/jsx-uses-vars": "error",
-    },
-    languageOptions: {
-      globals: {
-        ...globals.browser, // Includes browser globals like `fetch`
-        ...globals.node, // Includes Node.js globals like `process`
-        myCustomGlobal: "readonly",
-      },
-      parserOptions: {
-        ecmaFeatures: { jsx: true },
-        sourceType: "module",
-      },
+      "react-compiler/react-compiler": "error",
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/immutability": "warn",
+      "react/no-unescaped-entities": "off",
+      "react-hooks/exhaustive-deps": "warn",
     },
   },
-];
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+]);
+
+export default eslintConfig;
