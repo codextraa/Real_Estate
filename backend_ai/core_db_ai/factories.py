@@ -1,4 +1,5 @@
 import random
+import datetime
 import factory
 import numpy as np
 from factory.fuzzy import FuzzyInteger, FuzzyDecimal, FuzzyChoice
@@ -42,7 +43,7 @@ class AIReportFactory(factory.django.DjangoModelFactory):
     avg_baths = FuzzyInteger(1, 10)
     avg_market_price = FuzzyDecimal(15000.00, 60000.00, 2)
     avg_price_per_sqft = FuzzyDecimal(50.00, 300.00, 2)
-    investment_rating = FuzzyChoice(np.arange(0.0, 5.5, 0.5))
+    investment_rating = FuzzyChoice(np.arange(0.0, 5.5, 0.5).tolist())
 
     ai_insight_summary = factory.Faker("paragraph", nb_sentences=3)
 
@@ -52,8 +53,18 @@ class ChatSessionFactory(factory.django.DjangoModelFactory):
         model = ChatSession
 
     user = factory.LazyAttribute(lambda _: random.choice(User.objects.all()))
-    report = factory.LazyAttribute(lambda _: random.choice(AIReport.objects.all()))
     user_message_count = 0
+
+    @factory.lazy_attribute
+    def report(self):
+        eligible_reports = AIReport.objects.filter(
+            user=self.user, status=AIReport.Status.COMPLETED
+        )
+
+        if eligible_reports.exists():
+            return random.choice(eligible_reports)
+
+        return AIReportFactory(user=self.user, status=AIReport.Status.COMPLETED)
 
 
 class ChatMessageFactory(factory.django.DjangoModelFactory):
@@ -71,6 +82,7 @@ class ChatMessageFactory(factory.django.DjangoModelFactory):
         ]
     )
     content = factory.Faker("paragraph", nb_sentences=3)
+    timestamp = factory.Faker("date_time_ad", tzinfo=datetime.timezone.utc)
 
     @factory.post_generation
     def update_session_counter(

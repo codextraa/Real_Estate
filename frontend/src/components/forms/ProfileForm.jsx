@@ -23,6 +23,7 @@ export default function ProfileForm({
     errors: {},
     success: "",
     formUserData: userData,
+    initialUserData: userData,
   };
 
   const [state, formActions, isPending] = useActionState(
@@ -230,7 +231,7 @@ export default function ProfileForm({
     // from the server via revalidatePath after a successful submission)
     const initial = getInitialFormData(userData, userRole);
     const initialBio = userData.bio || "";
-    const initialImage = userData.image_url;
+    const initialImage = state.formUserData.image_url;
 
     // Check for differences between current client state and initial server state
     const changes = checkForChanges(
@@ -333,6 +334,11 @@ export default function ProfileForm({
                   className={styles.fileInput}
                   disabled={isPending}
                 />
+                <input
+                  type="hidden"
+                  name="client_preview_url"
+                  value={previewUrl}
+                />
               </div>
               {localImageError ? (
                 <span className={styles.errorText}>{localImageError}</span>
@@ -380,7 +386,7 @@ export default function ProfileForm({
                     <input
                       type="email"
                       id="email"
-                      disabled={isPending}
+                      disabled={true}
                       defaultValue={state.formUserData.user.email || ""}
                       className={styles.storedContent}
                     />

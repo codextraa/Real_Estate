@@ -8,9 +8,7 @@ import { redirect } from "next/navigation";
 import ProfileForm from "@/components/forms/ProfileForm";
 import styles from "@/styles/ProfilePage.module.css";
 
-export default async function EditPage({ params }) {
-  const urlParams = await params;
-  const slug = urlParams.slug;
+export default async function EditPage() {
   const userId = await getUserIdAction();
   const userRole = await getUserRoleAction();
   const imgUrl = "/real-estate/real-estate.jpg";
@@ -20,16 +18,14 @@ export default async function EditPage({ params }) {
   }
 
   let response;
-  let response_slug;
   if (userRole === "Agent") {
     response = await getAgent(userId);
-    response_slug = response.user.slug;
   } else {
     response = await getUser(userId);
-    response_slug = response.slug;
   }
 
-  if (response.error || slug !== response_slug) {
+  if (response.error) {
+    console.error(response.error);
     return notFound();
   }
 

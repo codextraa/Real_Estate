@@ -30,7 +30,6 @@
 }
 
 .modalBody {
-  width: 100%;
   background: #f7f7f7;
   border-radius: 15px;
   padding: 15px;
@@ -129,10 +128,6 @@
     font-size: 30px;
   }
 
-  .modalContent {
-    width: 90%;
-  }
-
   .modalStatus {
     position: static;
     display: block;
@@ -172,7 +167,7 @@
   }
 
   .overlay {
-    padding: 20px 0;
+    padding: 10px 0;
   }
 }
 
@@ -183,12 +178,19 @@
     align-items: center;
     text-align: center;
   }
+  .modalContent {
+    margin: 40px;
+  }
 }
 
 @media (max-width: 650px) {
   .modalHeader {
     flex-direction: column;
     gap: 10px;
+  }
+
+  .modalContent {
+    margin: 30px;
   }
 }
 

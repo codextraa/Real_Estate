@@ -87,8 +87,8 @@ def groq_json_formatter(context_text, area, city):
 
 
 def groq_ai_insight_prompt(
-    comps_sample, property_data, rating, breakdown
-):  # pylint: disable=R0913, R0917
+    comps_sample, property_data, rating, breakdown, agent="GPT"
+):  # pylint: disable=R0913, R0914, R0917
     """Groq gpt oss 120b"""
 
     title = property_data.get("title")
@@ -131,8 +131,13 @@ def groq_ai_insight_prompt(
         "}"
     )
 
+    if agent == "GPT":
+        agent_model = "openai/gpt-oss-120b"
+    else:
+        agent_model = "qwen/qwen3-32b"
+
     response = openai.chat.completions.create(
-        model="openai/gpt-oss-120b",
+        model=agent_model,
         messages=[
             {"role": "system", "content": system_role},
             {"role": "user", "content": user_prompt},

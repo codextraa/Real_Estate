@@ -7,6 +7,8 @@
   border: 2px solid rgba(19, 37, 46, 0.3);
   transition: transform 0.3s ease;
   background-color: #f0f0f0;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 .cardContainer:hover .cardContent,
@@ -21,15 +23,14 @@
 .imageContainer {
   width: 100%;
   height: 100%;
-  position: relative;
+  position: absolute;
+  z-index: 1;
 }
 
 .propertyImage {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   position: absolute;
-  top: 0;
-  left: 0;
   object-fit: cover;
   transition: transform 0.5s ease;
 }
@@ -40,6 +41,7 @@
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 2;
   opacity: 0;
   background: linear-gradient(
     180deg,
@@ -62,7 +64,6 @@
   font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 32px;
-  line-height: 1.2;
   color: #ffffff;
   margin: 0;
 }
@@ -96,17 +97,7 @@
   font-size: 14px;
 }
 
-/* ... Keep your existing CSS above ... */
-
-@media (max-width: 768px) {
-  .cardContainer {
-    width: 100%; /* Cards take full width of their column */
-    max-width: 400px; /* Prevents them from getting too wide */
-    height: 380px; /* Slightly shorter for mobile screens */
-    margin: 0 auto;
-  }
-
-  /* Make content partially visible by default on mobile so user knows it's there */
+@media (max-width: 900px) {
   .cardContent {
     opacity: 1;
     background: linear-gradient(
@@ -115,34 +106,16 @@
       rgba(0, 0, 0, 0.8) 100%
     );
   }
-
-  .propertyTitle {
-    font-size: 24px; /* Smaller font for mobile */
-    bottom: 90px;
-  }
-
-  .propertyDescription {
-    font-size: 13px;
-    bottom: 55px;
-    -webkit-line-clamp: 3; /* Show a bit more text on mobile */
-  }
-
-  .learnMore {
-    bottom: 12px;
-    padding: 6px 16px;
-    font-size: 12px;
-    background: rgba(247, 247, 247, 0.3); /* Slightly more visible */
-  }
 }
 
 /* For very small devices (portrait phones) */
 @media (max-width: 480px) {
   .cardContainer {
-    height: 320px;
+    width: 250px;
+    height: 350px;
   }
 
   .propertyTitle {
     font-size: 20px;
-    bottom: 85px;
   }
 }

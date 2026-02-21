@@ -1,7 +1,7 @@
 "use server";
 
 import { createUser, updateUser, deleteUser } from "@/libs/api";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 const userError = (response) => {
   if (typeof response.error === "object") {
@@ -186,6 +186,9 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
   const bio = formData.get("bio");
   const company_name = formData.get("company_name");
   const profile_image = formData.get("profile_image");
+  const client_preview_url = formData.get("client_preview_url");
+  const isNewImageUploaded =
+    profile_image && profile_image instanceof File && profile_image.size > 0;
 
   const newUserFormData =
     userRole === "Agent"
@@ -228,13 +231,12 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       errors,
       success: "",
       formUserData: newUserFormData,
+      initialUserData: prevState.initialUserData,
     };
   }
 
   try {
     let response;
-    const isNewImageUploaded =
-      profile_image && profile_image instanceof File && profile_image.size > 0;
 
     if (isNewImageUploaded) {
       const keys_to_delete = [];
@@ -243,7 +245,11 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
           key.startsWith("$") ||
           key === "" ||
           (key === "password" && value === "") ||
-          (key === "c_password" && value === "")
+          (key === "c_password" && value === "") ||
+          ((value === prevState.initialUserData[key] ||
+            value === prevState.initialUserData.user[key]) &&
+            key !== "password" &&
+            key !== "c_password")
         ) {
           keys_to_delete.push(key);
         }
@@ -252,51 +258,87 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       for (const key of keys_to_delete) {
         formData.delete(key);
       }
+      formData.delete("client_preview_url");
 
       response = await updateUser(id, formData, userRole, true);
     } else {
-      const data = {
-        ...(first_name &&
-          prevState.formUserData.user.first_name !== first_name && {
-            first_name,
-          }),
-        ...(last_name &&
-          prevState.formUserData.user.last_name !== last_name && { last_name }),
-        ...(username &&
-          prevState.formUserData.user.username !== username && { username }),
-        ...(password &&
-          prevState.formUserData.user.password !== password && { password }),
-        ...(c_password &&
-          prevState.formUserData.user.c_password !== c_password && {
-            c_password,
-          }),
-        ...(bio && prevState.formUserData.bio !== bio && { bio }),
-        ...(company_name &&
-          prevState.formUserData.company_name !== company_name && {
-            company_name,
-          }),
-      };
+      const data =
+        userRole === "Agent"
+          ? {
+              ...(first_name &&
+                prevState.initialUserData.user.first_name !== first_name && {
+                  first_name,
+                }),
+              ...(last_name &&
+                prevState.initialUserData.user.last_name !== last_name && {
+                  last_name,
+                }),
+              ...(username &&
+                prevState.initialUserData.user.username !== username && {
+                  username,
+                }),
+              ...(bio && prevState.initialUserData.bio !== bio && { bio }),
+              ...(company_name &&
+                prevState.initialUserData.company_name !== company_name && {
+                  company_name,
+                }),
+              ...(password && { password }),
+              ...(c_password && { c_password }),
+            }
+          : {
+              ...(first_name &&
+                prevState.initialUserData.first_name !== first_name && {
+                  first_name,
+                }),
+              ...(last_name &&
+                prevState.initialUserData.last_name !== last_name && {
+                  last_name,
+                }),
+              ...(username &&
+                prevState.initialUserData.username !== username && {
+                  username,
+                }),
+              ...(password && { password }),
+              ...(c_password && { c_password }),
+            };
+
+      if (Object.keys(data).length === 0) {
+        errors.general = "No changes were made";
+
+        return {
+          errors,
+          success: "",
+          formUserData: newUserFormData,
+          initialUserData: prevState.initialUserData,
+        };
+      }
+
       response = await updateUser(id, data, userRole);
     }
 
     if (response.error) {
       const backend_errors = userError(response);
+
+      if (isNewImageUploaded && !backend_errors["image_url"]) {
+        revalidateTag(`user-${id}`);
+        newUserFormData.image_url = client_preview_url;
+      }
+
       return {
         errors: backend_errors,
         success: "",
         formUserData: newUserFormData,
+        initialUserData: prevState.initialUserData,
       };
     }
 
-    const updatedSlug =
-      userRole === "Agent" ? response.data.user.slug : response.data.slug;
-
-    revalidatePath(`/profile/${updatedSlug}/edit`);
+    revalidateTag(`user-${id}`);
 
     return {
       errors,
       success: response.success,
       formUserData: response.data,
+      initialUserData: response.data,
     };
   } catch (error) {
     console.error(error);
@@ -305,6 +347,7 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       errors,
       success: "",
       formUserData: newUserFormData,
+      initialUserData: prevState.initialUserData,
     };
   }
 };

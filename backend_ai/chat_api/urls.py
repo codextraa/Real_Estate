@@ -1,14 +1,12 @@
 from django.urls import path
-from .views import ChatSessionView, ChatMessageView
+from .views import ChatSessionView, ChatMessageDetailView, ChatMessageCreateView
 
 urlpatterns = [
+    path("chat/session/<int:id>/", ChatSessionView.as_view(), name="chat-session"),
     path(
-        "chat/session/<int:report_id>/", ChatSessionView.as_view(), name="chat-session"
-    ),
-    path(
-        "chat/message/<int:message_id>/",
-        ChatMessageView.as_view(),
+        "chat/message/<int:id>/",
+        ChatMessageDetailView.as_view(),
         name="chat-message-detail",
     ),
-    path("chat/message/", ChatMessageView.as_view(), name="chat-message-create"),
+    path("chat/message/", ChatMessageCreateView.as_view(), name="chat-message-create"),
 ]
