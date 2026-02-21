@@ -6,8 +6,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 80%; /* Takes up a good portion of the form container */
-  max-width: 415px; /* Matches the max input width */
+  width: 80%;
+  /* Takes up a good portion of the form container */
+  max-width: 415px;
+  /* Matches the max input width */
   height: 100%;
   padding: 20px 0;
 }
@@ -19,16 +21,20 @@
   font-weight: 400;
   font-size: 115px;
   text-align: center;
-  line-height: 1; /* 100% line-height */
+  line-height: 1;
+  /* 100% line-height */
   color: #13252e;
-  z-index: 2; /* Ensure it's above other elements if positioned over them */
+  z-index: 2;
+  /* Ensure it's above other elements if positioned over them */
 }
 
 .mainContainer {
   display: flex;
   flex-direction: column;
-  gap: 25px; /* Vertical space between input groups */
-  width: 100%; /* Matches the width from the reference */
+  gap: 25px;
+  /* Vertical space between input groups */
+  width: 100%;
+  /* Matches the width from the reference */
   margin-top: 58px;
   margin-bottom: 40px;
 }
@@ -50,7 +56,8 @@
   width: 100%;
   padding: 10px;
   margin-bottom: -40px;
-  border-radius: 37px; /* A softer radius for the message bar */
+  border-radius: 37px;
+  /* A softer radius for the message bar */
   font-family: var(--font-merriweather);
   font-weight: 400;
   font-size: 16px;
@@ -60,11 +67,13 @@
 }
 
 .generalError {
-  background: #980000; /* Dark Red */
+  background: #980000;
+  /* Dark Red */
 }
 
 .success {
-  background: #2c7701; /* Dark Green */
+  background: #2c7701;
+  /* Dark Green */
 }
 
 /* --- Input Fields --- */
@@ -72,8 +81,10 @@
 .formInputContainer {
   display: flex;
   flex-direction: column;
-  gap: 25px; /* Vertical space between input groups */
-  width: 100%; /* Matches the width from the reference */
+  gap: 25px;
+  /* Vertical space between input groups */
+  width: 100%;
+  /* Matches the width from the reference */
   margin-top: 50px;
   margin-bottom: 20px;
 }
@@ -89,7 +100,8 @@
 .input {
   width: 100%;
   height: 40px;
-  padding: 13px; /* Add some padding for text inside */
+  padding: 13px;
+  /* Add some padding for text inside */
   padding-right: 45px;
   border-radius: 93px;
   background: rgba(217, 217, 217, 0);
@@ -99,7 +111,8 @@
   font-weight: 700;
   color: #13252e;
   box-sizing: border-box;
-  text-align: left; /* Text aligns left for better user experience */
+  text-align: left;
+  /* Text aligns left for better user experience */
 }
 
 .input:focus {
@@ -115,11 +128,11 @@
   font-weight: 700;
 }
 
-.input[id="email"]::placeholder::before {
+.input[id="email"]::placeholder {
   content: "Email";
 }
 
-.input[id="password"]::placeholder::before {
+.input[id="password"]::placeholder {
   content: "Password";
 }
 
@@ -137,9 +150,12 @@
   font-weight: 700;
   font-style: bold;
   font-size: 14px;
-  color: #a50000; /* Red Error Color */
-  margin-top: 5px; /* Space below the input */
-  margin-left: 15px; /* Slight indentation to the left */
+  color: #a50000;
+  /* Red Error Color */
+  margin-top: 5px;
+  /* Space below the input */
+  margin-left: 15px;
+  /* Slight indentation to the left */
   text-align: left;
 }
 
@@ -157,13 +173,17 @@
 }
 
 .loginFormButton:hover:not(:disabled) {
-  background: #233e4f; /* Slightly lighter on hover */
+  background: #233e4f;
+  /* Slightly lighter on hover */
 }
 
 .logInLast {
-  display: flex; /* Added to center the text */
-  justify-content: center; /* Center the text horizontally */
-  align-items: center; /* Align items vertically */
+  display: flex;
+  /* Added to center the text */
+  justify-content: center;
+  /* Center the text horizontally */
+  align-items: center;
+  /* Align items vertically */
   margin-top: 15px;
   color: #13252e;
   font-family: var(--font-old-standard-tt);

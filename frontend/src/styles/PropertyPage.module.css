@@ -215,10 +215,12 @@
     font-size: 48px;
   }
 }
+
 @media (max-width: 900px) {
   .content2 {
     font-size: 90px;
   }
+
   .reportTitle {
     margin: 0 40px;
     font-size: 45px;
@@ -294,9 +296,11 @@
     font-size: 16px;
     padding: 8px 15px;
   }
+
   .reportTitle {
     font-size: 32px;
   }
+
   .reportsWrapper {
     padding: 0px;
   }

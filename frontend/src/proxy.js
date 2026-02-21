@@ -11,7 +11,7 @@ import {
   authRoute,
 } from "./route";
 
-export async function middleware(req) {
+export async function proxy(req) {
   console.warn("Middleware triggered");
   const { pathname } = req.nextUrl;
 

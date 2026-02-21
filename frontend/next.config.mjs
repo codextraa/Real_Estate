@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactCompiler: true,
   allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS
     ? process.env.ALLOWED_DEV_ORIGINS.split(",")
     : ["localhost"],
   images: {
+    dangerouslyAllowLocalIP: process.env.NODE_ENV === "development",
     remotePatterns: [
       {
         protocol: "https",
@@ -12,6 +14,14 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "codextra-s3-media.s3.amazonaws.com",
+      },
+    ],
+    localPatterns: [
+      {
+        pathname: "/real-estate/**",
+      },
+      {
+        pathname: "/assets/**",
       },
     ],
   },
