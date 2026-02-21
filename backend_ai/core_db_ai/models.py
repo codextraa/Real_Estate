@@ -62,12 +62,12 @@ class Agent(models.Model):
 class Property(models.Model):
     agent = models.ForeignKey(Agent, on_delete=ON_DELETE)
     title = models.CharField(max_length=150)
-    description = models.TextField()
+    description = models.CharField(max_length=150)
     beds = models.IntegerField()
     baths = models.IntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=15, decimal_places=2)
     area_sqft = models.IntegerField()
-    address = models.CharField(max_length=255)
+    address = models.CharField(max_length=500)
     slug = models.SlugField(unique=True, max_length=150)
 
     class Meta:
