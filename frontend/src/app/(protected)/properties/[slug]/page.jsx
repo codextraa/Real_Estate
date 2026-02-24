@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getProperty, getProperties } from "@/libs/api";
 import PropertyCard from "@/components/cards/PropertyCard";
 import Dropdown from "@/components/dropdowns/Dropdown";

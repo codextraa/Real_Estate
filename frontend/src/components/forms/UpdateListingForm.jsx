@@ -20,87 +20,85 @@ const uploadIcon = "/assets/upload-icon.svg";
 const doneIcon = "/assets/done.svg";
 const notDoneIcon = "/assets/not-done.svg";
 
-export default function UpdateListingClient({ propertyId, initialData }) {
-  const [formData, setFormData] = useState({
-    title: initialData?.title || "",
-    description: initialData?.description || "",
-    country: initialData?.address?.country || "",
-    state: initialData?.address?.state || "",
-    city: initialData?.address?.city || "",
-    area: initialData?.address?.area || "",
-    street: initialData?.address?.street || "",
-    house_no: initialData?.address?.house_no || "",
-    flat_no: initialData?.address?.flat_no || "",
-    beds: initialData?.beds || "",
-    baths: initialData?.baths || "",
-    area_sqft: initialData?.area_sqft || "",
-    price: initialData?.price || "",
+function parseAddressFunc(addressString) {
+  const address = {};
+  const pairs = addressString.split(", ");
+
+  pairs.forEach((pair) => {
+    const [key, value] = pair.split("=");
+    address[key] = value;
   });
 
-  const [previewUrl, setPreviewUrl] = useState(initialData?.image_url || null);
-  const [localImageError, setLocalImageError] = useState("");
-  const fileInputRef = useRef(null);
-  const textAreaRef = useRef(null);
-  const router = useRouter();
+  return address;
+}
 
-  const [currentInitialData, setCurrentInitialData] = useState(initialData);
-  const [displaySuccess, setDisplaySuccess] = useState("");
-
+export default function UpdateListingClient({ propertyId, initialData }) {
   const [state, formAction, isPending] = useActionState(
     updatePropertyAction.bind(null, propertyId),
     {
       errors: {},
       success: "",
       formPropertyData: initialData,
+      initialPropertyData: initialData,
     },
   );
 
-  const slugify = (text) => {
-    return text
-      .toString()
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "")
-      .replace(/--+/g, "-");
-  };
+  const parsedAddress = parseAddressFunc(state.initialPropertyData?.address);
+  const [formData, setFormData] = useState({
+    title: state.initialPropertyData?.title || "",
+    description: state.initialPropertyData?.description || "",
+    country: parsedAddress?.country || "",
+    state: parsedAddress?.state || "",
+    city: parsedAddress?.city || "",
+    area: parsedAddress?.area || "",
+    street: parsedAddress?.street || "",
+    house_no: parsedAddress?.house_no || "",
+    flat_no: parsedAddress?.flat_no || "",
+    beds: state.initialPropertyData?.beds || "",
+    baths: state.initialPropertyData?.baths || "",
+    area_sqft: state.initialPropertyData?.area_sqft || "",
+    price: state.initialPropertyData?.price || "",
+  });
 
-  const isTitleChanged = formData.title !== currentInitialData?.title;
-  const activeTitle = isTitleChanged
-    ? formData.title
-    : currentInitialData?.title;
-  const currentSlug = `${slugify(activeTitle || "")}-${propertyId}`;
+  const [previewUrl, setPreviewUrl] = useState(
+    state.formPropertyData?.image_url || null,
+  );
+  const [localImageError, setLocalImageError] = useState("");
+  const [displaySuccess, setDisplaySuccess] = useState("");
+  const fileInputRef = useRef(null);
+  const textAreaRef = useRef(null);
+  const router = useRouter();
 
   const addressChanged =
-    formData.country !== currentInitialData?.address?.country ||
-    formData.state !== currentInitialData?.address?.state ||
-    formData.city !== currentInitialData?.address?.city ||
-    formData.area !== currentInitialData?.address?.area ||
-    formData.street !== currentInitialData?.address?.street ||
-    formData.house_no !== currentInitialData?.address?.house_no ||
-    formData.flat_no !== (currentInitialData?.address?.flat_no || "");
+    formData.country !== parsedAddress?.country ||
+    formData.state !== parsedAddress?.state ||
+    formData.city !== parsedAddress?.city ||
+    formData.area !== parsedAddress?.area ||
+    formData.street !== parsedAddress?.street ||
+    formData.house_no !== parsedAddress?.house_no ||
+    formData.flat_no !== (parsedAddress?.flat_no || "");
 
   const detailsChanged =
-    String(formData.beds) !== String(currentInitialData?.beds || "") ||
-    String(formData.baths) !== String(currentInitialData?.baths || "") ||
-    String(formData.area_sqft) !== String(currentInitialData?.area_sqft || "");
+    String(formData.beds) !== String(state.initialPropertyData?.beds || "") ||
+    String(formData.baths) !== String(state.initialPropertyData?.baths || "") ||
+    String(formData.area_sqft) !==
+      String(state.initialPropertyData?.area_sqft || "");
 
-  //works needs to be done
   const hasUnsavedChanges =
-    formData.title !== currentInitialData?.title ||
-    formData.description !== currentInitialData?.description ||
+    formData.title !== state.initialPropertyData?.title ||
+    formData.description !== state.initialPropertyData?.description ||
     addressChanged ||
     detailsChanged ||
-    String(formData.price) !== String(currentInitialData?.price || "") ||
-    previewUrl !== currentInitialData?.image_url;
+    String(formData.price) !== String(state.initialPropertyData?.price || "") ||
+    previewUrl !== state.formPropertyData?.image_url;
 
   const isTitleComplete =
     formData.title.trim() !== "" &&
-    formData.title !== currentInitialData?.title;
+    formData.title !== state.initialPropertyData?.title;
 
   const isDescriptionComplete =
     formData.description.trim() !== "" &&
-    formData.description !== currentInitialData?.description;
+    formData.description !== state.initialPropertyData?.description;
 
   const isAddressComplete =
     formData.country.trim() !== "" &&
@@ -112,10 +110,10 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
   const isPricingComplete =
     formData.price !== "" &&
-    String(formData.price) !== String(currentInitialData?.price || "");
+    String(formData.price) !== String(state.initialPropertyData?.price || "");
 
   const isImageComplete =
-    previewUrl !== null && previewUrl !== currentInitialData?.image_url;
+    previewUrl !== null && previewUrl !== state.formPropertyData?.image_url;
 
   const resetImageInput = useCallback(() => {
     setPreviewUrl(state.formPropertyData.image_url);
@@ -163,10 +161,11 @@ export default function UpdateListingClient({ propertyId, initialData }) {
           : "Image size should not exceed 2MB.";
 
         setLocalImageError(msg);
+        resetImageInput();
         return;
       }
 
-      if (previewUrl) {
+      if (previewUrl.startsWith("blob:")) {
         URL.revokeObjectURL(previewUrl);
       }
 
@@ -188,6 +187,12 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   };
 
   useEffect(() => {
+    if (isPending) {
+      setLocalImageError("");
+    }
+  }, [isPending]);
+
+  useEffect(() => {
     autoResize(textAreaRef.current);
   }, [formData.description]);
 
@@ -206,26 +211,16 @@ export default function UpdateListingClient({ propertyId, initialData }) {
   useEffect(() => {
     if (state.success) {
       setDisplaySuccess(state.success);
-      setLocalImageError("");
 
-      setCurrentInitialData(() => ({
-        title: formData.title,
-        description: formData.description,
-        beds: formData.beds,
-        baths: formData.baths,
-        area_sqft: formData.area_sqft,
-        price: formData.price,
-        image_url: previewUrl,
-        address: {
-          country: formData.country,
-          state: formData.state,
-          city: formData.city,
-          area: formData.area,
-          street: formData.street,
-          house_no: formData.house_no,
-          flat_no: formData.flat_no,
-        },
+      const parsedAddress = parseAddressFunc(
+        state.initialPropertyData?.address,
+      );
+      setFormData(() => ({
+        ...state.initialPropertyData,
+        ...parsedAddress,
       }));
+      setLocalImageError("");
+      resetImageInput();
 
       const timer = setTimeout(() => {
         setDisplaySuccess("");
@@ -234,7 +229,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
 
       return () => clearTimeout(timer);
     }
-  }, [state.success, router, formData, previewUrl]);
+  }, [state.success, state.initialPropertyData, router, resetImageInput]);
 
   return (
     <div className={styles.container}>
@@ -510,6 +505,11 @@ export default function UpdateListingClient({ propertyId, initialData }) {
                   style={{ display: "none" }}
                   disabled={isPending}
                 />
+                <input
+                  type="hidden"
+                  name="client_preview_url"
+                  value={previewUrl}
+                />
                 <div className={styles.uploadLabel}>
                   <div
                     className={styles.uploadIconCircle}
@@ -547,7 +547,7 @@ export default function UpdateListingClient({ propertyId, initialData }) {
           <div className={styles.buttonGroup}>
             <div className={styles.cancelProfileButton}>
               <Link
-                href={`/properties/${currentSlug}`}
+                href={`/properties/${state.initialPropertyData.slug}`}
                 className={styles.cancelProfileButtonLink}
               >
                 Cancel
