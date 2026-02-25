@@ -12,6 +12,7 @@ import Form from "next/form";
 import Image from "next/image";
 import { createPropertyAction } from "@/actions/propertyActions";
 import { FormButton } from "@/components/buttons/Buttons";
+import { BackButton } from "@/components/buttons/Buttons";
 import styles from "./CreateListingForm.module.css";
 
 const initialState = {
@@ -485,16 +486,7 @@ export default function ListingForm() {
             <div className={styles.errorBox2}>{state.errors.general}</div>
           )}
           <div className={styles.buttonGroup}>
-            <div className={styles.cancelProfileButton}>
-              <button
-                onClick={() => router.back()}
-                className={styles.cancelProfileButtonLink}
-                type="submit"
-              >
-                Cancel
-              </button>
-            </div>
-
+            <BackButton text="Cancel" />
             <FormButton
               type="submit"
               text="Create"

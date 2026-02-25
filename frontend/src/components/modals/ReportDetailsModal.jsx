@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { getReportAction } from "@/actions/reportActions";
+import { CloseButton } from "@/components/buttons/Buttons";
 import styles from "./ReportDetailsModal.module.css";
 
 export default function ReportDetailsModal({ reportID, onClose }) {
-  const closeIcon = "/assets/cross-icon.svg";
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,9 +36,7 @@ export default function ReportDetailsModal({ reportID, onClose }) {
   return (
     <div className={styles.overlay}>
       <div className={styles.modalContent}>
-        <button className={styles.closeButton} onClick={onClose}>
-          <Image src={closeIcon} width={40} height={40} alt="Close" />
-        </button>
+        <CloseButton onClick={onClose} className={styles.closeButton} />
         {loading ? (
           <div className={styles.modalBodyX}>
             <p>Loading report details...</p>

@@ -226,8 +226,9 @@
     padding: 6px 40px;
   }
 
-  .agentProfileButtonContainer {
-    flex-direction: column;
+  .agentProfileButtonContainer,
+  .profileDetailButtonContainer {
+    flex-direction: column-reverse;
     align-items: center;
     gap: 15px;
   }

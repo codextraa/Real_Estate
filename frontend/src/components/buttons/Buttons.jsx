@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import styles from "./Buttons.module.css";
 
+const crossIcon = "/assets/cross-icon.svg";
 export function FormButton({ text, pendingText, type, className }) {
   const { pending } = useFormStatus();
 
@@ -99,6 +100,32 @@ export function DeleteButton({ type, text, onClick, className, disabled }) {
       className={`${styles.deleteButton} ${className}`}
     >
       {text}
+    </button>
+  );
+}
+
+export function BackButton({ text }) {
+  const router = useRouter();
+  return (
+    <div className={styles.cancelProfileButton}>
+      <button
+        onClick={() => router.back()}
+        className={styles.cancelProfileButtonLink}
+        type="submit"
+      >
+        {text}
+      </button>
+    </div>
+  );
+}
+
+export function CloseButton({ onClick, className }) {
+  return (
+    <button
+      className={className ? `${className}` : styles.closeButton}
+      onClick={onClick}
+    >
+      <Image src={crossIcon} alt="Close Icon" width={30} height={30} />
     </button>
   );
 }

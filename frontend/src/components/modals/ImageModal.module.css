@@ -35,21 +35,6 @@
   border-radius: 11px;
 }
 
-.closeButton {
-  position: absolute;
-  background: none;
-  border: none;
-  cursor: pointer;
-  top: -20px;
-  right: -20px;
-  z-index: 1010;
-  transition: transform 0.2s ease;
-}
-
-.closeButton:hover {
-  transform: scale(1.1);
-}
-
 @media (max-width: 1200px) {
   .modalContent {
     width: 90vw;
@@ -61,16 +46,6 @@
   .modalContent {
     border-width: 2px;
     width: 95%;
-  }
-
-  .closeButton {
-    top: -10px;
-    right: -10px;
-  }
-
-  .closeButton img {
-    width: 20px;
-    height: 20px;
   }
 }
 

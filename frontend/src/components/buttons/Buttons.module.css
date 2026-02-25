@@ -77,6 +77,53 @@
   transform: translateY(1px);
 }
 
+.cancelProfileButton {
+  opacity: 1;
+  border-radius: 21px;
+  border: 1px solid #13252e;
+  background: transparent;
+  padding: 1px 39px 0px 39px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 39px;
+  transition: background 0.3s;
+  cursor: pointer;
+}
+
+.cancelProfileButtonLink {
+  color: #13252e;
+  font-family: var(--font-old-standard-tt);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: normal;
+  display: inline-block;
+  text-decoration: none;
+
+  border: none;
+  background: none;
+  outline: none;
+}
+
+.cancelProfileButton:hover {
+  background: rgba(19, 37, 46, 0.05);
+}
+
+.closeButton {
+  position: absolute;
+  background: none;
+  border: none;
+  cursor: pointer;
+  top: -20px;
+  right: -20px;
+  z-index: 1010;
+  transition: transform 0.2s ease;
+}
+
+.closeButton:hover {
+  transform: scale(1.1);
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .globalButton {
@@ -181,6 +228,28 @@
     padding: 12px 32px;
     min-width: 100px;
     min-height: 30px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .closeButton {
+    top: -10px;
+    right: -10px;
+  }
+
+  .closeButton img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .cancelProfileButton {
+    padding: 1px 20px 0px 20px;
+  }
+
+  .cancelProfileButtonLink {
+    font-size: 16px;
   }
 }
 
