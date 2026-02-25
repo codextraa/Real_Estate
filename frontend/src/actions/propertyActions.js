@@ -102,6 +102,7 @@ export const createPropertyAction = async (prevState, formData) => {
   const baths = formData.get("baths");
   const area_sqft = formData.get("area_sqft");
   const property_image = formData.get("property_image");
+  const client_preview_url = formData.get("client_preview_url");
 
   const newPropertyData = {
     title: title || prevState.formPropertyData.title,
@@ -110,7 +111,6 @@ export const createPropertyAction = async (prevState, formData) => {
     beds: beds || prevState.formPropertyData.beds,
     baths: baths || prevState.formPropertyData.baths,
     area_sqft: area_sqft || prevState.formPropertyData.area_sqft,
-    image_url: prevState.formPropertyData.image_url,
     ...addressParts,
   };
 
@@ -168,7 +168,7 @@ export const createPropertyAction = async (prevState, formData) => {
   if (Object.keys(errors).length > 0) {
     return {
       errors,
-      success: "",
+      success: {},
       formPropertyData: newPropertyData,
     };
   }
@@ -193,14 +193,17 @@ export const createPropertyAction = async (prevState, formData) => {
     if (response.error) {
       return {
         errors: propertyError(response),
-        success: "",
+        success: {},
         formPropertyData: newPropertyData,
       };
     }
 
     return {
       errors,
-      success: response.success,
+      success: {
+        message: response.success,
+        client_preview_url,
+      },
       formPropertyData: newPropertyData,
     };
   } catch (error) {
@@ -208,7 +211,7 @@ export const createPropertyAction = async (prevState, formData) => {
     errors.general = error.message || "An unexpected error occurred";
     return {
       errors,
-      success: "",
+      success: {},
       formPropertyData: newPropertyData,
     };
   }
