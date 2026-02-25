@@ -16,6 +16,7 @@ export default function ReportDetailsModal({ reportID, onClose }) {
       try {
         setLoading(true);
         const response = await getReportAction(reportID);
+        console.log("insight: ", response.ai_insight_summary);
         const reportData = response;
         setDetails(reportData);
       } catch (error) {
@@ -92,6 +93,7 @@ export default function ReportDetailsModal({ reportID, onClose }) {
               <div className={styles.sectionUnderline}>AI Summary:</div>
               <div className={styles.aiSummaryBox}>
                 {details.ai_insight_summary || "No summary available."}
+                {console.log("details insight: ", details.ai_insight_summary)}
               </div>
             </div>
 

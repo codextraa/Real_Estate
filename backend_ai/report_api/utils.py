@@ -1,5 +1,6 @@
 import re
 import random
+from decimal import Decimal, ROUND_DOWN
 import numpy as np
 
 
@@ -29,27 +30,27 @@ def generate_mock_summary(compiled_data, property_data):
     beds = property_data.get("beds")
     baths = property_data.get("baths")
 
-    if not compiled_data:
-        avg_comp_price = 0
-        price_diff = "unknown"
-    else:
-        avg_comp_price = sum(p.get("price", 0) for p in compiled_data) / len(
-            compiled_data
-        )
-        price_diff = "below" if price < avg_comp_price else "above"
+    dummy_analysis = (
+        "+1.5 Market Position Advantage\n"
+        "+0.5 Property Utility Score\n"
+        "-0.2 Regional Volatility Adjustment"
+    )
 
     return {
+        "weighted_analysis": dummy_analysis,
         "investment_summary": (
-            f"Automated insight generation temporarily unavailable. Fake data generated."
             f"The property at {title} is currently priced at ${price:,.2f}, "
-            f"which is {price_diff} the local market average of ${avg_comp_price:,.2f}."
+            "This mock summary is provided while the AI insight engine is unavailable."
         ),
         "pros": [
-            f"Competitive price point relative to {len(compiled_data)} local comparables.",
+            (
+                "Competitive price point relative to "
+                f"{len(compiled_data) if compiled_data else 0} local comparables."
+            ),
             f"Standard {beds} bed / {baths} bath configuration for this sub-market.",
         ],
         "cons": [
-            "Automated insight generation temporarily unavailable for detailed analysis.",
+            "Detailed algorithmic scoring is temporarily unavailable.",
             "Market volatility may require a manual appraisal for finalized valuation.",
         ],
     }
@@ -163,27 +164,52 @@ def clean_properties(item, property_data):
     return price, sqft, beds, baths
 
 
+def clamp_decimal(value, max_digits, decimal_places):
+    """
+    Ensures a number fits within Django DecimalField constraints.
+    """
+    if value is None:
+        return Decimal("0.00")
+
+    whole_digits = max_digits - decimal_places
+    max_allowed = (10**whole_digits) - (Decimal("1") / (10**decimal_places))
+
+    d_value = Decimal(str(value)).quantize(
+        Decimal(f"1.{'0' * decimal_places}"), rounding=ROUND_DOWN
+    )
+
+    if d_value > max_allowed:
+        return max_allowed
+    return d_value
+
+
 def average_prices_beds_baths(compiled_data):
+    """
+    Calculate average price, PPS, beds, baths
+    """
     prices = [p["price"] for p in compiled_data if p.get("price")]
     sqft = [p["area_sqft"] for p in compiled_data if p.get("area_sqft")]
     beds = [p["beds"] for p in compiled_data if p.get("beds") is not None]
     baths = [p["baths"] for p in compiled_data if p.get("baths") is not None]
 
     if prices:
-        avg_price = sum(prices) / len(prices)
+        raw_avg_price = sum(prices) / len(prices)
     else:
-        avg_price = 0
+        raw_avg_price = 0
 
     if sqft:
-        avg_sqft = sum(sqft) / len(sqft)
+        raw_avg_sqft = sum(sqft) / len(sqft)
     else:
-        avg_sqft = 0
+        raw_avg_sqft = 0
 
     # Calculate market average PPS
-    if avg_sqft > 0:
-        avg_pps = avg_price / avg_sqft
+    if raw_avg_sqft > 0:
+        raw_avg_pps = raw_avg_price / raw_avg_sqft
     else:
-        avg_pps = 0
+        raw_avg_pps = 0
+
+    avg_price = clamp_decimal(raw_avg_price, 15, 2)
+    avg_pps = clamp_decimal(raw_avg_pps, 12, 2)
 
     if beds:
         avg_beds = round(sum(beds) / len(beds))
@@ -195,7 +221,7 @@ def average_prices_beds_baths(compiled_data):
     else:
         avg_baths = 0
 
-    return avg_price, avg_pps, avg_beds, avg_baths
+    return Decimal(str(avg_price)), Decimal(str(avg_pps)), avg_beds, avg_baths
 
 
 def generate_price_score(price, predicted_price):

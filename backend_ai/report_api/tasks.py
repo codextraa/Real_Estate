@@ -1,16 +1,17 @@
-import time
-import random
+# import time
+# import random
 from celery import shared_task, chord, chain
 from celery.utils.log import get_task_logger
-from celery.exceptions import MaxRetriesExceededError
+
+# from celery.exceptions import MaxRetriesExceededError
 from core_db_ai.models import AIReport
 
-from .agents import tavily_search, groq_json_formatter, groq_ai_insight_prompt
-from .regression_model import InvestmentRegressor
+# from .agents import tavily_search, groq_json_formatter, groq_ai_insight_prompt
+# from .regression_model import InvestmentRegressor
 from .utils import (
-    split_context,
+    # split_context,
     clean_properties,
-    average_prices_beds_baths,
+    # average_prices_beds_baths,
     generate_mock_summary,
     generate_mock_properties,
 )
@@ -19,136 +20,138 @@ from .utils import (
 logger = get_task_logger(__name__)
 
 
-# @shared_task()
-# def search_properties(property_data, count, seed_index):  # pylint: disable=W0613
-#     """
-#     Worker Task: Mocks Tavily and Groq llama for a specific slice of data.
-#     """
-#     area_sqft = property_data.get("area_sqft")
-#     beds = property_data.get("beds")
-#     baths = property_data.get("baths")
-#     return generate_mock_properties(area_sqft, beds, baths, count)
-
-
-@shared_task(
-    bind=True,
-    rate_limit="15/m",  # Max 15 calls/m to avoid Groq 429s
-    max_retries=5,
-    default_retry_delay=61,  # Groq hits a limit, wait for full minute reset
-    retry_jitter=False,  # Predictable 61s wait, no randomness needed
-    autoretry_for=(),
-)
+@shared_task()
 def search_properties(
-    self,
-    report_id,
-    property_data,
-    count,
-    seed_index,
-    existing_context=None,
-    final_properties=None,
-    completed_chunks=None,
-):  # pylint: disable=R0913, R0914, R0917
+    report_id, property_data, count, seed_index
+):  # pylint: disable=W0613
     """
-    Worker Task: Calls Tavily and Groq llama for a specific slice of data.
+    Worker Task: Mocks Tavily and Groq llama for a specific slice of data.
     """
-    area = property_data.get("area")
-    city = property_data.get("city")
     area_sqft = property_data.get("area_sqft")
     beds = property_data.get("beds")
     baths = property_data.get("baths")
-    context_text = None
+    return generate_mock_properties(area_sqft, beds, baths, count)
 
-    if existing_context:
-        logger.info("Retrying Groq only. Skipping Tavily for query %s.", seed_index)
-        context_text = existing_context
-    else:
-        try:
-            # Variations to ensure the 4 workers find different things
-            context_text, tavily_credits = tavily_search(
-                area, city, area_sqft, beds, baths, count, seed_index
-            )
 
-            logger.info(
-                "[Tavily] Used %s credits for query %s", tavily_credits, seed_index
-            )
-        except Exception as e:  # pylint: disable=W0718
-            logger.warning("Search Task Error: %s. Retrying...", e)
-            try:
-                raise self.retry(exc=e)
-            except MaxRetriesExceededError:
-                logger.error(
-                    "FATAL: Fork %s exceeded max retries. Providing mock data.",
-                    seed_index,
-                )
-                AIReport.objects.get(id=report_id).update(
-                    status=AIReport.Status.FAILED,
-                    ai_insight_summary="Automated data search failed. Please try again later.",
-                )
-                return generate_mock_properties(area_sqft, beds, baths, count)
+# @shared_task(
+#     bind=True,
+#     rate_limit="15/m",  # Max 15 calls/m to avoid Groq 429s
+#     max_retries=5,
+#     default_retry_delay=61,  # Groq hits a limit, wait for full minute reset
+#     retry_jitter=False,  # Predictable 61s wait, no randomness needed
+#     autoretry_for=(),
+# )
+# def search_properties(
+#     self,
+#     report_id,
+#     property_data,
+#     count,
+#     seed_index,
+#     existing_context=None,
+#     final_properties=None,
+#     completed_chunks=None,
+# ):  # pylint: disable=R0913, R0914, R0917
+#     """
+#     Worker Task: Calls Tavily and Groq llama for a specific slice of data.
+#     """
+#     area = property_data.get("area")
+#     city = property_data.get("city")
+#     area_sqft = property_data.get("area_sqft")
+#     beds = property_data.get("beds")
+#     baths = property_data.get("baths")
+#     context_text = None
 
-    if final_properties is None:
-        final_properties = []
-    if completed_chunks is None:
-        completed_chunks = []
+#     if existing_context:
+#         logger.info("Retrying Groq only. Skipping Tavily for query %s.", seed_index)
+#         context_text = existing_context
+#     else:
+#         try:
+#             # Variations to ensure the 4 workers find different things
+#             context_text, tavily_credits = tavily_search(
+#                 area, city, area_sqft, beds, baths, count, seed_index
+#             )
 
-    chunks = split_context(context_text)
-    time.sleep(random.uniform(1.0, 5.0))
+#             logger.info(
+#                 "[Tavily] Used %s credits for query %s", tavily_credits, seed_index
+#             )
+#         except Exception as e:  # pylint: disable=W0718
+#             logger.warning("Search Task Error: %s. Retrying...", e)
+#             try:
+#                 raise self.retry(exc=e)
+#             except MaxRetriesExceededError:
+#                 logger.error(
+#                     "FATAL: Fork %s exceeded max retries. Providing mock data.",
+#                     seed_index,
+#                 )
+#                 AIReport.objects.get(id=report_id).update(
+#                     status=AIReport.Status.FAILED,
+#                     ai_insight_summary="Automated data search failed. Please try again later.",
+#                 )
+#                 return generate_mock_properties(area_sqft, beds, baths, count)
 
-    for i, chunk in enumerate(chunks):
-        if i in completed_chunks:
-            continue
+#     if final_properties is None:
+#         final_properties = []
+#     if completed_chunks is None:
+#         completed_chunks = []
 
-        try:
-            if i > 0:
-                time.sleep(2)
+#     chunks = split_context(context_text)
+#     time.sleep(random.uniform(1.0, 5.0))
 
-            properties_json, usage = groq_json_formatter(chunk, area, city)
+#     for i, chunk in enumerate(chunks):
+#         if i in completed_chunks:
+#             continue
 
-            logger.info(
-                "Fork %s Chunk %s: [Groq Llama] Prompt Tokens:%s "
-                "| Completion Tokens:%s | Total:%s",
-                seed_index,
-                i,
-                usage.prompt_tokens,
-                usage.completion_tokens,
-                usage.total_tokens,
-            )
+#         try:
+#             if i > 0:
+#                 time.sleep(2)
 
-            final_properties.extend(properties_json)
-            completed_chunks.append(i)
-        except Exception as e:  # pylint: disable=W0718
-            logger.warning(
-                "Attempt %s/%s failed for Fork %s Chunk %s. Groq Rate "
-                "Limit/Error: %s. Retrying extraction with SAVED context.",
-                self.request.retries,
-                self.max_retries,
-                seed_index,
-                i,
-                e,
-            )
+#             properties_json, usage = groq_json_formatter(chunk, area, city)
 
-            try:
-                raise self.retry(
-                    args=[report_id, property_data, count, seed_index],
-                    kwargs={
-                        "existing_context": context_text,
-                        "final_properties": final_properties,
-                        "completed_chunks": completed_chunks,
-                    },
-                    exc=e,
-                )
-            except MaxRetriesExceededError:
-                logger.error(
-                    "FATAL: Fork %s exceeded max retries. Providing mock data.",
-                    seed_index,
-                )
-                AIReport.objects.get(id=report_id).update(
-                    status=AIReport.Status.FAILED,
-                    ai_insight_summary="Automated data search failed. Please try again later.",
-                )
-                return generate_mock_properties(area_sqft, beds, baths, count)
+#             logger.info(
+#                 "Fork %s Chunk %s: [Groq Llama] Prompt Tokens:%s "
+#                 "| Completion Tokens:%s | Total:%s",
+#                 seed_index,
+#                 i,
+#                 usage.prompt_tokens,
+#                 usage.completion_tokens,
+#                 usage.total_tokens,
+#             )
 
-    return final_properties
+#             final_properties.extend(properties_json)
+#             completed_chunks.append(i)
+#         except Exception as e:  # pylint: disable=W0718
+#             logger.warning(
+#                 "Attempt %s/%s failed for Fork %s Chunk %s. Groq Rate "
+#                 "Limit/Error: %s. Retrying extraction with SAVED context.",
+#                 self.request.retries,
+#                 self.max_retries,
+#                 seed_index,
+#                 i,
+#                 e,
+#             )
+
+#             try:
+#                 raise self.retry(
+#                     args=[report_id, property_data, count, seed_index],
+#                     kwargs={
+#                         "existing_context": context_text,
+#                         "final_properties": final_properties,
+#                         "completed_chunks": completed_chunks,
+#                     },
+#                     exc=e,
+#                 )
+#             except MaxRetriesExceededError:
+#                 logger.error(
+#                     "FATAL: Fork %s exceeded max retries. Providing mock data.",
+#                     seed_index,
+#                 )
+#                 AIReport.objects.get(id=report_id).update(
+#                     status=AIReport.Status.FAILED,
+#                     ai_insight_summary="Automated data search failed. Please try again later.",
+#                 )
+#                 return generate_mock_properties(area_sqft, beds, baths, count)
+
+#     return final_properties
 
 
 @shared_task
@@ -180,121 +183,133 @@ def compile_search_data(results, property_data):
     return final_list
 
 
-# @shared_task()
-# def report_analysis(compiled_data, property_data):
-#     """Mocks Groq GPT to generate the analysis."""
-#     ai_insight_summary = generate_mock_summary(compiled_data, property_data)
-#     return {
-#         "avg_market_price": 0,
-#         "avg_price_per_sqft": 0,
-#         "avg_beds": 0,
-#         "avg_baths": 0,
-#         "investment_rating": 0,
-#         "ai_insight_summary": ai_insight_summary,
-#     }
+@shared_task()
+def report_analysis(compiled_data, report_id, property_data):  # pylint: disable=W0613
+    """Mocks Groq GPT to generate the analysis."""
+    ai_insight_summary = generate_mock_summary(compiled_data, property_data)
+    return {
+        "avg_market_price": 0,
+        "avg_price_per_sqft": 0,
+        "avg_beds": 0,
+        "avg_baths": 0,
+        "investment_rating": 0,
+        "ai_insight_summary": ai_insight_summary,
+    }
 
 
-@shared_task(bind=True, max_retries=3, default_retry_delay=61, rate_limit="8/m")
-def report_analysis(
-    self, compiled_data, report_id, property_data
-):  # pylint: disable=R0914, R1710
-    """
-    Calculates average prices, beds, baths.
-    Calculates investment rating.
-    Produce AI insight summary on them with pros and cons.
-    Using Groq gpt oss 120b
-    """
-    report = AIReport.objects.get(id=report_id)
-    if not compiled_data or report.status == AIReport.Status.FAILED:
-        return {
-            "avg_market_price": 0,
-            "avg_price_per_sqft": 0,
-            "avg_beds": 0,
-            "avg_baths": 0,
-            "investment_rating": 0,
-            "ai_insight_summary": report.ai_insight_summary
-            or "No market data available for analysis.",
-        }
+# @shared_task(bind=True, max_retries=3, default_retry_delay=61, rate_limit="8/m")
+# def report_analysis(
+#     self, compiled_data, report_id, property_data
+# ):  # pylint: disable=R0914, R1710
+#     """
+#     Calculates average prices, beds, baths.
+#     Calculates investment rating.
+#     Produce AI insight summary on them with pros and cons.
+#     Using Groq gpt oss 120b
+#     """
+#     report = AIReport.objects.get(id=report_id)
+#     if not compiled_data or report.status == AIReport.Status.FAILED:
+#         return {
+#             "avg_market_price": 0,
+#             "avg_price_per_sqft": 0,
+#             "avg_beds": 0,
+#             "avg_baths": 0,
+#             "investment_rating": 0,
+#             "ai_insight_summary": report.ai_insight_summary
+#             or "No market data available for analysis.",
+#         }
 
-    avg_price, avg_pps, avg_beds, avg_baths = average_prices_beds_baths(compiled_data)
+#     avg_price, avg_pps, avg_beds, avg_baths = average_prices_beds_baths(compiled_data)
 
-    logger.info(
-        "Market Average Price: %s ||| Market Average PPS: %s"
-        "Average Beds: %s ||| Average Baths: %s",
-        avg_price,
-        avg_pps,
-        avg_beds,
-        avg_baths,
-    )
+#     if avg_price == 0 or avg_pps == 0 or avg_beds == 0 or avg_baths == 0:
+#         return {
+#             "avg_market_price": avg_price,
+#             "avg_price_per_sqft": avg_pps,
+#             "avg_beds": avg_beds,
+#             "avg_baths": avg_baths,
+#             "investment_rating": 0,
+#             "ai_insight_summary": "No market data available for analysis.",
+#         }
 
-    regressor = InvestmentRegressor(avg_price, avg_pps, avg_beds, avg_baths)
-    try:
-        rating, breakdown = regressor.calculate_rating(compiled_data, property_data)
-        if not rating or not breakdown or len(breakdown) == 0:
-            raise ValueError("Empty rating or breakdown generated")
-    except Exception as e:  # pylint: disable=W0718
-        logger.error("FATAL: Investment Rating Error: %s", e)
-        return {
-            "avg_market_price": avg_price,
-            "avg_price_per_sqft": avg_pps,
-            "avg_beds": avg_beds,
-            "avg_baths": avg_baths,
-            "investment_rating": 0,
-            "ai_insight_summary": "No market data available for analysis.",
-        }
+#     logger.info(
+#         "Market Average Price: %s ||| Market Average PPS: %s ||| "
+#         "Average Beds: %s ||| Average Baths: %s",
+#         avg_price,
+#         avg_pps,
+#         avg_beds,
+#         avg_baths,
+#     )
 
-    logger.info("Investment Rating: %s", rating)
-    logger.info("Investment Breakdown: %s", str(breakdown))
+#     regressor = InvestmentRegressor(
+#         float(avg_price), float(avg_pps), avg_beds, avg_baths
+#     )
+#     try:
+#         rating, breakdown = regressor.calculate_rating(compiled_data, property_data)
+#         if not rating or not breakdown or len(breakdown) == 0:
+#             raise ValueError("Empty rating or breakdown generated")
+#     except Exception as e:  # pylint: disable=W0718
+#         logger.error("FATAL: Investment Rating Error: %s", e)
+#         return {
+#             "avg_market_price": avg_price,
+#             "avg_price_per_sqft": avg_pps,
+#             "avg_beds": avg_beds,
+#             "avg_baths": avg_baths,
+#             "investment_rating": 0,
+#             "ai_insight_summary": "No market data available for analysis.",
+#         }
 
-    # Small compiled json data to avoid window bloat
-    if len(compiled_data) > 50:
-        comps_sample = compiled_data[:50]
-    else:
-        comps_sample = compiled_data
+#     logger.info("Investment Rating: %s", rating)
+#     logger.info("Investment Breakdown: %s", str(breakdown))
 
-    try:
-        ai_json, usage = groq_ai_insight_prompt(
-            comps_sample, property_data, rating, breakdown
-        )
+#     # Small compiled json data to avoid window bloat
+#     if len(compiled_data) > 50:
+#         comps_sample = compiled_data[:50]
+#     else:
+#         comps_sample = compiled_data
 
-        logger.info(
-            "[Groq GPT] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
-            usage.prompt_tokens,
-            usage.completion_tokens,
-            usage.total_tokens,
-        )
-        logger.info("Groq GPT summary generated successfully")
+#     try:
+#         ai_json, usage = groq_ai_insight_prompt(
+#             comps_sample, property_data, rating, breakdown
+#         )
 
-        return {
-            "avg_market_price": avg_price,
-            "avg_price_per_sqft": avg_pps,
-            "avg_beds": avg_beds,
-            "avg_baths": avg_baths,
-            "investment_rating": rating,
-            "ai_insight_summary": ai_json,
-        }
-    except Exception as e:  # pylint: disable=W0718
-        logger.warning(
-            "Attempt %s/%s failed Groq Rate Limit/Error: %s. Retrying again",
-            self.request.retries,
-            self.max_retries,
-            e,
-        )
-        try:
-            self.retry(exc=e)
-        except MaxRetriesExceededError as err:
-            logger.error("Groq GPT Summary Error: %s", err)
-            ai_insight_summary = generate_mock_summary(compiled_data, property_data)
-            return {
-                "avg_market_price": avg_price,
-                "avg_price_per_sqft": avg_pps,
-                "avg_beds": avg_beds,
-                "avg_baths": avg_baths,
-                "investment_rating": rating,
-                "ai_insight_summary": ai_insight_summary,
-            }
+#         logger.info(
+#             "[Groq GPT] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
+#             usage.prompt_tokens,
+#             usage.completion_tokens,
+#             usage.total_tokens,
+#         )
+#         logger.info("Groq GPT summary generated successfully")
 
-    return None
+#         return {
+#             "avg_market_price": avg_price,
+#             "avg_price_per_sqft": avg_pps,
+#             "avg_beds": avg_beds,
+#             "avg_baths": avg_baths,
+#             "investment_rating": rating,
+#             "ai_insight_summary": ai_json,
+#         }
+#     except Exception as e:  # pylint: disable=W0718
+#         logger.warning(
+#             "Attempt %s/%s failed Groq Rate Limit/Error: %s. Retrying again",
+#             self.request.retries,
+#             self.max_retries,
+#             e,
+#         )
+#         try:
+#             self.retry(exc=e)
+#         except MaxRetriesExceededError as err:
+#             logger.error("Groq GPT Summary Error: %s", err)
+#             ai_insight_summary = generate_mock_summary(compiled_data, property_data)
+#             return {
+#                 "avg_market_price": avg_price,
+#                 "avg_price_per_sqft": avg_pps,
+#                 "avg_beds": avg_beds,
+#                 "avg_baths": avg_baths,
+#                 "investment_rating": rating,
+#                 "ai_insight_summary": ai_insight_summary,
+#             }
+
+#     return None
 
 
 @shared_task
@@ -360,7 +375,7 @@ def parallel_report_generator(report_id, property_data):
 
     if not report.exists():
         return None
-    report.update(status="IN_PROGRESS")
+    report.update(status=AIReport.Status.PROCESSING)
 
     # Define 4 parallel chunks (25 properties each = 100 total)
     search_tasks = [

@@ -1,15 +1,15 @@
 "use server";
 import { createReport, deleteReport, getReport } from "@/libs/api";
 
-export const createReportAction = async (data) => {
+export const createReportAction = async (id) => {
   try {
-    const response = await createReport({ data });
+    const response = await createReport({ property_id: id });
 
     if (response.error) {
       return { error: response.error };
     }
 
-    return { success: response.success, data: response.data };
+    return { success: response.success };
   } catch (error) {
     console.error(error);
     return { error: error.message || "An unexpected error occurred" };

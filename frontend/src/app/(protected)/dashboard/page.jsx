@@ -151,7 +151,7 @@ export default async function DashboardPage({ searchParams }) {
             <div className={styles.reportTitle}>Reports</div>
             <div className={styles.reportGrid}>
               {(() => {
-                if (response.results.length === 0) {
+                if (response.results && response.results?.length === 0) {
                   return (
                     <div className={styles.noResultsContainer}>
                       No {currentStatus} Reports Found
