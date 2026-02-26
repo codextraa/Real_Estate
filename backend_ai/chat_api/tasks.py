@@ -1,3 +1,4 @@
+import datetime
 from celery import shared_task, chain
 from celery.utils.log import get_task_logger
 from celery.exceptions import MaxRetriesExceededError
@@ -140,7 +141,6 @@ def ai_message_analysis(
         # pylint: enable=R0801
 
         return {
-            "message_id": message_id,
             "text": final_insight,
             "rating": rating,
         }
@@ -178,12 +178,46 @@ def ai_message_analysis(
             return "Stopped"
 
 
-@shared_task(bind=True)
-def finalizer_task(self, analysis_result, message_id):  # pylint: disable=W0613
-    pass
+@shared_task
+def finalizer_task(analysis_result, message_id):  # pylint: disable=W0613
+    """
+    Takes the JSON analysis from Qwen, formats it into a professional message,
+    and updates the ChatMessage model.
+    """
+    if analysis_result == "Stopped":
+        return "Aborted"
+
+    try:
+        message = ChatMessage.objects.get(id=message_id)
+        insight = analysis_result.get("text", {})
+        rating = analysis_result.get("rating", 0)
+
+        # Optimization: In chat, the "Investment Summary" is the actual answer.
+        # We lead with the answer, then provide the data-backed reasoning.
+        summary_text = (
+            f"{insight.get('investment_summary', '')}\n\n"
+            f"**New Projected Rating: {rating} / 5**\n\n"
+            f"**Analysis of Adjustments:**\n{insight.get('weighted_analysis', '')}\n\n"
+            "**Key Strengths:**\n- " + "\n- ".join(insight.get("pros", [])) + "\n\n"
+            "**Potential Risks:**\n- " + "\n- ".join(insight.get("cons", []))
+        )
+
+        message.content = summary_text
+        message.status = ChatMessage.Status.COMPLETED
+        message.timestamp = datetime.datetime.now()
+        message.save()
+
+        return f"Message {message_id} Success"
+    except Exception as e:
+        logger.error("Finalizer failed: %s", str(e))
+        ChatMessage.objects.filter(id=message_id).update(
+            status=ChatMessage.Status.FAILED,
+            content="Error finalizing the AI response."
+        )
+        return f"Message {message_id} Failed"
 
 
-@shared_task(max_retries=3)
+@shared_task
 def generate_ai_chat_response(message_id, report_id, user_query):
     try:
         report = AIReport.objects.select_related("property").get(id=report_id)
