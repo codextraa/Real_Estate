@@ -1,3 +1,5 @@
+/* --- Logged Out Styles --- */
+
 .background {
   position: relative;
   display: flex;
@@ -21,7 +23,7 @@
   /* top: 50%;
   left: 50%;
   transform: translate(-50%, -50%); */
-  width: 800px;
+  width: 850px;
   height: 627px;
   background: rgba(247, 247, 247, 0.52);
   border-radius: 30px;
@@ -44,7 +46,7 @@
   }
 }
 
-/* --- Desktop Styles (Based on 1280px wide layout) --- */
+/* --- Logged In Styles --- */
 
 .signUpBackground {
   background: #f7f7f7;
@@ -60,10 +62,13 @@
   display: flex;
   justify-content: center;
   max-width: 100%;
-  width: 1280px; /* Adjust as needed, but aims for a wide container */
+  width: 1280px;
+  /* Adjust as needed, but aims for a wide container */
   height: auto;
-  margin-top: 50px; /* Pushed down to account for the title position */
-  margin-bottom: 80px; /* Pushed down to account for the title position */
+  margin-top: 50px;
+  /* Pushed down to account for the title position */
+  margin-bottom: 80px;
+  /* Pushed down to account for the title position */
   border-radius: 93px;
   padding: 0 20px 0 20px;
   overflow: hidden;
@@ -74,10 +79,12 @@
   width: 613px;
   position: relative;
   border-radius: 93px;
-  overflow: hidden; /* Important to keep the image within the border radius */
+  overflow: hidden;
+  /* Important to keep the image within the border radius */
   box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.1);
   filter: blur(2px);
-  z-index: 1; /* Should be behind the form container if there's any overlap */
+  z-index: 1;
+  /* Should be behind the form container if there's any overlap */
 }
 
 .signUpPictureContainer > img {
@@ -89,7 +96,8 @@
 
 .signUpPageFormContainer {
   /* Right side with the form */
-  width: 625px; /* Equal split with the image */
+  width: 625px;
+  /* Equal split with the image */
   margin-left: -90px;
   display: flex;
   justify-content: center;
@@ -128,11 +136,13 @@
 @media (max-width: 500px) {
   .signUpBackground {
     padding: 0;
-    align-items: flex-start; /* Start content from the top on mobile */
+    align-items: flex-start;
+    /* Start content from the top on mobile */
   }
 
   .signUpPageContainer {
-    flex-direction: column; /* Stack the image and form vertically */
+    flex-direction: column;
+    /* Stack the image and form vertically */
     width: 100%;
     padding: 0;
     margin-top: 10px;

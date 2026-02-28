@@ -1,32 +1,25 @@
-/*
- * Desktop Styles (1280px x 832px reference)
- */
 .background {
-  /* Mimics the overall 1280x832 container and centers the content */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   background: #f7f7f7;
-  position: relative; /* For absolute positioning of children if needed, but flex is better */
+  position: relative;
 }
 
 .container {
-  /* Main layout for the two-column structure (form and image) */
   display: flex;
-  width: 1201px; /* Approximation of formContainer (566) + gap + image (595) */
+  width: 1201px;
   max-width: 95%;
-  height: 746px; /* Matches the image height */
+  height: 746px;
   position: relative;
-  /* Center it within the 1280px container */
-  margin-top: 50px; /* Pushed down to account for the title position */
+  margin-top: 50px;
   align-items: center;
   justify-content: center;
 }
 
 .formContainer {
-  /* The curved background for the form */
   width: 566px;
   height: 696px;
   border-radius: 93px;
@@ -38,46 +31,36 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   display: flex;
   justify-content: center;
-  align-items: center; /* The LoginForm will be centered within this */
-  z-index: 0; /* Ensure it's behind the title and next to the image */
+  align-items: center;
+  z-index: 0;
 }
 
 .image {
-  /* The container for the Next.js Image component */
   width: 595px;
   height: 746px;
   border-radius: 93px;
-  overflow: hidden; /* Important to keep the image within the border radius */
-  margin-left: -30px; /* Overlap with the form container to match the image */
+  overflow: hidden;
+  margin-left: -30px;
   box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.1);
-  filter: blur(2px);
+  filter: blur(3px);
   position: relative;
-  z-index: 1; /* Should be behind the form container if there's any overlap */
+  z-index: 1;
 }
 
 .image img {
-  /* Apply backdrop filter to the image element itself */
-  /* filter: blur(2px); */
-  /* Ensure the Image component fills its container */
   object-fit: cover;
   width: 100%;
   height: 100%;
 }
 
-/*
- * Mobile Styles (Max width 600px)
- */
-
 @media (max-width: 900px) {
   .container {
-    /* Stack the form and image vertically */
     flex-direction: column;
     width: 100%;
     height: auto;
   }
 
   .formContainer {
-    /* Full width, smaller height, less border radius */
     width: 90%;
     height: auto;
     min-height: 450px;
@@ -87,14 +70,12 @@
   }
 
   .image {
-    /* Hide the image on smaller screens to prioritize the form */
     display: none;
   }
 }
 
 @media (max-width: 500px) {
   .container {
-    /* Stack the form and image vertically */
     flex-direction: column;
     width: 100%;
     height: auto;
@@ -102,7 +83,6 @@
   }
 
   .formContainer {
-    /* Full width, smaller height, less border radius */
     width: 90%;
     height: auto;
     min-height: 450px;
@@ -113,7 +93,6 @@
   }
 
   .image {
-    /* Hide the image on smaller screens to prioritize the form */
     display: none;
   }
 }
