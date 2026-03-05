@@ -38,7 +38,9 @@ def ai_message_extractor(self, message_id, property_details, user_query):
         if error:
             self.request.chain = None
             message = ChatMessage.objects.get(id=message_id)
-            message.update(status=ChatMessage.Status.FAILED, content=error)
+            message.status = ChatMessage.Status.FAILED
+            message.content = error
+            message.save(update_fields=['status', 'content'])
             return "Stopped"
 
         property_json["title"] = property_details["title"]
@@ -58,10 +60,9 @@ def ai_message_extractor(self, message_id, property_details, user_query):
             logger.error("Groq GPT Summary Error: %s", err)
             self.request.chain = None
             message = ChatMessage.objects.get(id=message_id)
-            message.update(
-                status=ChatMessage.Status.FAILED,
-                content="Agent failed to respond. Please try again.",
-            )
+            message.status = ChatMessage.Status.FAILED
+            message.content = "Agent failed to respond. Please try again."
+            message.save(update_fields=['status', 'content'])
             return "Stopped"
 
 
@@ -109,10 +110,9 @@ def ai_message_analysis(
             logger.error("FATAL: Investment Rating Error: %s", e)
             self.request.chain = None
             message = ChatMessage.objects.get(id=message_id)
-            message.update(
-                status=ChatMessage.Status.FAILED,
-                content="Agent failed to respond. Please try again.",
-            )
+            message.status = ChatMessage.Status.FAILED
+            message.content = "Agent failed to respond. Please try again."
+            message.save(update_fields=['status', 'content'])
             return "Stopped"
 
     # pylint: disable=R0801
@@ -171,12 +171,10 @@ def ai_message_analysis(
             logger.error("Groq GPT Summary Error: %s", err)
             self.request.chain = None
             message = ChatMessage.objects.get(id=message_id)
-            message.update(
-                status=ChatMessage.Status.FAILED,
-                content="Agent failed to respond. Please try again.",
-            )
+            message.status = ChatMessage.Status.FAILED
+            message.content = "Agent failed to respond. Please try again."
+            message.save(update_fields=['status', 'content'])
             return "Stopped"
-
 
 @shared_task
 def finalizer_task(analysis_result, message_id):  # pylint: disable=W0613
@@ -191,10 +189,12 @@ def finalizer_task(analysis_result, message_id):  # pylint: disable=W0613
         message = ChatMessage.objects.get(id=message_id)
         insight = analysis_result.get("text", {})
         rating = analysis_result.get("rating", 0)
+        intro = "Based on your criteria, here is my analysis of this property:"
 
         # Optimization: In chat, the "Investment Summary" is the actual answer.
         # We lead with the answer, then provide the data-backed reasoning.
         summary_text = (
+            f"{intro}\n\n"
             f"{insight.get('investment_summary', '')}\n\n"
             f"**New Projected Rating: {rating} / 5**\n\n"
             f"**Analysis of Adjustments:**\n{insight.get('weighted_analysis', '')}\n\n"
@@ -223,7 +223,8 @@ def generate_ai_chat_response(message_id, report_id, user_query):
         report = AIReport.objects.select_related("property").get(id=report_id)
         property_obj = report.property
         ai_message = ChatMessage.objects.get(id=message_id)
-        ai_message.update(status=ChatMessage.Status.PROCESSING)
+        ai_message.status = ChatMessage.Status.PROCESSING
+        ai_message.save(update_fields=['status'])
 
         property_details = {
             "title": property_obj.title,
