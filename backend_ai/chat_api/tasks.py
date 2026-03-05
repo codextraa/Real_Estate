@@ -1,10 +1,10 @@
-import datetime
+from django.utils import timezone
 from celery import shared_task, chain
 from celery.utils.log import get_task_logger
 from celery.exceptions import MaxRetriesExceededError
 from report_api.regression_model import InvestmentRegressor
 from report_api.agents import groq_ai_insight_prompt
-from core_db_ai.models import ChatMessage, AIReport
+from core_db_ai.models import ChatSession, ChatMessage, AIReport
 from .agents import chat_json_extractor_agent
 
 logger = get_task_logger(__name__)
@@ -17,7 +17,7 @@ logger = get_task_logger(__name__)
     rate_limit="8/m",
     retry_jitter=False,
 )
-def ai_message_extractor(self, message_id, property_details, user_query):
+def ai_message_extractor(self, session_id, message_id, property_details, user_query):
     """
     Worker Task: Calls Groq GPT for extraction.
     """
@@ -40,7 +40,13 @@ def ai_message_extractor(self, message_id, property_details, user_query):
             message = ChatMessage.objects.get(id=message_id)
             message.status = ChatMessage.Status.FAILED
             message.content = error
-            message.save(update_fields=['status', 'content'])
+            message.timestamp = timezone.now()
+            message.save(update_fields=["status", "content", "timestamp"])
+
+            session = ChatSession.objects.get(id=session_id)
+            session.user_message_count += 1
+            session.save()
+
             return "Stopped"
 
         property_json["title"] = property_details["title"]
@@ -62,7 +68,8 @@ def ai_message_extractor(self, message_id, property_details, user_query):
             message = ChatMessage.objects.get(id=message_id)
             message.status = ChatMessage.Status.FAILED
             message.content = "Agent failed to respond. Please try again."
-            message.save(update_fields=['status', 'content'])
+            message.timestamp = timezone.now()
+            message.save(update_fields=["status", "content", "timestamp"])
             return "Stopped"
 
 
@@ -112,7 +119,8 @@ def ai_message_analysis(
             message = ChatMessage.objects.get(id=message_id)
             message.status = ChatMessage.Status.FAILED
             message.content = "Agent failed to respond. Please try again."
-            message.save(update_fields=['status', 'content'])
+            message.timestamp = timezone.now()
+            message.save(update_fields=["status", "content", "timestamp"])
             return "Stopped"
 
     # pylint: disable=R0801
@@ -173,11 +181,13 @@ def ai_message_analysis(
             message = ChatMessage.objects.get(id=message_id)
             message.status = ChatMessage.Status.FAILED
             message.content = "Agent failed to respond. Please try again."
-            message.save(update_fields=['status', 'content'])
+            message.timestamp = timezone.now()
+            message.save(update_fields=["status", "content", "timestamp"])
             return "Stopped"
 
+
 @shared_task
-def finalizer_task(analysis_result, message_id):  # pylint: disable=W0613
+def finalizer_task(analysis_result, session_id, message_id):  # pylint: disable=W0613
     """
     Takes the JSON analysis from Qwen, formats it into a professional message,
     and updates the ChatMessage model.
@@ -187,16 +197,15 @@ def finalizer_task(analysis_result, message_id):  # pylint: disable=W0613
 
     try:
         message = ChatMessage.objects.get(id=message_id)
+        session = ChatSession.objects.get(id=session_id)
         insight = analysis_result.get("text", {})
         rating = analysis_result.get("rating", 0)
         intro = "Based on your criteria, here is my analysis of this property:"
 
-        # Optimization: In chat, the "Investment Summary" is the actual answer.
-        # We lead with the answer, then provide the data-backed reasoning.
         summary_text = (
             f"{intro}\n\n"
-            f"{insight.get('investment_summary', '')}\n\n"
             f"**New Projected Rating: {rating} / 5**\n\n"
+            f"{insight.get('investment_summary', '')}\n\n"
             f"**Analysis of Adjustments:**\n{insight.get('weighted_analysis', '')}\n\n"
             "**Key Strengths:**\n- " + "\n- ".join(insight.get("pros", [])) + "\n\n"
             "**Potential Risks:**\n- " + "\n- ".join(insight.get("cons", []))
@@ -204,27 +213,31 @@ def finalizer_task(analysis_result, message_id):  # pylint: disable=W0613
 
         message.content = summary_text
         message.status = ChatMessage.Status.COMPLETED
-        message.timestamp = datetime.datetime.now()
+        message.timestamp = timezone.now()
         message.save()
+
+        session.user_message_count += 1
+        session.save()
 
         return f"Message {message_id} Success"
     except Exception as e:
         logger.error("Finalizer failed: %s", str(e))
         ChatMessage.objects.filter(id=message_id).update(
             status=ChatMessage.Status.FAILED,
-            content="Error finalizing the AI response."
+            content="Error finalizing the AI response.",
+            timestamp=timezone.now(),
         )
         return f"Message {message_id} Failed"
 
 
 @shared_task
-def generate_ai_chat_response(message_id, report_id, user_query):
+def generate_ai_chat_response(session_id, message_id, report_id, user_query):
     try:
         report = AIReport.objects.select_related("property").get(id=report_id)
         property_obj = report.property
         ai_message = ChatMessage.objects.get(id=message_id)
         ai_message.status = ChatMessage.Status.PROCESSING
-        ai_message.save(update_fields=['status'])
+        ai_message.save(update_fields=["status"])
 
         property_details = {
             "title": property_obj.title,
@@ -244,9 +257,11 @@ def generate_ai_chat_response(message_id, report_id, user_query):
         }
 
         return chain(
-            ai_message_extractor.s(message_id, property_details, user_query),
+            ai_message_extractor.s(
+                session_id, message_id, property_details, user_query
+            ),
             ai_message_analysis.s(message_id, report_details, user_query),
-            finalizer_task.s(message_id),
+            finalizer_task.s(session_id, message_id),
         ).apply_async()
     except AIReport.DoesNotExist:
         logger.error(f"Abort: Report {report_id} does not exist.")
@@ -258,6 +273,8 @@ def generate_ai_chat_response(message_id, report_id, user_query):
         logger.error(f"Unexpected error: {str(e)}")
         if "ai_message" in locals():
             ChatMessage.objects.filter(id=message_id).update(
-                status=ChatMessage.Status.FAILED
+                status=ChatMessage.Status.FAILED,
+                content="Error generating AI response. Please try again.",
+                timestamp=timezone.now(),
             )
         return None

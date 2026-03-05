@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -396,7 +397,10 @@ class ChatMessageDetailView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        if message.status != ChatMessage.Status.COMPLETED:
+        if (
+            message.status != ChatMessage.Status.COMPLETED
+            or message.status != ChatMessage.Status.FAILED
+        ):
             return Response(
                 {"pending": f"Your message is still being {message.status.lower()}."},
                 status=status.HTTP_202_ACCEPTED,
@@ -482,13 +486,16 @@ class ChatMessageCreateView(APIView):
             content=user_content,
             role=ChatMessage.Role.USER,
             status=ChatMessage.Status.COMPLETED,
+            timestamp=timezone.now(),
         )
 
         ai_message = ChatMessage.objects.create(
             session=session, role=ChatMessage.Role.AI
         )
 
-        generate_ai_chat_response.delay(ai_message.id, session.report_id, user_content)
+        generate_ai_chat_response.delay(
+            session.id, ai_message.id, session.report_id, user_content
+        )
 
         return Response(
             {
