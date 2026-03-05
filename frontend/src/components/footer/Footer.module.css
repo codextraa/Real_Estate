@@ -8,7 +8,7 @@
   font-family: var(--font-merriweather);
   font-weight: 900;
   font-size: 16px;
-  line-height: 100%;
+  line-height: normal;
   text-align: center;
   color: #f7f7f7;
   background: none;
@@ -40,7 +40,7 @@
 
 @media screen and (max-width: 375px) {
   .footer {
-    font-size: 9px;
+    font-size: 10px;
     padding: 8px;
   }
 }

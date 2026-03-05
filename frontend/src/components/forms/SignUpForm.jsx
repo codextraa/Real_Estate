@@ -81,7 +81,7 @@ export default function SignUpForm({ userType }) {
         <div className={styles.formInputContainer}>
           <div className={styles.inputContainer}>
             <input
-              type="email"
+              type="text"
               id="email"
               name="email"
               placeholder="Email*"
@@ -149,7 +149,7 @@ export default function SignUpForm({ userType }) {
               type="text"
               id="username"
               name="username"
-              placeholder="Username*"
+              placeholder="Username"
               disabled={isPending}
               defaultValue={state.formUsername}
               className={`${styles.input} ${userType === "admin" && styles2.inputAdmin}`}

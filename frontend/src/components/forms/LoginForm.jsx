@@ -49,7 +49,7 @@ export default function LoginForm() {
         <div className={styles.formInputContainer}>
           <div className={styles.inputContainer}>
             <input
-              id="email"
+              id="text"
               name="email"
               placeholder="Email"
               disabled={isPending}
