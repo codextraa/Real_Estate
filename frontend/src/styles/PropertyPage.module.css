@@ -40,12 +40,7 @@
   font-family: var(--font-koh-santepheap);
   font-size: 210px;
   font-weight: 400;
-  background: linear-gradient(
-    280.9deg,
-    #14242c -29.02%,
-    #324b59 40.91%,
-    #648aa2 106.52%
-  );
+  background: #13252E;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
@@ -281,6 +276,7 @@
 }
 
 @media (max-width: 480px) {
+
   .content,
   .content2 {
     font-size: 60px;
