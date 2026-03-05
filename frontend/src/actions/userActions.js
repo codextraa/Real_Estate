@@ -193,24 +193,24 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
   const newUserFormData =
     userRole === "Agent"
       ? {
-          user: {
-            email: prevState.formUserData.user.email,
-            first_name: first_name || prevState.formUserData.user.first_name,
-            last_name: last_name || prevState.formUserData.user.last_name,
-            username: username || prevState.formUserData.user.username,
-            slug: prevState.formUserData.user.slug,
-          },
-          bio: bio || prevState.formUserData.bio,
-          company_name: company_name || prevState.formUserData.company_name,
-          image_url: prevState.formUserData.image_url,
-        }
+        user: {
+          email: prevState.formUserData.user.email,
+          first_name: first_name || prevState.formUserData.user.first_name,
+          last_name: last_name || prevState.formUserData.user.last_name,
+          username: username || prevState.formUserData.user.username,
+          slug: prevState.formUserData.user.slug,
+        },
+        bio: bio || prevState.formUserData.bio,
+        company_name: company_name || prevState.formUserData.company_name,
+        image_url: prevState.formUserData.image_url,
+      }
       : {
-          email: prevState.formUserData.email,
-          first_name: first_name || prevState.formUserData.first_name,
-          last_name: last_name || prevState.formUserData.last_name,
-          username: username || prevState.formUserData.username,
-          slug: prevState.formUserData.slug,
-        };
+        email: prevState.formUserData.email,
+        first_name: first_name || prevState.formUserData.first_name,
+        last_name: last_name || prevState.formUserData.last_name,
+        username: username || prevState.formUserData.username,
+        slug: prevState.formUserData.slug,
+      };
 
   const errors = {};
 
@@ -265,42 +265,42 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       const data =
         userRole === "Agent"
           ? {
-              ...(first_name &&
-                prevState.initialUserData.user.first_name !== first_name && {
-                  first_name,
-                }),
-              ...(last_name &&
-                prevState.initialUserData.user.last_name !== last_name && {
-                  last_name,
-                }),
-              ...(username &&
-                prevState.initialUserData.user.username !== username && {
-                  username,
-                }),
-              ...(bio && prevState.initialUserData.bio !== bio && { bio }),
-              ...(company_name &&
-                prevState.initialUserData.company_name !== company_name && {
-                  company_name,
-                }),
-              ...(password && { password }),
-              ...(c_password && { c_password }),
-            }
+            ...(first_name &&
+              prevState.initialUserData.user.first_name !== first_name && {
+              first_name,
+            }),
+            ...(last_name &&
+              prevState.initialUserData.user.last_name !== last_name && {
+              last_name,
+            }),
+            ...(username &&
+              prevState.initialUserData.user.username !== username && {
+              username,
+            }),
+            ...(bio && prevState.initialUserData.bio !== bio && { bio }),
+            ...(company_name &&
+              prevState.initialUserData.company_name !== company_name && {
+              company_name,
+            }),
+            ...(password && { password }),
+            ...(c_password && { c_password }),
+          }
           : {
-              ...(first_name &&
-                prevState.initialUserData.first_name !== first_name && {
-                  first_name,
-                }),
-              ...(last_name &&
-                prevState.initialUserData.last_name !== last_name && {
-                  last_name,
-                }),
-              ...(username &&
-                prevState.initialUserData.username !== username && {
-                  username,
-                }),
-              ...(password && { password }),
-              ...(c_password && { c_password }),
-            };
+            ...(first_name &&
+              prevState.initialUserData.first_name !== first_name && {
+              first_name,
+            }),
+            ...(last_name &&
+              prevState.initialUserData.last_name !== last_name && {
+              last_name,
+            }),
+            ...(username &&
+              prevState.initialUserData.username !== username && {
+              username,
+            }),
+            ...(password && { password }),
+            ...(c_password && { c_password }),
+          };
 
       if (Object.keys(data).length === 0) {
         errors.general = "No changes were made";

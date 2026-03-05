@@ -29,7 +29,7 @@ export default async function ProfileCard({ userData, userId, userRole }) {
           <div className={styles.profileContainer}>
             <div className={styles.bioInfo}>
               <h1 className={styles.subTitle}>
-                {userData.user.first_name + " " + userData.user.last_name}
+                {`${userData.user.first_name!=null?`${userData.user.first_name} `:''}${userData.user.last_name!=null?`${userData.user.last_name} `:''}` || userData.user.username}
               </h1>
               <label className={styles.aboutMeLabel}>About Me</label>
               <div className={styles.storedText}>{userData.bio}</div>
