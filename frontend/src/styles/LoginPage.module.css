@@ -54,6 +54,13 @@
 }
 
 @media (max-width: 900px) {
+  .background {
+    min-height: 100vh;
+    display: flex;
+    justify-content: flex-start;
+    padding-top: 15vh;
+  }
+
   .container {
     flex-direction: column;
     width: 100%;
