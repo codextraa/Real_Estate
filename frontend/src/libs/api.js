@@ -125,3 +125,19 @@ export const getReport = async (id) => {
 export const deleteReport = async (id) => {
   return apiAiClient.delete(`/report-api/reports/${id}/`);
 };
+
+export const getAIChatSession = async (id) => {
+  return apiAiClient.get(`/chat-api/chat/session/${id}/`);
+}
+
+export const deleteAIChatSession = async (id) => {
+  return apiAiClient.delete(`/chat-api/chat/session/${id}/`);
+}
+
+export const postAIMessage = async (data) => {
+  return apiAiClient.post(`/chat-api/chat/message/`, data);
+}
+
+export const getAIMessage = async (id) => {
+  return apiAiClient.get(`/chat-api/chat/message/${id}/`);
+}

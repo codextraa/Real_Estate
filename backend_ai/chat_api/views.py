@@ -475,6 +475,12 @@ class ChatMessageCreateView(APIView):
                     {"error": "Access denied. This session belongs to another user."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
+
+            if session.user_message_count >= 10:
+                return Response(
+                    {"error": "You have reached the maximum number of messages."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         except ChatSession.DoesNotExist:
             return Response(
                 {"error": "The specified ChatSession does not exist."},
