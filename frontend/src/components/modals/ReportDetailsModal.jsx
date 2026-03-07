@@ -15,7 +15,6 @@ export default function ReportDetailsModal({ reportID, onClose }) {
       try {
         setLoading(true);
         const response = await getReportAction(reportID);
-        console.log("insight: ", response.ai_insight_summary);
         const reportData = response;
         setDetails(reportData);
       } catch (error) {

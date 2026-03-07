@@ -1,20 +1,18 @@
-/* DeleteModal.module.css */
-
 .modalOverlay {
-  /* Fixes the position relative to the viewport */
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0);
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
   backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  overflow: hidden;
+  z-index: 999999;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0px 20px 0px 20px;
 }
 
 .modalContent {
@@ -52,8 +50,6 @@
   cursor: pointer;
   font: var(--font-old-standard-tt);
   font-weight: 700;
-  line-height: 1;
-  font-style: bold;
   font-size: 18px;
   text-align: center;
   transition: background-color 0.2s;
@@ -79,13 +75,17 @@
 
 .errorMessage {
   margin-top: 10px;
+  margin-bottom: -25px;
   color: #b70000;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 18px;
 }
 .successMessage {
   margin-top: 10px;
+  margin-bottom: -25px;
   color: #368c04;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 18px;
 }
 
 @media (max-width: 800px) {
@@ -109,8 +109,16 @@
     padding: 20px 20px;
   }
 
-  .modalText {
+  .modalText,
+  .errorMessage,
+  .successMessage {
     font-size: 16px;
+  }
+  .errorMessage {
+    margin-bottom: -15px;
+  }
+  .successMessage {
+    margin-bottom: -15px;
   }
 
   .yesButton,

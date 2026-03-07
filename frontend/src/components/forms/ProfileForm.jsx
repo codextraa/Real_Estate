@@ -46,8 +46,8 @@ export default function ProfileForm({
 
   const name =
     userRole === "Agent"
-      ? `${state.initialUserData.user.first_name != null ? `${state.initialUserData.user.first_name} ` : ''}${state.initialUserData.user.last_name != null ? `${state.initialUserData.user.last_name}` : ''}`
-      || state.initialUserData.user.username
+      ? `${state.initialUserData.user.first_name != null ? `${state.initialUserData.user.first_name} ` : ""}${state.initialUserData.user.last_name != null ? `${state.initialUserData.user.last_name}` : ""}` ||
+        state.initialUserData.user.username
       : null;
 
   // Helper function to extract relevant form fields based on user role

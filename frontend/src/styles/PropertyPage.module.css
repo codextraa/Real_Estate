@@ -40,7 +40,7 @@
   font-family: var(--font-koh-santepheap);
   font-size: 210px;
   font-weight: 400;
-  background: #13252E;
+  background: #13252e;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
@@ -276,7 +276,6 @@
 }
 
 @media (max-width: 480px) {
-
   .content,
   .content2 {
     font-size: 60px;
