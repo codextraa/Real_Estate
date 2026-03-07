@@ -36,7 +36,6 @@
 
 .profileLabel {
   font-size: 18px;
-  margin-bottom: -2px;
   display: block;
 }
 
@@ -72,12 +71,17 @@ input[type="email"].storedContent {
   max-width: 544px;
 }
 
+.passwordContainerUser {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .changePasswordTitle {
   font-size: 20px;
   line-height: 100%;
   letter-spacing: 0%;
   margin-top: 0;
-  margin-bottom: 4px;
 }
 
 .wholePasswordContainer {
@@ -224,7 +228,7 @@ input[type="email"].storedContent {
 
 .ImageContainer {
   width: 200px;
-  height: 150px;
+  height: 140px;
   border-radius: 12px;
   border: 3px solid #415261;
   position: relative;
@@ -255,13 +259,13 @@ input[type="email"].storedContent {
 }
 
 .bioInfo {
-  margin-bottom: 30px;
+  margin-bottom: 35px;
 }
 
 .subTitle {
   font-size: 25px;
   margin-top: 0;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .aboutMeLabel {
@@ -316,8 +320,8 @@ input[type="email"].storedContent {
 .profileDetails {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  margin-bottom: 35px;
+  gap: 11px;
+  margin-bottom: 40px;
 }
 
 .subTitle2 {
@@ -335,7 +339,7 @@ input[type="email"].storedContent {
 }
 
 .changePasswordTitleAgent {
-  margin-bottom: 12px;
+  margin-bottom: 11px;
 }
 
 .wholePasswordContainerAgent {
@@ -426,8 +430,13 @@ input[type="email"].storedContent {
     font-size: 25px;
   }
 
+  .bioInfo {
+    margin-bottom: 25px;
+  }
+
   .subTitle {
     font-size: 20px;
+    margin-bottom: 15px;
   }
 
   .aboutMeLabel {
@@ -501,12 +510,16 @@ input[type="email"].storedContent {
   }
 
   .profileDetails {
-    gap: 5px;
+    gap: 8px;
+    margin-bottom: 25px;
+  }
+
+  .passwordContainerAgent {
     margin-bottom: 25px;
   }
 
   .changePasswordTitleAgent {
-    margin-bottom: 9px;
+    margin-bottom: 8px;
   }
 }
 
@@ -551,6 +564,10 @@ input[type="email"].storedContent {
     font-size: 14px;
   }
 
+  .storedContent {
+    padding: 5px 9px;
+  }
+
   .storedText {
     font-size: 14px;
     padding: 5px 10px;
@@ -589,11 +606,10 @@ input[type="email"].storedContent {
   }
 
   .profileDetails {
-    gap: 3px;
-    margin-bottom: 15px;
+    gap: 5px;
   }
 
   .changePasswordTitleAgent {
-    margin-bottom: 6px;
+    margin-bottom: 5px;
   }
 }
