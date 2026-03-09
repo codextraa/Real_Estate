@@ -141,3 +141,87 @@ class Property(models.Model):
 
     def __str__(self):
         return f"{self.title}"
+
+
+# Shadow Models for AI Backend Tables
+# These models mirror the AI backend's models to allow the main backend
+# to query and delete AI backend records for cross-service integrity
+
+
+class AIReport(models.Model):
+    """Shadow model for AI backend's AIReport table"""
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        PROCESSING = "PROCESSING", "Processing"
+        COMPLETED = "COMPLETED", "Completed"
+        FAILED = "FAILED", "Failed"
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="ai_reports", db_column="user_id"
+    )
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="ai_reports",
+        db_column="property_id",
+    )
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING
+    )
+
+    class Meta:
+        managed = False
+        db_table = "core_db_ai_aireport"
+
+
+class ChatSession(models.Model):
+    """Shadow model for AI backend's ChatSession table"""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="chat_sessions",
+        db_column="user_id",
+    )
+    report = models.ForeignKey(
+        AIReport,
+        on_delete=models.CASCADE,
+        related_name="chat_sessions",
+        db_column="report_id",
+    )
+    user_message_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed = False
+        db_table = "core_db_ai_chatsession"
+
+
+class ChatMessage(models.Model):
+    """Shadow model for AI backend's ChatMessage table"""
+
+    class Role(models.TextChoices):
+        USER = "user", "User"
+        AI = "ai", "AI"
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        PROCESSING = "PROCESSING", "Processing"
+        COMPLETED = "COMPLETED", "Completed"
+        FAILED = "FAILED", "Failed"
+
+    session = models.ForeignKey(
+        ChatSession,
+        on_delete=models.CASCADE,
+        related_name="messages",
+        db_column="session_id",
+    )
+    role = models.CharField(max_length=10, choices=Role.choices)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING
+    )
+
+    class Meta:
+        managed = False
+        db_table = "core_db_ai_chatmessage"

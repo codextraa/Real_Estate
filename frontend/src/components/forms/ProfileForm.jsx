@@ -47,7 +47,7 @@ export default function ProfileForm({
   const name =
     userRole === "Agent"
       ? `${state.initialUserData.user.first_name != null ? `${state.initialUserData.user.first_name} ` : ""}${state.initialUserData.user.last_name != null ? `${state.initialUserData.user.last_name}` : ""}` ||
-      state.initialUserData.user.username
+        state.initialUserData.user.username
       : null;
 
   // Helper function to extract relevant form fields based on user role
@@ -693,7 +693,9 @@ export default function ProfileForm({
                   </span>
                 )}
             </div>
-            <div className={`${styles.passwordContainer} ${styles.passwordContainerUser}`}>
+            <div
+              className={`${styles.passwordContainer} ${styles.passwordContainerUser}`}
+            >
               <h2 className={styles.changePasswordTitle}>Change Password</h2>
               <div className={styles.wholePasswordContainer}>
                 <div className={styles.profileBoxLabel}>

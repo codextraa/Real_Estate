@@ -220,7 +220,7 @@ def finalizer_task(analysis_result, session_id, message_id):  # pylint: disable=
         session.save()
 
         return f"Message {message_id} Success"
-    except Exception as e:
+    except Exception as e:  # pylint: disable=W0718
         logger.error("Finalizer failed: %s", str(e))
         ChatMessage.objects.filter(id=message_id).update(
             status=ChatMessage.Status.FAILED,

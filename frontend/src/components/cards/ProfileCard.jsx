@@ -29,7 +29,8 @@ export default async function ProfileCard({ userData, userId, userRole }) {
           <div className={styles.profileContainer}>
             <div className={styles.bioInfo}>
               <h1 className={styles.subTitle}>
-                {`${userData.user.first_name != null ? `${userData.user.first_name} ` : ''}${userData.user.last_name != null ? `${userData.user.last_name} ` : ''}` || userData.user.username}
+                {`${userData.user.first_name != null ? `${userData.user.first_name} ` : ""}${userData.user.last_name != null ? `${userData.user.last_name} ` : ""}` ||
+                  userData.user.username}
               </h1>
               <label className={styles.aboutMeLabel}>About Me</label>
               <div className={styles.storedText}>{userData.bio}</div>
@@ -71,7 +72,9 @@ export default async function ProfileCard({ userData, userId, userRole }) {
                 </div>
               </div>
             </div>
-            <div className={`${styles.profileDetails} ${styles.companyDetails}`}>
+            <div
+              className={`${styles.profileDetails} ${styles.companyDetails}`}
+            >
               <h1 className={styles.subTitle2}>Company Information</h1>
               <div
                 className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}

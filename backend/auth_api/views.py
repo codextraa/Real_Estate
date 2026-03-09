@@ -22,7 +22,7 @@ from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiResponse,
 )
-from core_db.models import Agent
+from core_db.models import Agent, AIReport, ChatMessage, ChatSession
 from backend.renderers import ViewRenderer
 from backend.mixins import http_method_mixin
 from backend.schema_serializers import (
@@ -1036,6 +1036,18 @@ class UserViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        reports = AIReport.objects.filter(user=user_to_delete)
+
+        if reports.exists():
+            sessions = ChatSession.objects.filter(report__in=reports)
+
+            if sessions.exists():
+                ChatMessage.objects.filter(session__in=sessions).delete()
+
+            sessions.delete()
+
+        reports.delete()
+
         email = user_to_delete.email
         response = super().destroy(request, *args, **kwargs)
 
@@ -1654,6 +1666,18 @@ class AgentViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        reports = AIReport.objects.filter(user=user_to_delete)
+
+        if reports.exists():
+            sessions = ChatSession.objects.filter(report__in=reports)
+
+            if sessions.exists():
+                ChatMessage.objects.filter(session__in=sessions).delete()
+
+            sessions.delete()
+
+        reports.delete()
+
         default_profile_image = "profile_images/default_profile.jpg"
         old_agent_image = None
 
@@ -1665,6 +1689,7 @@ class AgentViewSet(ModelViewSet):
                 settings.MEDIA_ROOT, agent_to_delete.image_url.name
             )
 
+        email = user_to_delete.email
         response = super().destroy(request, *args, **kwargs)
         user_to_delete.delete()
 
@@ -1673,7 +1698,7 @@ class AgentViewSet(ModelViewSet):
 
         if response.status_code == status.HTTP_204_NO_CONTENT:
             return Response(
-                {"success": "Agent profile deleted successfully."},
+                {"success": f"Agent {email} deleted successfully."},
                 status=status.HTTP_200_OK,
             )
 
