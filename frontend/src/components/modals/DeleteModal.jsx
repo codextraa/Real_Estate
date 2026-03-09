@@ -5,6 +5,7 @@ import { useState } from "react";
 import { deleteUserAction } from "@/actions/userActions";
 import { deletePropertyAction } from "@/actions/propertyActions";
 import { deleteReportAction } from "@/actions/reportActions";
+import { deleteAIChatSessionAction } from "@/actions/chatActions";
 import { logoutAction } from "@/actions/authActions";
 import { redirect } from "next/navigation";
 export default function DeleteModal({
@@ -70,6 +71,20 @@ export default function DeleteModal({
           setTimeout(async () => {
             onCancel();
             redirect("/dashboard");
+          }, 2000);
+        }
+      } else if (actionName === "deleteChat") {
+        const chatId = userData.id;
+        const response = await deleteAIChatSessionAction(chatId);
+        if (response && response.error) {
+          setDeletionError(
+            response.error ||
+              "Report deletion failed due to an unknown server error.",
+          );
+        } else if (response && response.success) {
+          setSuccessMessage(response.success || "Report deleted successfully.");
+          setTimeout(async () => {
+            onCancel();
           }, 2000);
         }
       }

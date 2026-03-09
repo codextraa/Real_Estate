@@ -398,8 +398,8 @@ class ChatMessageDetailView(APIView):
             )
 
         if (
-            message.status != ChatMessage.Status.COMPLETED
-            or message.status != ChatMessage.Status.FAILED
+            message.status != ChatMessage.Status.COMPLETED and 
+            message.status != ChatMessage.Status.FAILED
         ):
             return Response(
                 {"pending": f"Your message is still being {message.status.lower()}."},

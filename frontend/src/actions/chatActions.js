@@ -1,6 +1,11 @@
 "use server";
 
-import { getAIChatSession, deleteAIChatSession, postAIMessage, getAIMessage } from "@/libs/api";
+import {
+  getAIChatSession,
+  deleteAIChatSession,
+  postAIMessage,
+  getAIMessage,
+} from "@/libs/api";
 
 export const getAIChatSessionAction = async (reportId) => {
   try {
@@ -33,7 +38,7 @@ export const deleteAIChatSessionAction = async (sessionId) => {
 };
 
 export const postAIMessageAction = async (sessionId, prevState, formData) => {
-  content = formData.get("content");
+  const content = formData.get("content");
 
   if (!content) {
     return { error: "Content is required" };

@@ -89,7 +89,6 @@ export default function ReportDetailsModal({ reportID, onClose }) {
               <div className={styles.sectionUnderline}>AI Summary:</div>
               <div className={styles.aiSummaryBox}>
                 {details.ai_insight_summary || "No summary available."}
-                {console.log("details insight: ", details.ai_insight_summary)}
               </div>
             </div>
 
