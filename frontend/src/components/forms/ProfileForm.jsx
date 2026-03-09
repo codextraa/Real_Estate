@@ -693,7 +693,9 @@ export default function ProfileForm({
                   </span>
                 )}
             </div>
-            <div className={styles.passwordContainer}>
+            <div
+              className={`${styles.passwordContainer} ${styles.passwordContainerUser}`}
+            >
               <h2 className={styles.changePasswordTitle}>Change Password</h2>
               <div className={styles.wholePasswordContainer}>
                 <div className={styles.profileBoxLabel}>

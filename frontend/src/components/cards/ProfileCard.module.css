@@ -1,3 +1,4 @@
+/* Common styles for both Agent and Customer containers */
 .profileInfoContainer {
   background: #f7f7f7;
   font-family: var(--font-old-standard-tt);
@@ -36,13 +37,12 @@
 
 .profileLabel {
   font-size: 18px;
-  margin-bottom: -2px;
   display: block;
 }
 
 .storedContent {
   border: 2px solid #415261;
-  min-height: 33px;
+  min-height: 32px;
   border-radius: 6px;
   width: 100%;
   padding: 5px 10px;
@@ -93,7 +93,7 @@
 
 .ImageContainer {
   width: 200px;
-  height: 150px;
+  height: 140px;
   border-radius: 12px;
   border: 3px solid #415261;
 }
@@ -112,7 +112,7 @@
 }
 
 .bioInfo {
-  margin-bottom: 30px;
+  margin-bottom: 35px;
 }
 
 .subTitle {
@@ -140,7 +140,14 @@
 .profileDetails {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 11px;
+}
+
+.mainDetails {
+  margin-bottom: 40px;
+}
+
+.companyDetails {
   margin-bottom: 25px;
 }
 
@@ -160,14 +167,14 @@
 
 .editAgentProfileButton {
   border-radius: 10px;
-  padding: 3px 36px;
+  padding: 6px 36px 4px 36px;
 }
 
 .myListingsButton {
   justify-content: space-between;
   gap: 18px;
   border-radius: 10px;
-  padding: 4px 13px;
+  padding: 5px 13px 4px 13px;
 }
 
 .arrowIcon {
@@ -181,7 +188,11 @@
   }
 }
 
-@media (max-width: 550px) {
+@media (max-width: 600px) {
+  .agentProfileContainer {
+    gap: 20px;
+  }
+
   .profileInfoContainer {
     padding-bottom: 30px;
   }
@@ -190,8 +201,13 @@
     font-size: 30px;
   }
 
+  .bioInfo {
+    margin-bottom: 20px;
+  }
+
   .subTitle {
     font-size: 20px;
+    margin-bottom: 10px;
   }
 
   .aboutMeLabel {
@@ -200,6 +216,10 @@
 
   .storedText {
     font-size: 16px;
+  }
+
+  .mainDetails {
+    margin-bottom: 10px;
   }
 
   .subTitle2 {
@@ -218,6 +238,7 @@
   .storedContent {
     border: 1.5px solid #415261;
     font-size: 16px;
+    min-height: 28px;
   }
 
   .editProfileButton {
@@ -228,19 +249,19 @@
 
   .agentProfileButtonContainer,
   .profileDetailButtonContainer {
-    flex-direction: column-reverse;
+    flex-direction: column;
     align-items: center;
     gap: 15px;
   }
 
   .editAgentProfileButton {
     max-width: 180px;
-    padding: 3px 36px;
+    padding: 6px 40px 4px 40px;
   }
 
   .myListingsButton {
     max-width: 180px;
-    padding: 4px 13px;
+    padding: 6px 13px 5px 13px;
   }
 
   .arrowIcon {
@@ -258,6 +279,10 @@
     font-size: 25px;
   }
 
+  .bioInfo {
+    margin-bottom: 15px;
+  }
+
   .subTitle {
     font-size: 18px;
   }
@@ -268,6 +293,14 @@
 
   .storedText {
     font-size: 14px;
+  }
+
+  .mainDetails {
+    margin-bottom: 0px;
+  }
+
+  .companyDetails {
+    margin-bottom: 20px;
   }
 
   .subTitle2 {
@@ -285,6 +318,7 @@
 
   .storedContent {
     font-size: 14px;
+    min-height: 25px;
   }
 
   .editProfileButton {
@@ -295,12 +329,12 @@
 
   .editAgentProfileButton {
     max-width: 180px;
-    padding: 3px 36px;
+    padding: 6px 38px 4px 38px;
   }
 
   .myListingsButton {
     max-width: 180px;
-    padding: 4px 13px;
+    padding: 6px 13px 5px 13px;
   }
 
   .arrowIcon {
