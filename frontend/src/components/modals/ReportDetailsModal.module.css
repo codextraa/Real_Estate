@@ -79,20 +79,6 @@
   transition: all 0.3s ease;
 }
 
-.closeButton {
-  position: absolute;
-  background: none;
-  border: none;
-  cursor: pointer;
-  top: -15px;
-  right: -15px;
-  transition: transform 0.2s ease;
-}
-
-.closeButton:hover {
-  transform: scale(1.1) rotate(90deg);
-}
-
 .modalHeader {
   display: flex;
   justify-content: space-between;

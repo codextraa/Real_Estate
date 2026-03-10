@@ -22,6 +22,8 @@ export default function ChatOverlay({ sessionData, onClose }) {
   const backIcon = "/assets/back-button.svg";
   const deleteIcon = "/assets/trash-icon.svg";
   const sendIcon = "/assets/send-button.svg";
+  const gifUrl = "/assets/loading-chat.gif";
+  const bot = "/assets/chat-bot-loading.svg";
 
   const [messages, setMessages] = useState(() => {
     if (
@@ -83,7 +85,7 @@ export default function ChatOverlay({ sessionData, onClose }) {
           setIsTyping(false);
           setPendingText("");
         }
-      }, index * 50); // Speed of typing
+      }, index * 50);
     });
   };
 
@@ -105,7 +107,7 @@ export default function ChatOverlay({ sessionData, onClose }) {
 
       if (response.pending) {
         setPendingText(response.pending);
-        setTimeout(executePoll, 10000);
+        setTimeout(executePoll, 5000);
         setErrorText("");
         return;
       }
@@ -243,8 +245,26 @@ export default function ChatOverlay({ sessionData, onClose }) {
 
         {isTyping && (
           <div className={`${styles.messageWrapper} ${styles.ai}`}>
+            <div className={styles.logoContainer}>
+              <Image
+                src={gifUrl}
+                alt="Loading Animation"
+                width={200}
+                height={200}
+                className={styles.gif}
+                unoptimized
+              />
+              <Image
+                src={bot}
+                alt="Bot"
+                width={200}
+                height={200}
+                className={styles.botLogo}
+              />
+            </div>
             <div className={`${styles.bubble} ${styles.typing}`}>
-              {"Thinking..."}
+              Thinking
+              <span className={styles.dots}>.</span>
             </div>
           </div>
         )}

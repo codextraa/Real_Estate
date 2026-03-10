@@ -35,7 +35,7 @@ export default function ReportDetailsModal({ reportID, onClose }) {
   return (
     <div className={styles.overlay}>
       <div className={styles.modalContent}>
-        <CloseButton onClick={onClose} className={styles.closeButton} />
+        <CloseButton onClick={onClose} />
         {loading ? (
           <div className={styles.modalBodyX}>
             <p>Loading report details...</p>
