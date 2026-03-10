@@ -55,6 +55,9 @@ export default function ChatOverlay({ sessionData, onClose }) {
   const [pendingText, setPendingText] = useState("");
   const [errorText, setErrorText] = useState("");
   const [inputValue, setInputValue] = useState("");
+  const [streamingMessageId, setStreamingMessageId] = useState(null);
+  const [displayedContent, setDisplayedContent] = useState({});
+
   const scrollRef = useRef(null);
   const isMounted = useRef(true);
 
@@ -63,6 +66,26 @@ export default function ChatOverlay({ sessionData, onClose }) {
     "What are the specific beds and baths details for this report?",
     "Does the price per sqft represent a good value for this area?",
   ];
+
+  const typeMessage = (messageId, fullText) => {
+    const words = fullText.split(" ");
+    let currentText = "";
+    setStreamingMessageId(messageId);
+
+    words.forEach((word, index) => {
+      setTimeout(() => {
+        if (!isMounted.current) return;
+        currentText += (index === 0 ? "" : " ") + word;
+        setDisplayedContent((prev) => ({ ...prev, [messageId]: currentText }));
+
+        if (index === words.length - 1) {
+          setStreamingMessageId(null);
+          setIsTyping(false);
+          setPendingText("");
+        }
+      }, index * 50); // Speed of typing
+    });
+  };
 
   const openDeleteModal = () => {
     setIsDeleteModalOpen(true);
@@ -87,22 +110,18 @@ export default function ChatOverlay({ sessionData, onClose }) {
         return;
       }
 
-      if (response.error) {
-        setErrorText(response.error);
-        return;
-      }
-
       if (response.success && response.data) {
         setTimeout(() => {
           if (!isMounted.current) return;
           setMessages((prev) => [...prev, response.data]);
+          typeMessage(response.data.id, response.data.content);
           setPendingText("");
           setIsTyping(false);
         }, 1000);
       } else {
         setIsTyping(false);
         setPendingText("");
-        setErrorText("Failed to retrieve message.");
+        setErrorText(response.error || "Failed to retrieve message.");
       }
     };
     executePoll();
@@ -120,19 +139,16 @@ export default function ChatOverlay({ sessionData, onClose }) {
     setIsTyping(true);
     setPendingText("Thinking...");
 
-    const result = await postAIMessageAction(sessionData.id, null, formData);
+    const data = new FormData();
+    data.append("content", content);
 
-    if (result.error) {
-      setErrorText(result.error);
-      setIsTyping(false);
-      setPendingText("");
-      return;
-    }
+    const result = await postAIMessageAction(sessionData.id, null, formData);
 
     if (result.data?.ai_message_id) {
       setMessageCount((prev) => prev + 1);
       pollForResponse(result.data.ai_message_id);
     } else {
+      setErrorText(result.error);
       setIsTyping(false);
       setPendingText("");
     }
@@ -147,7 +163,10 @@ export default function ChatOverlay({ sessionData, onClose }) {
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
   }, [messages, isTyping, pendingText]);
 
@@ -166,7 +185,7 @@ export default function ChatOverlay({ sessionData, onClose }) {
           </div>
         </div>
         <button onClick={openDeleteModal} className={styles.deleteBtn}>
-          <Image src={deleteIcon} alt="Delete" width={20} height={20} />
+          <Image src={deleteIcon} alt="Delete" width={30} height={30} />
         </button>
       </div>
 
@@ -177,7 +196,9 @@ export default function ChatOverlay({ sessionData, onClose }) {
             className={`${styles.messageWrapper} ${msg.role === "user" ? styles.user : styles.ai}`}
           >
             <div className={styles.bubble}>
-              {msg.content}
+              {msg.role === "ai" && streamingMessageId === msg.id
+                ? displayedContent[msg.id]
+                : msg.content}
               <div className={styles.timestamp}>
                 {new Date(msg.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",
@@ -206,7 +227,7 @@ export default function ChatOverlay({ sessionData, onClose }) {
           </div>
         )}
 
-        {messageCount === 10 && (
+        {messageCount > 10 && (
           <div className={styles.limitReached}>
             "We couldn't process your request right now. Our models are
             experiencing an unusually high volume of traffic and need a quick
@@ -223,7 +244,7 @@ export default function ChatOverlay({ sessionData, onClose }) {
         {isTyping && (
           <div className={`${styles.messageWrapper} ${styles.ai}`}>
             <div className={`${styles.bubble} ${styles.typing}`}>
-              {pendingText || "Thinking..."}
+              {"Thinking..."}
             </div>
           </div>
         )}
@@ -256,6 +277,7 @@ export default function ChatOverlay({ sessionData, onClose }) {
           userRole="Agent"
           actionName="deleteChat"
           onCancel={closeDeleteModal}
+          onClose={onClose}
         />
       )}
     </div>

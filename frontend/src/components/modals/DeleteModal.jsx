@@ -14,6 +14,7 @@ export default function DeleteModal({
   userRole,
   actionName,
   onCancel,
+  onClose,
 }) {
   const [deletionError, setDeletionError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -85,6 +86,7 @@ export default function DeleteModal({
           setSuccessMessage(response.success || "Report deleted successfully.");
           setTimeout(async () => {
             onCancel();
+            onClose();
           }, 2000);
         }
       }

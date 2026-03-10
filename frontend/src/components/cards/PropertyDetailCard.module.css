@@ -185,7 +185,7 @@
   background: #f7f7f7;
   border: 1px solid #415261;
   border-radius: 38px;
-
+  padding: 2px;
   font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 20px;
