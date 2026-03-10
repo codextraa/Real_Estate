@@ -4,7 +4,7 @@
   right: 20px;
   width: 521px;
   height: 660px;
-  max-height: 90vh; /* Prevents overflow on short screens */
+  max-height: 90vh;
   background: white;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -304,10 +304,6 @@
   display: flex;
   align-items: center;
   transition: box-shadow 0.2s ease;
-}
-
-.inputWrapper:focus-within {
-  box-shadow: 0 0 0 2px rgba(19, 37, 46, 0.1);
 }
 
 .input {
