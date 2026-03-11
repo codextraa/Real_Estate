@@ -8,6 +8,9 @@ import { createUserAction } from "@/actions/userActions";
 import Form from "next/form";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+
+const eIcon = "/assets/E.svg";
 
 export default function SignUpForm({ userType }) {
   const initialState = {
@@ -54,7 +57,16 @@ export default function SignUpForm({ userType }) {
       {userType === "admin" ? (
         <h1 className={styles2.title}>Create Admin</h1>
       ) : (
-        <h1 className={styles.title}>Estate</h1>
+        <h1 className={styles.title}>
+          <Image
+            src={eIcon}
+            width={500}
+            height={500}
+            alt="E"
+            className={styles.icon}
+          />
+          <span>state</span>
+        </h1>
       )}
       <div
         className={

@@ -21,6 +21,11 @@
   text-decoration: none;
 }
 
+.icon {
+  width: 12px;
+  height: 17px;
+}
+
 .navLinks {
   display: flex;
   justify-items: right;

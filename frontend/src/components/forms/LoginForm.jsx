@@ -1,6 +1,7 @@
 "use client";
 
 import Form from "next/form";
+import Image from "next/image";
 import { useState } from "react";
 import { useActionState } from "react";
 import { redirect } from "next/navigation";
@@ -18,6 +19,7 @@ const initialState = {
 };
 
 export default function LoginForm() {
+  const eIcon = "/assets/E.svg";
   const [state, formAction, isPending] = useActionState(
     loginAction,
     initialState,
@@ -37,7 +39,16 @@ export default function LoginForm() {
 
   return (
     <Form action={formAction} className={styles.form}>
-      <h1 className={styles.title1}>Estate</h1>
+      <h1 className={styles.title1}>
+        <Image
+          src={eIcon}
+          width={500}
+          height={500}
+          alt="E"
+          className={styles.icon}
+        />
+        <span>state</span>
+      </h1>
       <div className={styles.mainContainer}>
         <h2 className={styles.title2}>Welcome!</h2>
 

@@ -48,6 +48,11 @@
   pointer-events: none;
 }
 
+.icon {
+  width: 131px;
+  height: 186px;
+}
+
 .propertiesContainer {
   max-width: 1200px;
   margin: 0 auto;
@@ -187,10 +192,6 @@
     margin-top: 20px;
   }
 
-  .content {
-    font-size: 140px;
-  }
-
   .content2 {
     font-size: 120px;
   }
@@ -213,6 +214,10 @@
 
 @media (max-width: 900px) {
   .content2 {
+    font-size: 90px;
+  }
+
+  .content {
     font-size: 90px;
   }
 

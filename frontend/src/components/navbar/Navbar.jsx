@@ -1,5 +1,6 @@
 import { NavButton } from "@/components/buttons/Buttons";
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./Navbar.module.css";
 import {
   getUserIdAction,
@@ -8,6 +9,7 @@ import {
 } from "@/actions/authActions";
 
 export default async function Navbar() {
+  const eIcon = "/assets/E.svg";
   const userId = await getUserIdAction();
   const userRole = await getUserRoleAction();
 
@@ -31,7 +33,14 @@ export default async function Navbar() {
   return (
     <nav className={styles.navbar}>
       <Link href="/" className={styles.logo}>
-        Estate
+        <Image
+          src={eIcon}
+          width={500}
+          height={500}
+          alt="E"
+          className={styles.icon}
+        />
+        <span>state</span>
       </Link>
 
       <div className={styles.navLinks}>

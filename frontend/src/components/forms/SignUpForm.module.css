@@ -22,6 +22,11 @@
   margin-left: 50px;
 }
 
+.icon {
+  width: 60px;
+  height: 84px;
+}
+
 .subTitle {
   font-family: var(--font-quando);
   font-weight: 400;
@@ -216,6 +221,11 @@
     text-align: center;
     margin-top: -40px;
     margin-left: 0px;
+  }
+
+  .icon {
+    width: 40px;
+    height: 56px;
   }
 
   .subTitle {
