@@ -170,7 +170,7 @@ export default function ChatOverlay({ sessionData, onClose }) {
         behavior: "smooth",
       });
     }
-  }, [messages, isTyping, pendingText]);
+  }, [messages, isTyping, pendingText, displayedContent]);
 
   return (
     <div className={styles.overlay}>

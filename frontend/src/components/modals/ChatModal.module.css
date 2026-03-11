@@ -126,6 +126,7 @@
   flex-direction: column;
   max-width: 100%;
   animation: messageIn 0.3s ease forwards;
+  padding-bottom: 5px;
 }
 
 .messageWrapper.user {
