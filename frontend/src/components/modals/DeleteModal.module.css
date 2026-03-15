@@ -1,20 +1,55 @@
-/* DeleteModal.module.css */
+@keyframes fadeIn {
+  from {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+  }
+  to {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+  }
+  70% {
+    transform: scale(1.02) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
 
 .modalOverlay {
-  /* Fixes the position relative to the viewport */
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  overflow: hidden;
+  z-index: 999999;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0px 20px;
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 .modalContent {
@@ -30,6 +65,7 @@
   gap: 12px;
   border-radius: 15px;
   text-align: center;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .modalText {
@@ -50,13 +86,26 @@
   border: none;
   border-radius: 17px;
   cursor: pointer;
-  font: var(--font-old-standard-tt);
+  font-family: var(--font-old-standard-tt);
   font-weight: 700;
-  line-height: 1;
-  font-style: bold;
   font-size: 18px;
   text-align: center;
-  transition: background-color 0.2s;
+  transition:
+    transform 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
+}
+
+/* Subtle button lift on hover */
+.yesButton:hover,
+.noButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.yesButton:active,
+.noButton:active {
+  transform: translateY(0);
 }
 
 .yesButton {
@@ -79,13 +128,19 @@
 
 .errorMessage {
   margin-top: 10px;
+  margin-bottom: -25px;
   color: #b70000;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 18px;
+  animation: shake 0.3s ease-in-out;
 }
 .successMessage {
   margin-top: 10px;
+  margin-bottom: -25px;
   color: #368c04;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 18px;
+  transition: all 0.3s ease;
 }
 
 @media (max-width: 800px) {
@@ -107,10 +162,17 @@
 @media (max-width: 500px) {
   .modalContent {
     padding: 20px 20px;
+    gap: 15px;
   }
 
-  .modalText {
+  .modalText,
+  .errorMessage,
+  .successMessage {
     font-size: 16px;
+  }
+  .errorMessage,
+  .successMessage {
+    margin-bottom: -15px;
   }
 
   .yesButton,

@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import styles from "./ImageModal.module.css";
-
-const crossIcon = "/assets/cross-icon.svg";
+import { CloseButton } from "@/components/buttons/Buttons";
 
 export default function ImageModal({ image, isOpen, onClose }) {
   if (!isOpen) return null;
@@ -11,10 +10,7 @@ export default function ImageModal({ image, isOpen, onClose }) {
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeButton} onClick={onClose}>
-          <Image src={crossIcon} alt="Close Icon" width={30} height={30} />
-        </button>
-
+        <CloseButton onClick={onClose} />
         <Image
           src={image}
           alt="Enlarged Property Image"

@@ -172,6 +172,30 @@
   gap: 10px;
 }
 
+.chatErrorBubble {
+  background: #ffebee;
+  color: #b70000;
+  border: 1px solid #b70000;
+  padding: 10px 20px;
+  border-radius: 28px;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  font-size: 18px;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 1000px) {
   .card {
     margin: 15px 60px 30px 60px;
@@ -210,7 +234,7 @@
   }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 670px) {
   .card {
     margin: 15px 20px 30px 20px;
     flex-direction: column;

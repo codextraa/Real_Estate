@@ -1,7 +1,7 @@
 "use server";
 
 import { createUser, updateUser, deleteUser } from "@/libs/api";
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 
 const userError = (response) => {
   if (typeof response.error === "object") {
@@ -320,7 +320,7 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       const backend_errors = userError(response);
 
       if (isNewImageUploaded && !backend_errors["image_url"]) {
-        revalidateTag(`user-${id}`);
+        updateTag(`user-${id}`);
         newUserFormData.image_url = client_preview_url;
       }
 
@@ -332,7 +332,7 @@ export const updateUserAction = async (id, userRole, prevState, formData) => {
       };
     }
 
-    revalidateTag(`user-${id}`);
+    updateTag(`user-${id}`);
 
     return {
       errors,

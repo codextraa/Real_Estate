@@ -1,6 +1,7 @@
 # core_db/validators.py
 
 import re
+from decimal import Decimal
 
 
 def validate_password_complexity(password):
@@ -30,20 +31,39 @@ def validate_password_complexity(password):
     return {"password": errors}
 
 
-def validate_property_integers(beds, baths, sqft):
+def validate_property_integers(beds, baths, sqft, price):
     bed_error = ""
     bath_error = ""
     sqft_error = ""
+    price_error = ""
 
-    if beds is not None and isinstance(beds, int) and len(str(abs(beds))) > 5:
-        bed_error = "Beds cannot exceed 5 digits."
+    if beds is not None and isinstance(beds, int):
+        if beds <= 0:
+            bed_error += "Beds cannot be negative or zero. "
+        if len(str(abs(beds))) > 5:
+            bed_error += "Beds cannot exceed 5 digits."
 
-    if baths is not None and isinstance(baths, int) and len(str(abs(baths))) > 5:
-        bath_error = "Baths cannot exceed 5 digits."
+    if baths is not None and isinstance(baths, int):
+        if baths <= 0:
+            bath_error += "Baths cannot be negative or zero. "
+        if len(str(abs(baths))) > 5:
+            bath_error += "Baths cannot exceed 5 digits."
 
-    if sqft is not None and isinstance(sqft, int) and len(str(abs(sqft))) > 10:
-        sqft_error = "Area square footage cannot exceed 10 digits."
+    if sqft is not None and isinstance(sqft, int):
+        if sqft <= 100:
+            sqft_error += "Area square footage cannot be less than 100 sqft. "
+        if len(str(abs(sqft))) > 10:
+            sqft_error += "Area square footage cannot exceed 10 digits."
 
-    errors = {"beds": bed_error, "baths": bath_error, "area_sqft": sqft_error}
+    if price is not None and isinstance(price, (int, Decimal)):
+        if price <= 10000:
+            price_error = "Price cannot be less than $10,000."
+
+    errors = {
+        "beds": bed_error,
+        "baths": bath_error,
+        "area_sqft": sqft_error,
+        "price": price_error,
+    }
 
     return {k: v for k, v in errors.items() if v}

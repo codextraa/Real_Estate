@@ -1,67 +1,97 @@
+from django.utils import timezone
 from celery import shared_task, chain
 from celery.utils.log import get_task_logger
 from celery.exceptions import MaxRetriesExceededError
 from report_api.regression_model import InvestmentRegressor
 from report_api.agents import groq_ai_insight_prompt
-from core_db_ai.models import ChatMessage, AIReport
-from .agents import chat_json_extractor_agent
+from core_db_ai.models import ChatSession, ChatMessage, AIReport
+
+# from .agents import chat_json_extractor_agent
 
 logger = get_task_logger(__name__)
 
 
-@shared_task(
-    bind=True,
-    max_retries=3,
-    default_retry_delay=61,
-    rate_limit="8/m",
-    retry_jitter=False,
-)
-def ai_message_extractor(self, message_id, property_details, user_query):
-    """
-    Worker Task: Calls Groq GPT for extraction.
-    """
-    try:
-        property_json, usage = chat_json_extractor_agent(property_details, user_query)
+@shared_task(bind=True)
+def ai_message_extractor(
+    self, session_id, message_id, property_details, user_query
+):  # pylint: disable=W0613
+    """Dummy extractor"""
+    self.request.chain = None
+    message = ChatMessage.objects.get(id=message_id)
+    message.status = ChatMessage.Status.FAILED
+    message.content = "Our chat bot is currently unavailable. Please try again later."
+    message.timestamp = timezone.now()
+    message.save(update_fields=["status", "content", "timestamp"])
 
-        # pylint: disable=R0801
-        logger.info(
-            "[Groq GPT] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
-            usage.prompt_tokens,
-            usage.completion_tokens,
-            usage.total_tokens,
-        )
-        logger.info("Groq Json extraction complete.")
-        # pylint: enable=R0801
+    session = ChatSession.objects.get(id=session_id)
+    session.user_message_count += 1
+    session.save()
 
-        error = property_json.get("error")
-        if error:
-            self.request.chain = None
-            message = ChatMessage.objects.get(id=message_id)
-            message.update(status=ChatMessage.Status.FAILED, content=error)
-            return "Stopped"
+    return "Stopped"
 
-        property_json["title"] = property_details["title"]
-        return property_json
-    except Exception as e:  # pylint: disable=W0718
-        # pylint: disable=R0801
-        logger.warning(
-            "Attempt %s/%s failed Groq Rate Limit/Error: %s. Retrying again",
-            self.request.retries,
-            self.max_retries,
-            e,
-        )
-        # pylint: enable=R0801
-        try:
-            return self.retry(exc=e)
-        except MaxRetriesExceededError as err:
-            logger.error("Groq GPT Summary Error: %s", err)
-            self.request.chain = None
-            message = ChatMessage.objects.get(id=message_id)
-            message.update(
-                status=ChatMessage.Status.FAILED,
-                content="Agent failed to respond. Please try again.",
-            )
-            return "Stopped"
+
+# @shared_task(
+#     bind=True,
+#     max_retries=3,
+#     default_retry_delay=61,
+#     rate_limit="8/m",
+#     retry_jitter=False,
+# )
+# def ai_message_extractor(self, session_id, message_id, property_details, user_query):
+#     """
+#     Worker Task: Calls Groq GPT for extraction.
+#     """
+#     try:
+#         property_json, usage = chat_json_extractor_agent(property_details, user_query)
+
+#         # pylint: disable=R0801
+#         logger.info(
+#             "[Groq GPT] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
+#             usage.prompt_tokens,
+#             usage.completion_tokens,
+#             usage.total_tokens,
+#         )
+#         logger.info("Groq Json extraction complete.")
+#         # pylint: enable=R0801
+
+#         error = property_json.get("error")
+#         if error:
+#             self.request.chain = None
+#             message = ChatMessage.objects.get(id=message_id)
+#             message.status = ChatMessage.Status.FAILED
+#             message.content = error
+#             message.timestamp = timezone.now()
+#             message.save(update_fields=["status", "content", "timestamp"])
+
+#             if error == "Invalid request. Please try again.":
+#                 session = ChatSession.objects.get(id=session_id)
+#                 session.user_message_count += 1
+#                 session.save()
+
+#             return "Stopped"
+
+#         property_json["title"] = property_details["title"]
+#         return property_json
+#     except Exception as e:  # pylint: disable=W0718
+#         # pylint: disable=R0801
+#         logger.warning(
+#             "Attempt %s/%s failed Groq Rate Limit/Error: %s. Retrying again",
+#             self.request.retries,
+#             self.max_retries,
+#             e,
+#         )
+#         # pylint: enable=R0801
+#         try:
+#             return self.retry(exc=e)
+#         except MaxRetriesExceededError as err:
+#             logger.error("Groq GPT Summary Error: %s", err)
+#             self.request.chain = None
+#             message = ChatMessage.objects.get(id=message_id)
+#             message.status = ChatMessage.Status.FAILED
+#             message.content = "Agent failed to respond. Please try again."
+#             message.timestamp = timezone.now()
+#             message.save(update_fields=["status", "content", "timestamp"])
+#             return "Stopped"
 
 
 @shared_task(
@@ -108,10 +138,10 @@ def ai_message_analysis(
             logger.error("FATAL: Investment Rating Error: %s", e)
             self.request.chain = None
             message = ChatMessage.objects.get(id=message_id)
-            message.update(
-                status=ChatMessage.Status.FAILED,
-                content="Agent failed to respond. Please try again.",
-            )
+            message.status = ChatMessage.Status.FAILED
+            message.content = "Agent failed to respond. Please try again."
+            message.timestamp = timezone.now()
+            message.save(update_fields=["status", "content", "timestamp"])
             return "Stopped"
 
     # pylint: disable=R0801
@@ -140,7 +170,6 @@ def ai_message_analysis(
         # pylint: enable=R0801
 
         return {
-            "message_id": message_id,
             "text": final_insight,
             "rating": rating,
         }
@@ -171,25 +200,65 @@ def ai_message_analysis(
             logger.error("Groq GPT Summary Error: %s", err)
             self.request.chain = None
             message = ChatMessage.objects.get(id=message_id)
-            message.update(
-                status=ChatMessage.Status.FAILED,
-                content="Agent failed to respond. Please try again.",
-            )
+            message.status = ChatMessage.Status.FAILED
+            message.content = "Agent failed to respond. Please try again."
+            message.timestamp = timezone.now()
+            message.save(update_fields=["status", "content", "timestamp"])
             return "Stopped"
 
 
-@shared_task(bind=True)
-def finalizer_task(self, analysis_result, message_id):  # pylint: disable=W0613
-    pass
+@shared_task
+def finalizer_task(analysis_result, session_id, message_id):  # pylint: disable=W0613
+    """
+    Takes the JSON analysis from Qwen, formats it into a professional message,
+    and updates the ChatMessage model.
+    """
+    if analysis_result == "Stopped":
+        return "Aborted"
+
+    try:
+        message = ChatMessage.objects.get(id=message_id)
+        session = ChatSession.objects.get(id=session_id)
+        insight = analysis_result.get("text", {})
+        rating = analysis_result.get("rating", 0)
+        intro = "Based on your criteria, here is my analysis of this property:"
+
+        summary_text = (
+            f"{intro}\n\n"
+            f"**New Projected Rating: {rating} / 5**\n\n"
+            f"{insight.get('investment_summary', '')}\n\n"
+            f"**Analysis of Adjustments:**\n{insight.get('weighted_analysis', '')}\n\n"
+            "**Key Strengths:**\n- " + "\n- ".join(insight.get("pros", [])) + "\n\n"
+            "**Potential Risks:**\n- " + "\n- ".join(insight.get("cons", []))
+        )
+
+        message.content = summary_text
+        message.status = ChatMessage.Status.COMPLETED
+        message.timestamp = timezone.now()
+        message.save()
+
+        session.user_message_count += 1
+        session.save()
+
+        return f"Message {message_id} Success"
+    except Exception as e:  # pylint: disable=W0718
+        logger.error("Finalizer failed: %s", str(e))
+        ChatMessage.objects.filter(id=message_id).update(
+            status=ChatMessage.Status.FAILED,
+            content="Error finalizing the AI response.",
+            timestamp=timezone.now(),
+        )
+        return f"Message {message_id} Failed"
 
 
-@shared_task(max_retries=3)
-def generate_ai_chat_response(message_id, report_id, user_query):
+@shared_task
+def generate_ai_chat_response(session_id, message_id, report_id, user_query):
     try:
         report = AIReport.objects.select_related("property").get(id=report_id)
         property_obj = report.property
         ai_message = ChatMessage.objects.get(id=message_id)
-        ai_message.update(status=ChatMessage.Status.PROCESSING)
+        ai_message.status = ChatMessage.Status.PROCESSING
+        ai_message.save(update_fields=["status"])
 
         property_details = {
             "title": property_obj.title,
@@ -209,9 +278,11 @@ def generate_ai_chat_response(message_id, report_id, user_query):
         }
 
         return chain(
-            ai_message_extractor.s(message_id, property_details, user_query),
+            ai_message_extractor.s(
+                session_id, message_id, property_details, user_query
+            ),
             ai_message_analysis.s(message_id, report_details, user_query),
-            finalizer_task.s(message_id),
+            finalizer_task.s(session_id, message_id),
         ).apply_async()
     except AIReport.DoesNotExist:
         logger.error(f"Abort: Report {report_id} does not exist.")
@@ -223,6 +294,8 @@ def generate_ai_chat_response(message_id, report_id, user_query):
         logger.error(f"Unexpected error: {str(e)}")
         if "ai_message" in locals():
             ChatMessage.objects.filter(id=message_id).update(
-                status=ChatMessage.Status.FAILED
+                status=ChatMessage.Status.FAILED,
+                content="Error generating AI response. Please try again.",
+                timestamp=timezone.now(),
             )
         return None

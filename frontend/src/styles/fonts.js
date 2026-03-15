@@ -8,7 +8,7 @@ import {
 export const kohSantepheap = Koh_Santepheap({
   subsets: ["latin"],
   weight: ["400"],
-  variable: "--font-koh-santepheap", // Matches your CSS var()
+  variable: "--font-koh-santepheap",
 });
 
 export const quando = Quando({
@@ -19,7 +19,7 @@ export const quando = Quando({
 
 export const oldStandardTT = Old_Standard_TT({
   subsets: ["latin"],
-  weight: ["400", "700"], // We load 700 because your .input class needs it
+  weight: ["400", "700"],
   variable: "--font-old-standard-tt",
 });
 

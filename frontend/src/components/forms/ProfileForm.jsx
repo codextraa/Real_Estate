@@ -46,9 +46,8 @@ export default function ProfileForm({
 
   const name =
     userRole === "Agent"
-      ? state.formUserData.user.first_name +
-        " " +
-        state.formUserData.user.last_name
+      ? `${state.initialUserData.user.first_name != null ? `${state.initialUserData.user.first_name} ` : ""}${state.initialUserData.user.last_name != null ? `${state.initialUserData.user.last_name}` : ""}` ||
+        state.initialUserData.user.username
       : null;
 
   // Helper function to extract relevant form fields based on user role
@@ -418,6 +417,12 @@ export default function ProfileForm({
                       onChange={handleInputChange}
                       className={styles.storedContent}
                     />
+                    {Object.keys(state.errors).length > 0 &&
+                      state.errors.first_name && (
+                        <span className={styles.errorText}>
+                          {state.errors.first_name}
+                        </span>
+                      )}
                   </div>
                   <div
                     className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
@@ -434,6 +439,12 @@ export default function ProfileForm({
                       onChange={handleInputChange}
                       className={styles.storedContent}
                     />
+                    {Object.keys(state.errors).length > 0 &&
+                      state.errors.last_name && (
+                        <span className={styles.errorText}>
+                          {state.errors.last_name}
+                        </span>
+                      )}
                   </div>
                   <div
                     className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
@@ -682,7 +693,9 @@ export default function ProfileForm({
                   </span>
                 )}
             </div>
-            <div className={styles.passwordContainer}>
+            <div
+              className={`${styles.passwordContainer} ${styles.passwordContainerUser}`}
+            >
               <h2 className={styles.changePasswordTitle}>Change Password</h2>
               <div className={styles.wholePasswordContainer}>
                 <div className={styles.profileBoxLabel}>

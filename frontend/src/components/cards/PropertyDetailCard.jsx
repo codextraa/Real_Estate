@@ -16,6 +16,7 @@ export default function PropertyDetailCard({ property }) {
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("idle");
+  const [message, setMessage] = useState("");
 
   const formatAddress = (addressString) => {
     if (!addressString) return "";
@@ -62,12 +63,15 @@ export default function PropertyDetailCard({ property }) {
 
       if (response?.success) {
         setStatus("success");
+        setMessage(response?.success);
       } else {
         setStatus("error");
+        setMessage(response?.error);
       }
     } catch (error) {
       console.error("Report Action Failed:", error);
       setStatus("error");
+      setMessage("Report Generation Failed");
     } finally {
       setLoading(false);
       setTimeout(() => {
@@ -144,9 +148,7 @@ export default function PropertyDetailCard({ property }) {
                   status === "success" ? styles.successMsg : styles.errorMsg
                 }
               >
-                {status === "success"
-                  ? "✓ Report Created"
-                  : "✕ Failed to create"}
+                {message || "Report Generation Failed"}
               </span>
             )}
           </div>

@@ -10,8 +10,6 @@ class AIReportFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AIReport
 
-    # Instead of SubFactory, we pick a random existing property and user
-    # We use a lambda to ensure the query runs when the factory is called
     property = factory.LazyAttribute(lambda _: random.choice(Property.objects.all()))
     user = factory.LazyAttribute(lambda _: random.choice(User.objects.all()))
 

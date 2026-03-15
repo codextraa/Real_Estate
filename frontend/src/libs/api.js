@@ -75,7 +75,9 @@ export const createProperty = async (data, isImage = false) => {
 };
 
 export const getProperty = async (id) => {
-  return apiClient.get(`/property-api/properties/${id}/`);
+  return apiClient.get(`/property-api/properties/${id}/`, {
+    next: { revalidate: 3600, tags: [`property-${id}`] },
+  });
 };
 
 export const updateProperty = async (id, data, isImage = false) => {
@@ -122,4 +124,20 @@ export const getReport = async (id) => {
 
 export const deleteReport = async (id) => {
   return apiAiClient.delete(`/report-api/reports/${id}/`);
+};
+
+export const getAIChatSession = async (id) => {
+  return apiAiClient.get(`/chat-api/chat/session/${id}/`);
+};
+
+export const deleteAIChatSession = async (id) => {
+  return apiAiClient.delete(`/chat-api/chat/session/${id}/`);
+};
+
+export const postAIMessage = async (data) => {
+  return apiAiClient.post(`/chat-api/chat/message/`, data);
+};
+
+export const getAIMessage = async (id) => {
+  return apiAiClient.get(`/chat-api/chat/message/${id}/`);
 };

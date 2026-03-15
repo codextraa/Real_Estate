@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getProperty, getProperties } from "@/libs/api";
 import PropertyCard from "@/components/cards/PropertyCard";
 import Dropdown from "@/components/dropdowns/Dropdown";
@@ -10,7 +10,7 @@ export default async function PropertyPage({ params }) {
   const { slug } = await params;
   const propertyId = slug.split("-").pop();
 
-  if (!propertyId || isNaN(propertyId)) {
+  if (!propertyId) {
     return notFound();
   }
 
@@ -19,6 +19,11 @@ export default async function PropertyPage({ params }) {
   if (response.error) {
     return notFound();
   }
+
+  if (response.slug !== slug) {
+    redirect(`/properties/${response.slug}`);
+  }
+
   const recommendedProperties = await getProperties();
 
   return (

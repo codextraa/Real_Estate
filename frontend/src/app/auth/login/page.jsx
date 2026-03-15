@@ -17,7 +17,7 @@ export default async function LoginPage() {
             alt="Modern city buildings representing real estate"
             width={669}
             height={746}
-            priority // Load image first
+            priority
           />
         </div>
       </div>

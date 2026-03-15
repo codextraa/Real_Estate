@@ -38,8 +38,11 @@
   align-items: center;
   padding-left: 11px;
   cursor: pointer;
-  transition: all 0.2s ease;
   position: relative;
+  transition:
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    transform 0.2s ease;
 }
 
 .addressButton:hover,
@@ -48,6 +51,16 @@
 .bedsButton:hover,
 .bathsButton:hover {
   border-color: #13252e;
+  background-color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.addressButton:active,
+.priceButton:active,
+.area_sqftButton:active,
+.bedsButton:active,
+.bathsButton:active {
+  transform: translateY(0);
 }
 
 .addressIcon,
@@ -111,6 +124,19 @@
   z-index: 100;
   overflow-y: auto;
   box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+  animation: fadeInSlide 0.3s ease-out forwards;
+  transform-origin: top;
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scaleY(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
 }
 
 .addressDropdownItem,
@@ -128,6 +154,9 @@
   color: #13252e;
   cursor: pointer;
   border-bottom: 1px solid rgba(19, 37, 46, 0.1);
+  transition:
+    background 0.2s ease,
+    padding-left 0.2s ease;
 }
 
 .addressDropdownItem:hover,
@@ -136,22 +165,19 @@
 .bedsDropdownItem:hover,
 .bathsDropdownItem:hover {
   background: rgba(19, 37, 46, 0.05);
+  padding-left: 25px;
 }
 
-/* --- RESPONSIVE DESIGN --- */
-
-/* Tablets and Medium Screens */
 @media (max-width: 1150px) {
   .propertyDropdowns {
-    position: relative; /* Remove absolute positioning to flow with content */
-    flex-wrap: wrap; /* Allow capsules to move to a new line */
+    position: relative;
+    flex-wrap: wrap;
     width: 100%;
     height: auto;
     gap: 20px;
     padding: 10px;
   }
 
-  /* Adjust widths to fit 2 or 3 per row */
   .addressFilter,
   .priceFilter,
   .areaSqftFilter,
@@ -162,7 +188,6 @@
   }
 }
 
-/* Phones and Small Tablets */
 @media (max-width: 768px) {
   .propertyDropdowns {
     gap: 15px;
@@ -173,7 +198,7 @@
   .area_sqftLabel,
   .bedsLabel,
   .bathsLabel {
-    font-size: 18px; /* Slightly smaller text */
+    font-size: 18px;
   }
 
   .addressValue,
@@ -184,7 +209,6 @@
     font-size: 14px;
   }
 
-  /* Adjust the dropdown menu list to be full width of the capsule */
   .addressDropdown,
   .priceDropdown,
   .area_sqftDropdown,
@@ -208,7 +232,6 @@
   }
 }
 
-/* Very Small Devices */
 @media (max-width: 480px) {
   .propertyDropdowns {
     gap: 12px;
@@ -219,6 +242,6 @@
   .area_sqftButton,
   .bedsButton,
   .bathsButton {
-    padding-left: 15px; /* More breathing room on small screens */
+    padding-left: 15px;
   }
 }

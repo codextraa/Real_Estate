@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import DeleteModal from "@/components/modals/DeleteModal";
+import ChatOverlay from "../modals/ChatModal";
+import { getAIChatSessionAction } from "@/actions/chatActions";
 import ReportDetailsModal from "@/components/modals/ReportDetailsModal";
 import { DeleteButton } from "../buttons/Buttons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./ReportCard.module.css";
 
 export default function ReportCard({ report }) {
@@ -15,7 +17,33 @@ export default function ReportCard({ report }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
+  const [activeChatSession, setActiveChatSession] = useState(null);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [chatError, setChatError] = useState("");
+
   const rating = parseFloat(report.investment_rating);
+
+  useEffect(() => {
+    if (chatError) {
+      const timer = setTimeout(() => setChatError(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [chatError]);
+
+  const handleOpenChat = async () => {
+    setChatError("");
+    setIsChatLoading(true);
+
+    const response = await getAIChatSessionAction(report.id);
+
+    if (response && !response.error) {
+      setActiveChatSession(response);
+      setIsChatLoading(false);
+    } else {
+      setIsChatLoading(false);
+      setChatError(response.error);
+    }
+  };
 
   const openDeleteModal = () => {
     setIsDeleteModalOpen(true);
@@ -73,16 +101,24 @@ export default function ReportCard({ report }) {
       </div>
       <div className={styles.actions}>
         <div className={styles.aiButton}>
-          <button className={styles.aiBtn}>
-            <Image
-              src={botIcon}
-              width={50}
-              height={50}
-              className={styles.aiIcon}
-              alt="AI Assistant Icon"
-            />
-            Smart Assistant
-          </button>
+          {chatError ? (
+            <div className={styles.chatErrorBubble}>{chatError}</div>
+          ) : (
+            <button
+              className={styles.aiBtn}
+              onClick={handleOpenChat}
+              disabled={isChatLoading}
+            >
+              <Image
+                src={botIcon}
+                width={50}
+                height={50}
+                className={styles.aiIcon}
+                alt="AI Assistant Icon"
+              />
+              {isChatLoading ? "Opening..." : "Smart Assistant"}
+            </button>
+          )}
         </div>
         <div className={styles.buttons}>
           <button
@@ -103,6 +139,12 @@ export default function ReportCard({ report }) {
         <ReportDetailsModal
           reportID={report.id}
           onClose={() => setIsDetailsModalOpen(false)}
+        />
+      )}
+      {activeChatSession && (
+        <ChatOverlay
+          sessionData={activeChatSession}
+          onClose={() => setActiveChatSession(null)}
         />
       )}
       {isDeleteModalOpen && (

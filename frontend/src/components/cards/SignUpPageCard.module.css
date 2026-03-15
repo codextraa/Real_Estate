@@ -70,6 +70,10 @@
 }
 
 @media (max-width: 768px) {
+  .signUpCardContainer {
+    gap: 20px;
+  }
+
   .signUpCardTitle {
     font-size: 36px;
   }
@@ -93,6 +97,10 @@
 }
 
 @media (max-width: 480px) {
+  .signUpCardContainer {
+    gap: 15px;
+  }
+
   .signUpCardTitle {
     font-size: 28px;
   }

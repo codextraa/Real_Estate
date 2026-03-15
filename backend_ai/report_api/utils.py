@@ -1,5 +1,6 @@
 import re
 import random
+from decimal import Decimal, ROUND_DOWN
 import numpy as np
 
 
@@ -29,27 +30,27 @@ def generate_mock_summary(compiled_data, property_data):
     beds = property_data.get("beds")
     baths = property_data.get("baths")
 
-    if not compiled_data:
-        avg_comp_price = 0
-        price_diff = "unknown"
-    else:
-        avg_comp_price = sum(p.get("price", 0) for p in compiled_data) / len(
-            compiled_data
-        )
-        price_diff = "below" if price < avg_comp_price else "above"
+    dummy_analysis = (
+        "+1.5 Market Position Advantage\n"
+        "+0.5 Property Utility Score\n"
+        "-0.2 Regional Volatility Adjustment"
+    )
 
     return {
+        "weighted_analysis": dummy_analysis,
         "investment_summary": (
-            f"Automated insight generation temporarily unavailable. Fake data generated."
             f"The property at {title} is currently priced at ${price:,.2f}, "
-            f"which is {price_diff} the local market average of ${avg_comp_price:,.2f}."
+            "This mock summary is provided while the AI insight engine is unavailable."
         ),
         "pros": [
-            f"Competitive price point relative to {len(compiled_data)} local comparables.",
+            (
+                "Competitive price point relative to "
+                f"{len(compiled_data) if compiled_data else 0} local comparables."
+            ),
             f"Standard {beds} bed / {baths} bath configuration for this sub-market.",
         ],
         "cons": [
-            "Automated insight generation temporarily unavailable for detailed analysis.",
+            "Detailed algorithmic scoring is temporarily unavailable.",
             "Market volatility may require a manual appraisal for finalized valuation.",
         ],
     }
@@ -128,7 +129,7 @@ def split_context(text, max_chars=10000):
 
 
 def clean_properties(item, property_data):
-    SQFT_VARIANCE = 0.30
+    SQFT_VARIANCE = 0.20
     BED_VARIANCE = 1
     BATH_VARIANCE = 1
 
@@ -163,27 +164,52 @@ def clean_properties(item, property_data):
     return price, sqft, beds, baths
 
 
+def clamp_decimal(value, max_digits, decimal_places):
+    """
+    Ensures a number fits within Django DecimalField constraints.
+    """
+    if value is None:
+        return Decimal("0.00")
+
+    whole_digits = max_digits - decimal_places
+    max_allowed = (10**whole_digits) - (Decimal("1") / (10**decimal_places))
+
+    d_value = Decimal(str(value)).quantize(
+        Decimal(f"1.{'0' * decimal_places}"), rounding=ROUND_DOWN
+    )
+
+    if d_value > max_allowed:
+        return max_allowed
+    return d_value
+
+
 def average_prices_beds_baths(compiled_data):
+    """
+    Calculate average price, PPS, beds, baths
+    """
     prices = [p["price"] for p in compiled_data if p.get("price")]
     sqft = [p["area_sqft"] for p in compiled_data if p.get("area_sqft")]
     beds = [p["beds"] for p in compiled_data if p.get("beds") is not None]
     baths = [p["baths"] for p in compiled_data if p.get("baths") is not None]
 
     if prices:
-        avg_price = sum(prices) / len(prices)
+        raw_avg_price = sum(prices) / len(prices)
     else:
-        avg_price = 0
+        raw_avg_price = 0
 
     if sqft:
-        avg_sqft = sum(sqft) / len(sqft)
+        raw_avg_sqft = sum(sqft) / len(sqft)
     else:
-        avg_sqft = 0
+        raw_avg_sqft = 0
 
     # Calculate market average PPS
-    if avg_sqft > 0:
-        avg_pps = avg_price / avg_sqft
+    if raw_avg_sqft > 0:
+        raw_avg_pps = raw_avg_price / raw_avg_sqft
     else:
-        avg_pps = 0
+        raw_avg_pps = 0
+
+    avg_price = clamp_decimal(raw_avg_price, 15, 2)
+    avg_pps = clamp_decimal(raw_avg_pps, 12, 2)
 
     if beds:
         avg_beds = round(sum(beds) / len(beds))
@@ -195,7 +221,39 @@ def average_prices_beds_baths(compiled_data):
     else:
         avg_baths = 0
 
-    return avg_price, avg_pps, avg_beds, avg_baths
+    return Decimal(str(avg_price)), Decimal(str(avg_pps)), avg_beds, avg_baths
+
+
+def calculate_market_adjustments(df):
+    """
+    Mathematically derives bedroom premiums and marginal square footage value
+    from the local neighborhood dataset.
+    """
+    # Average price jump between bedroom counts
+    bed_medians = df.groupby("beds")["price"].median()
+
+    if len(bed_medians) > 1:
+        # Price difference between each tier (e.g., 4-bed median minus 3-bed median)
+        bed_premium = bed_medians.diff().mean()
+    else:
+        # If no variation, an extra bed is typically worth ~10-12% of avg price
+        bed_premium = df["price"].median() * 0.11
+
+    # Excess square footage is valued at 40% of the total PPS
+    avg_pps = df["price"].median() / df["area_sqft"].median()
+    marginal_pps = avg_pps * 0.40
+
+    # House rarely sells for more than 2 SDs above the mean
+    price_mean = df["price"].mean()
+    price_std = df["price"].std()
+    market_ceiling = price_mean + (2 * price_std)
+
+    return {
+        "bed_premium": bed_premium,
+        "avg_pps": avg_pps,
+        "marginal_pps": marginal_pps,
+        "market_ceiling": market_ceiling,
+    }
 
 
 def generate_price_score(price, predicted_price):
@@ -217,18 +275,25 @@ def generate_price_score(price, predicted_price):
     return price_score, price_remarks
 
 
-def generate_space_efficiency(price, area_sqft, avg_pps):
+def generate_space_efficiency(price, predicted_price, area_sqft, avg_pps):
     # Space efficiency (price per square foot)
-    prop_pps = price / area_sqft
-    pps_diff = (avg_pps - prop_pps) / avg_pps
+    avg_sqft = predicted_price / avg_pps
     pps_score = 0.84
 
+    is_big_prop = area_sqft > (avg_sqft * 1.15)
+    if is_big_prop:
+        pps_diff = (predicted_price - price) / predicted_price
+    else:
+        prop_pps = price / area_sqft
+        pps_diff = (avg_pps - prop_pps) / avg_pps
+
+    label = "Value" if is_big_prop else "PPS"
     if pps_diff >= 0:
         pps_score += (pps_diff / 0.10) * 0.36
-        pps_remarks = f"PPS is {abs(round(pps_diff*100, 1))}% lower than median"
+        pps_remarks = f"{label} is {abs(round(pps_diff*100, 1))}% lower than market"
     else:
         pps_score += (pps_diff / 0.15) * 0.36
-        pps_remarks = f"PPS is {abs(round(pps_diff*100, 1))}% higher than median"
+        pps_remarks = f"{label} is {abs(round(pps_diff*100, 1))}% higher than market"
 
     pps_score = np.clip(pps_score, -1.2, 1.2)
 
@@ -237,7 +302,7 @@ def generate_space_efficiency(price, area_sqft, avg_pps):
 
 def generate_bed_score(
     beds, area_sqft, price, predicted_price, avg_beds, avg_sqft
-):  # pylint: disable=R0912, R0913, R0917
+):  # pylint: disable=R0912, R0913, R0915, R0917
     # Room Factors (-0.8 to 0.8)
     # Bed counts
     space_worth_bed = 0
@@ -251,34 +316,44 @@ def generate_bed_score(
         bed_count_score = -0.5
         bed_remarks = "2 or more less bed, "
     else:
-        bed_count_score = 0.2
+        bed_count_score = 0.3
         bed_remarks = "one less bed, "
 
     if bed_count_score == 0:
         if area_sqft >= avg_sqft and price < predicted_price:
-            bed_final = 0.7
+            bed_final = 0.8
             bed_remarks += "more sqft, less price"
         elif (avg_sqft * 0.9) <= area_sqft and price < predicted_price:
-            bed_final = 0.4
+            bed_final = 0.6
             bed_remarks += "more sqft, close to predicted price"
         elif (avg_sqft * 0.9) <= area_sqft and price <= (predicted_price * 1.1):
-            bed_final = -0.1
+            bed_final = 0.4
             bed_remarks += "less sqft, close to predicted price"
         else:
-            bed_final = -0.5
+            bed_final = 0
             bed_remarks += "more price, sqft discarded"
     else:
         # Space Worth
         prop_spb = area_sqft / beds
         avg_spb = avg_sqft / avg_beds
-        if prop_spb > avg_spb + (0.1 * avg_spb):
+        is_big_prop = area_sqft > (avg_sqft * 1.15)
+        if is_big_prop and prop_spb > avg_spb:
+            space_worth_bed = 0.3
+            if beds > avg_beds:
+                bed_remarks += "more sqft satisfy more bed count"
+            else:
+                bed_remarks += "more sqft gives too much big rooms"
+        elif prop_spb > avg_spb + (0.1 * avg_spb):
             space_worth_bed = 0.3
             if beds > avg_beds:
                 bed_remarks += "more sqft satisfy more bed count"
             else:
                 bed_remarks += "more sqft gives too much big rooms"
         else:
-            space_worth_bed = -0.3
+            if is_big_prop:
+                space_worth_bed = -0.1
+            else:
+                space_worth_bed = -0.3
             if beds > avg_beds:
                 bed_remarks += "less sqft not satisfy more bed count"
             else:
@@ -292,7 +367,7 @@ def generate_bed_score(
 
 def generate_bath_score(
     baths, beds, area_sqft, price, predicted_price, avg_baths, avg_sqft
-):  # pylint: disable=R0913, R0917
+):  # pylint: disable=R0912, R0913, R0914, R0917
     # Bath Density (-0.7 to 0.7)
     # Gold Standard (0.7 ratio)
     # For less than 3 beds using 0.5 ratio
@@ -313,27 +388,34 @@ def generate_bath_score(
     # Bath count
     if baths == avg_baths:
         if area_sqft >= avg_sqft and price < predicted_price:
-            bath_price_worth = 0.4
+            bath_price_worth = 0.35
             bath_remarks += "more sqft less price"
         elif (avg_sqft * 0.9) <= area_sqft and price < predicted_price:
-            bath_price_worth = 0.2
+            bath_price_worth = 0.3
             bath_remarks += "more sqft same price"
         elif (avg_sqft * 0.9) <= area_sqft and price <= (predicted_price * 1.1):
-            bath_price_worth = -0.1
+            bath_price_worth = 0.2
             bath_remarks += "less sqft same price"
         else:
-            bath_price_worth = -0.4
+            bath_price_worth = 0
             bath_remarks += "more price, sqft discarded"
         bath_final = bath_ratio_score + bath_price_worth
     else:
         # Space Worth
         prop_spba = area_sqft / baths
         avg_spba = avg_sqft / avg_baths
-        if prop_spba > avg_spba + (0.1 * avg_spba):
+        is_big_prop = area_sqft > (avg_sqft * 1.15)
+        if is_big_prop and prop_spba > avg_spba:
+            space_worth_bath = 0.25
+            bath_remarks += "Bathrooms spacious X total sqft"
+        elif prop_spba > avg_spba + (0.1 * avg_spba):
             space_worth_bath = 0.25
             bath_remarks += "Bathrooms spacious X total sqft"
         else:
-            space_worth_bath = -0.25
+            if is_big_prop:
+                space_worth_bath = -0.1
+            else:
+                space_worth_bath = -0.25
             bath_remarks += "Bathrooms cramped X total sqft"
         bath_final = bath_ratio_score + space_worth_bath
 

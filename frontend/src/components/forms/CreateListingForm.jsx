@@ -12,11 +12,12 @@ import Form from "next/form";
 import Image from "next/image";
 import { createPropertyAction } from "@/actions/propertyActions";
 import { FormButton } from "@/components/buttons/Buttons";
+import { BackButton } from "@/components/buttons/Buttons";
 import styles from "./CreateListingForm.module.css";
 
 const initialState = {
   errors: {},
-  success: "",
+  success: {},
   formPropertyData: {
     title: "",
     description: "",
@@ -31,7 +32,6 @@ const initialState = {
     baths: "",
     area_sqft: "",
     price: "",
-    property_image: null,
   },
 };
 const uploadIcon = "/assets/upload-icon.svg";
@@ -65,12 +65,28 @@ export default function ListingForm() {
     property_image: null,
   });
 
+  const isTitleComplete = formData.title.trim() !== "";
+  const isDescriptionComplete = formData.description.trim() !== "";
+  const isAddressComplete =
+    formData.country.trim() !== "" &&
+    formData.state.trim() !== "" &&
+    formData.city.trim() !== "" &&
+    formData.area.trim() !== "" &&
+    formData.street.trim() !== "" &&
+    formData.house_no.trim() !== "";
+  const isDetailsComplete =
+    formData.beds.trim() !== "" &&
+    formData.baths.trim() !== "" &&
+    formData.area_sqft.trim() !== "";
+  const isPricingComplete = formData.price.trim() !== "";
+  const isImageComplete = formData.property_image !== null && !!previewUrl;
+
   const resetImageInput = useCallback(() => {
-    setPreviewUrl(state.formPropertyData.image_url);
+    setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  }, [state.formPropertyData.image_url]);
+  }, []);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -85,11 +101,13 @@ export default function ListingForm() {
           ? "Only JPG, JPEG and PNG images are allowed."
           : "Image size should not exceed 2MB.";
 
+        if (formData.property_image) {
+          setFormData((prev) => ({ ...prev, property_image: null }));
+        }
         setLocalImageError(msg);
         resetImageInput();
         return;
       }
-
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
@@ -98,7 +116,6 @@ export default function ListingForm() {
       setFormData((prev) => ({ ...prev, property_image: file }));
     }
   };
-
   const handleIconClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -115,8 +132,8 @@ export default function ListingForm() {
         const limits = {
           price: /^\d{0,13}(\.\d{0,2})?$/,
           area_sqft: /^\d{0,10}$/,
-          beds: /^\d{0,10}$/,
-          baths: /^\d{0,10}$/,
+          beds: /^\d{0,5}$/,
+          baths: /^\d{0,5}$/,
         };
 
         if (limits[name] && !limits[name].test(value)) {
@@ -137,6 +154,12 @@ export default function ListingForm() {
   };
 
   useEffect(() => {
+    if (isPending) {
+      setLocalImageError("");
+    }
+  }, [isPending]);
+
+  useEffect(() => {
     autoResize(textAreaRef.current);
   }, [formData.description]);
 
@@ -147,41 +170,21 @@ export default function ListingForm() {
   }, []);
 
   useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  useEffect(() => {
-    if (state.errors && state.errors.image_url) {
+    if (state.errors) {
       resetImageInput();
     }
   }, [state.errors, resetImageInput]);
 
   useEffect(() => {
-    if (state.success) {
+    if (Object.keys(state.success).length > 0) {
+      resetImageInput();
+      setPreviewUrl(state.success.client_preview_url);
       setTimeout(() => {
-        router.back();
+        router.push("/dashboard");
       }, 2000);
       setLocalImageError("");
     }
-  }, [state.success, router]);
-
-  const isTitleComplete = formData.title.trim() !== "";
-  const isDescriptionComplete = formData.description.trim() !== "";
-  const isAddressComplete =
-    formData.country.trim() !== "" &&
-    formData.state.trim() !== "" &&
-    formData.city.trim() !== "" &&
-    formData.area.trim() !== "" &&
-    formData.street.trim() !== "" &&
-    formData.house_no.trim() !== "";
-  const isDetailsComplete =
-    formData.beds.trim() !== "" &&
-    formData.baths.trim() !== "" &&
-    formData.area_sqft.trim() !== "";
-  const isPricingComplete = formData.price.trim() !== "";
-  const isImageComplete = formData.property_image !== null;
+  }, [state.success, router, resetImageInput]);
 
   return (
     <div className={styles.container}>
@@ -444,6 +447,11 @@ export default function ListingForm() {
                   style={{ display: "none" }} // Hidden input, triggered by icon click
                   disabled={isPending}
                 />
+                <input
+                  type="hidden"
+                  name="client_preview_url"
+                  value={previewUrl}
+                />
                 <div className={styles.uploadLabel}>
                   <div
                     className={styles.uploadIconCircle}
@@ -465,28 +473,20 @@ export default function ListingForm() {
             </div>
             {localImageError ? (
               <span className={styles.errorBox}>{localImageError}</span>
-            ) : Object.keys(state.errors).length > 0 &&
+            ) : !isImageComplete &&
+              Object.keys(state.errors).length > 0 &&
               state.errors.image_url ? (
               <span className={styles.errorBox}>{state.errors.image_url}</span>
             ) : null}
           </div>
-          {state.success && (
-            <div className={styles.successBox}>{state.success}</div>
+          {Object.keys(state.success).length > 0 && state.success.message && (
+            <div className={styles.successBox}>{state.success.message}</div>
           )}
           {Object.keys(state.errors).length > 0 && state.errors.general && (
             <div className={styles.errorBox2}>{state.errors.general}</div>
           )}
           <div className={styles.buttonGroup}>
-            <div className={styles.cancelProfileButton}>
-              <button
-                onClick={() => router.back()}
-                className={styles.cancelProfileButtonLink}
-                type="submit"
-              >
-                Cancel
-              </button>
-            </div>
-
+            <BackButton text="Cancel" />
             <FormButton
               type="submit"
               text="Create"

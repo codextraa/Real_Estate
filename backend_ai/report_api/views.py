@@ -382,7 +382,7 @@ class AIReportViewSet(ModelViewSet):
         current_user = self.request.user
         report_to_delete = self.get_object()
 
-        if report_to_delete.user != current_user or not current_user.is_superuser:
+        if report_to_delete.user != current_user and not current_user.is_superuser:
             return Response(
                 {"error": "You are not authorized to delete this report."},
                 status=status.HTTP_403_FORBIDDEN,
