@@ -59,7 +59,7 @@ class InvestmentRegressor:  # pylint: disable=R0902
 
         X, y = x_y
 
-        if area_sqft > (self.avg_sqft * 1.15):
+        if area_sqft > (self.avg_sqft * 1.15) and beds > self.avg_bed:
             adjustments = calculate_market_adjustments(df)
             self.avg_pps = adjustments["avg_pps"]
 
