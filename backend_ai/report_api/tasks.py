@@ -340,10 +340,10 @@ def report_finalizer(analysis_result, compiled_data, report_id):
                             + "\n- ".join(insight.get("cons", []))
                         )
                         report.ai_insight_summary = summary_text
-                        report.status = AIReport.Status.FAILED
+                        report.status = AIReport.Status.COMPLETED
                     else:
                         report.ai_insight_summary = value
-                        report.status = AIReport.Status.COMPLETED
+                        report.status = AIReport.Status.FAILED
 
         report.save()
 
