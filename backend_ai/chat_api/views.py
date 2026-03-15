@@ -397,10 +397,10 @@ class ChatMessageDetailView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        if (
-            message.status != ChatMessage.Status.COMPLETED and 
-            message.status != ChatMessage.Status.FAILED
-        ):
+        if message.status not in {
+            ChatMessage.Status.COMPLETED,
+            ChatMessage.Status.FAILED,
+        }:
             return Response(
                 {"pending": f"Your message is still being {message.status.lower()}."},
                 status=status.HTTP_202_ACCEPTED,

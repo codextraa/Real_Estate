@@ -2,7 +2,7 @@
 
 import { createProperty, updateProperty, deleteProperty } from "@/libs/api";
 import { updateTag } from "next/cache";
-const propertyError = (response) => {
+const backendError = (response) => {
   if (typeof response.error === "object") {
     const errorMessages = {};
 
@@ -77,6 +77,78 @@ const propertyError = (response) => {
   }
 };
 
+const frontendError = (
+  title,
+  description,
+  price,
+  addressParts,
+  beds,
+  baths,
+  area_sqft,
+) => {
+  const errors = {};
+
+  if (!title) {
+    errors.title = "Title is required.";
+  }
+
+  if (!description) {
+    errors.description = "Description is required.";
+  }
+
+  if (!price) {
+    errors.price = "Pricing is required.";
+  }
+
+  if (price && price <= 10000) {
+    errors.price = "Pricing cannot be less than $10,000.";
+  }
+
+  const requiredAddressFields = [
+    "house_no",
+    "street",
+    "area",
+    "city",
+    "state",
+    "country",
+  ];
+
+  const missing = requiredAddressFields.filter(
+    (field) => !addressParts[field].trim(),
+  );
+
+  if (missing.length > 0) {
+    errors.address =
+      "Please provide full address: House No, Street, Area, City, State, and Country are required.";
+  }
+
+  if (!beds) {
+    errors.beds = "Number of Beds is required.";
+  }
+
+  if (beds && beds <= 0) {
+    errors.beds = "Beds cannot be negative or zero.";
+  }
+
+  if (!baths) {
+    errors.baths = "Number of Baths is required.";
+  }
+
+  if (baths && baths <= 0) {
+    errors.baths = "Baths cannot be negative or zero.";
+  }
+
+  if (!area_sqft) {
+    errors.area_sqft = "Area is required.";
+  }
+
+  if (area_sqft && area_sqft <= 100) {
+    errors.area_sqft = "Area square footage cannot be less than 100 sqft.";
+  }
+
+  return errors;
+};
+
 export const createPropertyAction = async (prevState, formData) => {
   const addressParts = {
     flat_no: formData.get("flat_no") || "",
@@ -114,49 +186,15 @@ export const createPropertyAction = async (prevState, formData) => {
     ...addressParts,
   };
 
-  const errors = {};
-
-  if (!title) {
-    errors.title = "Title is required.";
-  }
-
-  if (!description) {
-    errors.description = "Description is required.";
-  }
-
-  if (!price) {
-    errors.price = "Pricing is required.";
-  }
-
-  const requiredAddressFields = [
-    "house_no",
-    "street",
-    "area",
-    "city",
-    "state",
-    "country",
-  ];
-
-  const missing = requiredAddressFields.filter(
-    (field) => !addressParts[field].trim(),
+  const errors = frontendError(
+    title,
+    description,
+    price,
+    addressParts,
+    beds,
+    baths,
+    area_sqft,
   );
-
-  if (missing.length > 0) {
-    errors.address =
-      "Please provide full address: House No, Street, Area, City, State, and Country are required.";
-  }
-
-  if (!beds) {
-    errors.beds = "Number of Beds is required.";
-  }
-
-  if (!baths) {
-    errors.baths = "Number of Baths is required.";
-  }
-
-  if (!area_sqft) {
-    errors.area_sqft = "Area is required.";
-  }
 
   const isNewImageUploaded =
     property_image && property_image instanceof File && property_image.size > 0;
@@ -192,7 +230,7 @@ export const createPropertyAction = async (prevState, formData) => {
 
     if (response.error) {
       return {
-        errors: propertyError(response),
+        errors: backendError(response),
         success: {},
         formPropertyData: newPropertyData,
       };
@@ -253,43 +291,15 @@ export const updatePropertyAction = async (id, prevState, formData) => {
     ...addressParts,
   };
 
-  const errors = {};
-
-  if (!title) {
-    errors.title = "Title is required.";
-  }
-  if (!description) {
-    errors.description = "Description is required.";
-  }
-  if (!price) {
-    errors.price = "Pricing is required.";
-  }
-
-  const requiredAddressFields = [
-    "house_no",
-    "street",
-    "area",
-    "city",
-    "state",
-    "country",
-  ];
-  const missing = requiredAddressFields.filter(
-    (field) => !addressParts[field].trim(),
+  const errors = frontendError(
+    title,
+    description,
+    price,
+    addressParts,
+    beds,
+    baths,
+    area_sqft,
   );
-
-  if (missing.length > 0) {
-    errors.address =
-      "Please provide full address: House No, Street, Area, City, State, and Country are required.";
-  }
-  if (!beds) {
-    errors.beds = "Number of Beds is required.";
-  }
-  if (!baths) {
-    errors.baths = "Number of Baths is required.";
-  }
-  if (!area_sqft) {
-    errors.area_sqft = "Area is required.";
-  }
 
   if (Object.keys(errors).length > 0) {
     return {
@@ -372,7 +382,7 @@ export const updatePropertyAction = async (id, prevState, formData) => {
     }
 
     if (response.error) {
-      const backend_errors = propertyError(response);
+      const backend_errors = backendError(response);
 
       if (isNewImageUploaded && !backend_errors["image_url"]) {
         updateTag(`property-${id}`);
