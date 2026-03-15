@@ -8,18 +8,89 @@
   border: 2px solid rgba(20, 36, 44, 0.3);
   border-radius: 31px;
   background-color: #eee;
-  transition: transform 0.3s ease;
+  transition:
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    box-shadow 0.4s ease,
+    border-color 0.4s ease;
   position: relative;
+  animation: cardAppear 0.6s ease-out forwards;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.imageCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+  z-index: 1;
+}
+
+@keyframes shimmer {
+  100% {
+    left: 200%;
+  }
 }
 
 .imageCard:hover {
-  transform: scale(1.01);
+  transform: scale(1.02);
+  border-color: rgba(20, 36, 44, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.imageCard::after {
+  content: "View Image";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(20, 36, 44, 0.2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-old-standard-tt);
+  font-size: 20px;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+}
+
+.imageCard:hover::after {
+  opacity: 1;
 }
 
 .propertyImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 2;
+  position: relative;
+}
+
+.imageCard:hover .propertyImage {
+  transform: scale(1.05);
 }
 
 @media (max-width: 1200px) {
@@ -32,5 +103,9 @@
   .imageCard {
     height: 350px;
     border-radius: 20px;
+  }
+
+  .imageCard::after {
+    display: none;
   }
 }

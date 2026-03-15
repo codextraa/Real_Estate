@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from core_db.models import Agent, Property
+from core_db.models import Agent, Property, AIReport, ChatSession, ChatMessage
 from backend.mixins import http_method_mixin
 from backend.renderers import ViewRenderer
 from backend.schema_serializers import (
@@ -580,6 +580,20 @@ class PropertyViewSet(ModelViewSet):
                 {"error": "You are not authorized to delete this property."},
                 status=status.HTTP_403_FORBIDDEN,
             )
+
+        # pylint: disable=R0801
+        reports = AIReport.objects.filter(property=property_instance)
+
+        if reports.exists():
+            sessions = ChatSession.objects.filter(report__in=reports)
+
+            if sessions.exists():
+                ChatMessage.objects.filter(session__in=sessions).delete()
+
+            sessions.delete()
+
+        reports.delete()
+        # pylint: enable=R0801
 
         default_property_image = "property_images/default_image.jpg"
         old_property_image = None

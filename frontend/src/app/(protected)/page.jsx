@@ -12,6 +12,7 @@ import styles from "@/styles/PropertyPage.module.css";
 
 export default async function Page({ searchParams }) {
   const imageUrl = "/real-estate/real-estate.jpg";
+  const eIcon = "/assets/E.svg";
   const userId = await getUserIdAction();
   let currentPage, response;
 
@@ -34,7 +35,16 @@ export default async function Page({ searchParams }) {
       />
 
       <div className={stylesHome.container}>
-        <div className={stylesHome.content}>Estate</div>
+        <div className={stylesHome.content}>
+          <Image
+            src={eIcon}
+            width={500}
+            height={500}
+            alt="E"
+            className={stylesHome.icon}
+          />
+          <span>state</span>
+        </div>
         <div className={stylesHome.buttons}>
           <HomePageButton text="Get Started" />
         </div>
@@ -54,7 +64,16 @@ export default async function Page({ searchParams }) {
           />
         </div>
         <div className={styles.container}>
-          <div className={styles.content}>Estate</div>
+          <div className={styles.content}>
+            <Image
+              src={eIcon}
+              width={500}
+              height={500}
+              alt="E"
+              className={stylesHome.icon}
+            />
+            <span>state</span>
+          </div>
         </div>
       </div>
       <div className={styles.propertiesContainer}>

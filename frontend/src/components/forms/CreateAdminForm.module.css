@@ -11,7 +11,6 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  /* where is the max width */
   max-width: 836px;
 }
 
@@ -23,13 +22,10 @@
   text-align: center;
 }
 
-/* who will fix the height and font size */
 .inputAdmin {
   height: 50px;
   font-size: 20px;
 }
-
-/* who will fix the gap between the input and the hint */
 .inputHintAdminUsername {
   margin-top: 6px;
 }

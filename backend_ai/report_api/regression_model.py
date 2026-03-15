@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.impute import SimpleImputer
 from .utils import (
+    calculate_market_adjustments,
     generate_price_score,
     generate_space_efficiency,
     generate_bed_score,
@@ -24,12 +25,8 @@ class InvestmentRegressor:  # pylint: disable=R0902
         self.imputer = SimpleImputer(strategy="median")
         self.model = LinearRegression()
 
-    def clean_data(self, compiled_data):
+    def clean_data(self, df):
         """Removes properties without prices and handles missing feature data."""
-        if not compiled_data:
-            return None
-
-        df = pd.DataFrame(compiled_data)
         # Remove properties without prices
         df = df.dropna(subset=["price"])
 
@@ -49,24 +46,48 @@ class InvestmentRegressor:  # pylint: disable=R0902
         baths = int(property_data.get("baths"))
         price = float(property_data.get("price"))
 
-        x_y = self.clean_data(compiled_data)
+        if not compiled_data or price == 0 or area_sqft == 0 or beds == 0 or baths == 0:
+            return 2.5, {}
 
-        if x_y is None or price == 0 or area_sqft == 0 or beds == 0 or baths == 0:
+        # Convert to dataframe
+        df = pd.DataFrame(compiled_data)
+
+        x_y = self.clean_data(df)
+
+        if x_y is None:
             return 2.5, {}
 
         X, y = x_y
 
-        # Train the model
-        self.model.fit(X, y)
+        if area_sqft > (self.avg_sqft * 1.15) and beds > self.avg_bed:
+            adjustments = calculate_market_adjustments(df)
+            self.avg_pps = adjustments["avg_pps"]
 
-        # Subject and prediction
-        subject_X = np.array([[area_sqft, beds, baths]])
-        predicted_price = self.model.predict(subject_X)[0]
+            sqft_gap = area_sqft - self.avg_sqft
+            bed_gap = beds - self.avg_beds
+
+            sqft_adj_value = sqft_gap * adjustments["marginal_pps"]
+            bed_adj_value = bed_gap * adjustments["bed_premium"]
+
+            shifted_predicted_price = self.avg_price + sqft_adj_value + bed_adj_value
+
+            predicted_price = min(
+                shifted_predicted_price, adjustments["market_ceiling"]
+            )
+            market_superiority = 0.3
+        else:
+            # Train the model
+            self.model.fit(X, y)
+
+            # Subject and prediction
+            subject_X = np.array([[area_sqft, beds, baths]])
+            predicted_price = self.model.predict(subject_X)[0]
+            market_superiority = 0
 
         price_score, price_remarks = generate_price_score(price, predicted_price)
 
         pps_score, pps_remarks = generate_space_efficiency(
-            price, area_sqft, self.avg_pps
+            price, predicted_price, area_sqft, self.avg_pps
         )
 
         bed_final, bed_count_score, space_worth_bed, bed_remarks = generate_bed_score(
@@ -115,6 +136,7 @@ class InvestmentRegressor:  # pylint: disable=R0902
             "bath_final": bath_final,
             "bath_remarks": bath_remarks,
             "market_stability": market_stability,
+            "market_superiority": market_superiority,
             "layout_score": layout_score,
         }
 
@@ -124,6 +146,7 @@ class InvestmentRegressor:  # pylint: disable=R0902
             + bed_final
             + bath_final
             + market_stability
+            + market_superiority
             + layout_score
         )
         final_rating = round(min(5.0, max(0.0, total_score)) * 2) / 2

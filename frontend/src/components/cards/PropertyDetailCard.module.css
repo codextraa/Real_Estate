@@ -1,7 +1,6 @@
 .propertyDetailCard {
   box-sizing: border-box;
   width: 393px;
-  /* Changed to min-height so it can expand if text wraps on mobile */
   min-height: 506px;
   background: #f7f7f7;
   border: 2px solid rgba(65, 82, 97, 0.53);
@@ -11,14 +10,23 @@
   flex-direction: column;
   position: relative;
   gap: 15px;
-  /* Increased gap slightly for better breathing room */
+  animation: cardSlideIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
-/* Location Section */
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .location {
   display: flex;
   align-items: flex-start;
-  /* Better for long wrapped addresses */
   gap: 12px;
 }
 
@@ -26,8 +34,20 @@
   width: 20px !important;
   height: 20px !important;
   flex-shrink: 0;
-  /* Prevents icon from squishing */
   margin-top: 4px;
+  animation: locationPulse 2s infinite ease-in-out;
+}
+
+@keyframes locationPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .locationText {
@@ -37,7 +57,6 @@
   line-height: 1.3;
 }
 
-/* Details Grid */
 .details {
   border-top: 1px solid rgba(19, 37, 46, 0.1);
   padding-top: 15px;
@@ -60,7 +79,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Center-aligns the number and label */
+  transition: transform 0.3s ease;
+}
+
+.detailItemContainer:hover {
+  transform: translateY(-3px);
 }
 
 .detailItemBed,
@@ -76,11 +99,9 @@
   font-family: var(--font-old-standard-tt);
   font-weight: 400;
   font-size: 16px;
-  /* Adjusted from 30px which was too large */
   color: #13252e;
 }
 
-/* Price Section */
 .priceContainer {
   margin-top: 5px;
 }
@@ -112,12 +133,21 @@
   border: none;
   padding: 10px 18px;
   border-radius: 50px;
-  /* Pill shape to match Update/Delete */
   cursor: pointer;
   font-family: var(--font-old-standard-tt);
   font-size: 14px;
-  transition: opacity 0.2s;
+  transition: all 0.3s ease;
 }
+
+.paymentButton:hover:not(:disabled) {
+  background: #233e4f;
+  transform: scale(1.05);
+}
+
+.paymentButton:active {
+  transform: scale(0.95);
+}
+
 .successMsg {
   color: #28a745;
   font-weight: 600;
@@ -176,27 +206,26 @@
 }
 
 .agentContact {
-  display: flex; /* Added to center the text easily */
+  display: flex;
   align-items: center;
   justify-content: center;
-  text-decoration: none; /* Removes the default link underline */
+  text-decoration: none;
   box-sizing: border-box;
-
   background: #f7f7f7;
   border: 1px solid #415261;
   border-radius: 38px;
-
+  padding: 2px;
   font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 20px;
   color: #13252e;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Optional: Add a hover state so it feels like a real button */
 .agentContact:hover {
   background: #13252e;
   color: #f7f7f7;
+  transform: translateY(-2px);
 }
 
 .agentImage {
@@ -204,6 +233,11 @@
   object-fit: cover;
   width: 45px !important;
   height: 45px !important;
+  transition: transform 0.4s ease;
+}
+
+.agentInfo:hover .agentImage {
+  transform: rotate(5deg) scale(1.1);
 }
 
 /* Auth Buttons */
@@ -213,53 +247,49 @@
   align-items: center;
   justify-content: center;
   gap: 20px;
-  /* Adjusted gap to better fit the card width */
   margin-top: 20px;
 }
 
-/* Shared styles for the pill shape */
 .editProfileButton,
 .deleteButton {
   box-sizing: border-box;
   width: 150px;
-  /* Fixed width for consistent pill shape */
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50px;
-  /* High value creates the pill shape seen in the image */
   font-family: var(--font-old-standard-tt), serif;
   font-weight: 700;
   font-size: 18px;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
-/* Update Button: White background with thin dark border */
 .editProfileButton {
   background: #ffffff;
   color: #13252e;
   border: 1px solid #13252e;
-  /* Matches the thin outline in the reference */
 }
 
-/* Delete Button: Solid red background */
 .deleteButton {
   background: #980000;
   color: #ffffff;
   border: none;
-  width: 150px;
-  /* Ensure it matches the edit button width */
 }
 
-/* Hover effects */
-.editProfileButton:hover,
+.editProfileButton:hover {
+  background: #13252e;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 .deleteButton:hover {
-  opacity: 0.8;
-  transform: translateY(-1px);
-  /* Subtle lift effect */
+  background: #c00000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(152, 0, 0, 0.2);
 }
 
 /* --- RESPONSIVE BREAKPOINTS --- */
@@ -268,7 +298,6 @@
   .propertyDetailCard {
     width: 100%;
     max-width: 450px;
-    /* Limits width on tablet so it doesn't look too stretched */
     margin: 0 auto;
   }
 }

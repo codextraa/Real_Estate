@@ -1,13 +1,10 @@
-import io
 import os
 import jwt
-from PIL import Image
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITestCase
 from rest_framework.test import APIClient
 from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from core_db.models import Agent

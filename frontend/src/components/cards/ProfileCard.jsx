@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getUserIdAction } from "@/actions/authActions";
+import { BackButton } from "@/components/buttons/Buttons";
 import styles from "./ProfileCard.module.css";
 
 export default async function ProfileCard({ userData, userId, userRole }) {
@@ -28,12 +29,13 @@ export default async function ProfileCard({ userData, userId, userRole }) {
           <div className={styles.profileContainer}>
             <div className={styles.bioInfo}>
               <h1 className={styles.subTitle}>
-                {userData.user.first_name + " " + userData.user.last_name}
+                {`${userData.user.first_name != null ? `${userData.user.first_name} ` : ""}${userData.user.last_name != null ? `${userData.user.last_name} ` : ""}` ||
+                  userData.user.username}
               </h1>
               <label className={styles.aboutMeLabel}>About Me</label>
               <div className={styles.storedText}>{userData.bio}</div>
             </div>
-            <div className={styles.profileDetails}>
+            <div className={`${styles.profileDetails} ${styles.mainDetails}`}>
               <h1 className={styles.subTitle2}>Details</h1>
               <div className={styles.profileInfos}>
                 <div
@@ -70,7 +72,9 @@ export default async function ProfileCard({ userData, userId, userRole }) {
                 </div>
               </div>
             </div>
-            <div className={styles.profileDetails}>
+            <div
+              className={`${styles.profileDetails} ${styles.companyDetails}`}
+            >
               <h1 className={styles.subTitle2}>Company Information</h1>
               <div
                 className={`${styles.profileBoxLabel} ${styles.profileBoxLabelAgent}`}
@@ -81,29 +85,32 @@ export default async function ProfileCard({ userData, userId, userRole }) {
                 </div>
               </div>
             </div>
-            {isOwnProfile && (
-              <div className={styles.agentProfileButtonContainer}>
-                <Link
-                  href={`/profile/${userData.user.slug}/edit`}
-                  className={`${styles.editProfileButton} ${styles.editAgentProfileButton}`}
-                >
-                  Edit Profile
-                </Link>
-                <Link
-                  href={`/dashboard?tab=my-listings`}
-                  className={`${styles.editProfileButton} ${styles.myListingsButton}`}
-                >
-                  View Listings
-                  <Image
-                    className={styles.arrowIcon}
-                    src="/assets/button-arrow.svg"
-                    alt="Right Arrow Icon"
-                    width={53}
-                    height={45}
-                  />
-                </Link>
-              </div>
-            )}
+            <div className={styles.agentProfileButtonContainer}>
+              {!isOwnProfile && <BackButton text="Go Back" />}
+              {isOwnProfile && (
+                <>
+                  <Link
+                    href={`/profile/${userData.user.slug}/edit`}
+                    className={`${styles.editProfileButton} ${styles.editAgentProfileButton}`}
+                  >
+                    Edit Profile
+                  </Link>
+                  <Link
+                    href={`/dashboard?tab=my-listings`}
+                    className={`${styles.editProfileButton} ${styles.myListingsButton}`}
+                  >
+                    View Listings
+                    <Image
+                      className={styles.arrowIcon}
+                      src="/assets/button-arrow.svg"
+                      alt="Right Arrow Icon"
+                      width={53}
+                      height={45}
+                    />
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       ) : (
@@ -126,16 +133,17 @@ export default async function ProfileCard({ userData, userId, userRole }) {
               <div className={styles.storedContent}>{userData.username}</div>
             </div>
           </div>
-          {isOwnProfile && (
-            <div className={styles.profileDetailButtonContainer}>
+          <div className={styles.profileDetailButtonContainer}>
+            {!isOwnProfile && <BackButton text="Go Back" />}
+            {isOwnProfile && (
               <Link
                 href={`/profile/${userData.slug}/edit`}
                 className={styles.editProfileButton}
               >
                 Edit Profile
               </Link>
-            </div>
-          )}
+            )}
+          </div>
         </>
       )}
     </div>

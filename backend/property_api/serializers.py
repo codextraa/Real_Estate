@@ -37,8 +37,9 @@ class PropertySerializer(serializers.ModelSerializer):
         beds = attrs.get("beds")
         baths = attrs.get("baths")
         area_sqft = attrs.get("area_sqft")
+        price = attrs.get("price")
 
-        errors = validate_property_integers(beds, baths, area_sqft)
+        errors = validate_property_integers(beds, baths, area_sqft, price)
         if errors:
             raise serializers.ValidationError(errors)
 

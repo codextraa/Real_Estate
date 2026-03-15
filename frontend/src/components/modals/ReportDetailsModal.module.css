@@ -1,3 +1,37 @@
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pulseLoading {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .overlay {
   position: fixed;
   top: 0;
@@ -13,6 +47,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 40px 0;
+  transition: background 0.3s ease;
 }
 
 .modalContent {
@@ -20,6 +55,7 @@
   max-height: none;
   position: relative;
   margin: 0 auto;
+  animation: fadeInScale 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
 }
 
 .modalBodyX {
@@ -27,6 +63,9 @@
   justify-content: center;
   align-items: center;
   height: 300px;
+  font-family: var(--font-old-standard-tt);
+  font-weight: 700;
+  animation: pulseLoading 1.5s infinite ease-in-out;
 }
 
 .modalBody {
@@ -37,15 +76,7 @@
   box-shadow:
     -2px -2px 14px 4px #415261,
     2px 2px 14px 4px #415261;
-}
-
-.closeButton {
-  position: absolute;
-  background: none;
-  border: none;
-  cursor: pointer;
-  top: -20px;
-  right: -20px;
+  transition: all 0.3s ease;
 }
 
 .modalHeader {
@@ -83,6 +114,18 @@
   font-size: 18px;
   color: #13252e;
   line-height: 1.6;
+
+  animation: slideIn 0.5s ease out both;
+}
+
+.modalSection:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.modalSection:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.modalSection:nth-child(3) {
+  animation-delay: 0.3s;
 }
 
 .sectionUnderline {
@@ -90,7 +133,6 @@
   font-weight: 700;
   font-size: 22px;
   text-decoration: underline;
-  /* margin-bottom: 10px; */
 }
 
 .insideSection {
@@ -105,6 +147,7 @@
   border: 2px solid #13252e;
   border-radius: 10px;
   padding: 15px;
+  white-space: pre-line;
   font-family: var(--font-old-standard-tt);
   font-size: 18px;
   line-height: 1.4;
@@ -178,6 +221,7 @@
     align-items: center;
     text-align: center;
   }
+
   .modalContent {
     margin: 40px;
   }

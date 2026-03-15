@@ -40,17 +40,17 @@
   font-family: var(--font-koh-santepheap);
   font-size: 210px;
   font-weight: 400;
-  background: linear-gradient(
-    280.9deg,
-    #14242c -29.02%,
-    #324b59 40.91%,
-    #648aa2 106.52%
-  );
+  background: #13252e;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
   letter-spacing: -2px;
   pointer-events: none;
+}
+
+.icon {
+  width: 131px;
+  height: 186px;
 }
 
 .propertiesContainer {
@@ -192,10 +192,6 @@
     margin-top: 20px;
   }
 
-  .content {
-    font-size: 140px;
-  }
-
   .content2 {
     font-size: 120px;
   }
@@ -218,6 +214,10 @@
 
 @media (max-width: 900px) {
   .content2 {
+    font-size: 90px;
+  }
+
+  .content {
     font-size: 90px;
   }
 
