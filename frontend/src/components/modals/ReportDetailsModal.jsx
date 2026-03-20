@@ -46,9 +46,7 @@ export default function ReportDetailsModal({ reportID, onClose }) {
               <div className={styles.modalMainTitle}>Details</div>
               <div className={styles.modalStatus}>Status: {details.status}</div>
             </div>
-
             <div className={styles.modalReportId}>Report ID: #{details.id}</div>
-
             <div className={styles.modalSection}>
               <div className={styles.sectionUnderline}>Property Details:</div>
               <div className={styles.insideSection}>
@@ -67,7 +65,6 @@ export default function ReportDetailsModal({ reportID, onClose }) {
                 Average Baths: {details.avg_baths}
               </div>
             </div>
-
             <div className={styles.modalSection}>
               <div className={styles.sectionUnderline}>Market Details:</div>
               <div className={styles.insideSection}>
@@ -84,14 +81,12 @@ export default function ReportDetailsModal({ reportID, onClose }) {
                 /5.00
               </div>
             </div>
-
             <div className={styles.modalSection}>
               <div className={styles.sectionUnderline}>AI Summary:</div>
               <div className={styles.aiSummaryBox}>
                 {details.ai_insight_summary || "No summary available."}
               </div>
             </div>
-
             <div className={styles.modalFooter}>
               <span>Created By: {details.user?.username}</span>
               <span suppressHydrationWarning>

@@ -62,7 +62,7 @@ export function NavButton({ text, href, onClick }) {
   };
 
   const buttonClass =
-    text === "Login" || text === "Log Out"
+    text === "Log In" || text === "Log Out"
       ? styles.NavLogInButton
       : styles.NavSignUpButton;
 

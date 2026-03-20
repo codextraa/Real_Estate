@@ -1,11 +1,11 @@
 .propertyDetailCard {
   box-sizing: border-box;
-  width: 393px;
+  width: 435px;
   min-height: 506px;
   background: #f7f7f7;
   border: 2px solid rgba(65, 82, 97, 0.53);
   border-radius: 20px;
-  padding: 30px;
+  padding: 30px 25px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -24,6 +24,10 @@
   }
 }
 
+.locationContainer {
+  display: block;
+}
+
 .location {
   display: flex;
   align-items: flex-start;
@@ -31,8 +35,8 @@
 }
 
 .locationIcon {
-  width: 20px !important;
-  height: 20px !important;
+  width: 33px !important;
+  height: 33px !important;
   flex-shrink: 0;
   margin-top: 4px;
   animation: locationPulse 2s infinite ease-in-out;
@@ -51,7 +55,7 @@
 }
 
 .locationText {
-  font-family: var(--font-old-standard-tt), serif;
+  font-family: var(--font-old-standard-tt);
   font-size: 18px;
   color: #13252e;
   line-height: 1.3;
@@ -91,14 +95,14 @@
 .detailItemArea {
   font-family: var(--font-old-standard-tt);
   font-weight: 700;
-  font-size: 24px;
+  font-size: 25px;
   color: #324b59;
 }
 
 .detailItemLabel {
   font-family: var(--font-old-standard-tt);
-  font-weight: 400;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 25px;
   color: #13252e;
 }
 
@@ -109,20 +113,19 @@
 .priceLabel {
   font-family: var(--font-old-standard-tt);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .pricePayment {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
 }
 
 .priceValue {
   font-family: var(--font-old-standard-tt);
-  font-weight: 700;
+  font-weight: 400;
   font-size: 25px;
   color: #13252e;
 }
@@ -136,6 +139,7 @@
   cursor: pointer;
   font-family: var(--font-old-standard-tt);
   font-size: 14px;
+  font-weight: 700;
   transition: all 0.3s ease;
 }
 
@@ -146,6 +150,11 @@
 
 .paymentButton:active {
   transform: scale(0.95);
+}
+
+.analyzeText {
+  display: flex;
+  flex-direction: row;
 }
 
 .successMsg {
@@ -173,7 +182,6 @@
   }
 }
 
-/* Agent Section */
 .agentContainer {
   display: flex;
   flex-direction: column;
@@ -193,6 +201,7 @@
   justify-content: space-between;
   align-items: center;
 }
+
 .agentNameContainer {
   display: flex;
   flex-direction: column;
@@ -214,7 +223,7 @@
   background: #f7f7f7;
   border: 1px solid #415261;
   border-radius: 38px;
-  padding: 2px;
+  padding: 4px 12px;
   font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 20px;
@@ -228,11 +237,18 @@
   transform: translateY(-2px);
 }
 
-.agentImage {
+.agentImageContainer {
+  width: 56px;
+  height: 56px;
+  border: 2px solid #13252e;
   border-radius: 50%;
+  overflow: hidden;
+}
+
+.agentImage {
   object-fit: cover;
-  width: 45px !important;
-  height: 45px !important;
+  width: 100% !important;
+  height: 100% !important;
   transition: transform 0.4s ease;
 }
 
@@ -240,14 +256,14 @@
   transform: rotate(5deg) scale(1.1);
 }
 
-/* Auth Buttons */
 .formProfileButtons {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 20px;
-  margin-top: 20px;
+  margin-top: auto;
+  padding-top: 10px;
 }
 
 .editProfileButton,
@@ -292,8 +308,6 @@
   box-shadow: 0 4px 8px rgba(152, 0, 0, 0.2);
 }
 
-/* --- RESPONSIVE BREAKPOINTS --- */
-
 @media (max-width: 1100px) {
   .propertyDetailCard {
     width: 100%;
@@ -315,6 +329,10 @@
   .detailItemBed,
   .detailItemBath,
   .detailItemArea {
+    font-size: 20px;
+  }
+
+  .detailItemLabel {
     font-size: 20px;
   }
 

@@ -9,6 +9,7 @@ import { getUserIdAction } from "@/actions/authActions";
 import { createReportAction } from "@/actions/reportActions";
 
 const locationIcon = "/assets/location-icon.svg";
+const arrowIcon = "/assets/arrow2.svg";
 export default function PropertyDetailCard({ property }) {
   const [userId, setUserId] = useState(null);
   const [isClient, setIsClient] = useState(false);
@@ -133,25 +134,36 @@ export default function PropertyDetailCard({ property }) {
         <div className={styles.priceLabel}>Price </div>
         <div className={styles.pricePayment}>
           <span className={styles.priceValue}>${property.price}</span>
-          <div className={styles.button}>
-            {status === "idle" ? (
-              <button
-                className={styles.paymentButton}
-                onClick={handleAnalyze}
-                disabled={loading}
-              >
-                {loading ? "Analyzing..." : "Analyze"}
-              </button>
-            ) : (
-              <span
-                className={
-                  status === "success" ? styles.successMsg : styles.errorMsg
-                }
-              >
-                {message || "Report Generation Failed"}
-              </span>
-            )}
-          </div>
+          {status === "idle" ? (
+            <button
+              className={styles.paymentButton}
+              onClick={handleAnalyze}
+              disabled={loading}
+            >
+              {loading ? (
+                "Analyzing..."
+              ) : (
+                <span className={styles.analyzeText}>
+                  Analyze Property
+                  <Image
+                    src={arrowIcon}
+                    alt="Arrow Icon"
+                    width={16}
+                    height={16}
+                    className={styles.arrowIcon}
+                  />
+                </span>
+              )}
+            </button>
+          ) : (
+            <span
+              className={
+                status === "success" ? styles.successMsg : styles.errorMsg
+              }
+            >
+              {message || "Report Generation Failed"}
+            </span>
+          )}
         </div>
       </div>
       <div className={styles.agentContainer}>
@@ -165,7 +177,7 @@ export default function PropertyDetailCard({ property }) {
               href={`/profile/${property.agent.slug}?user_id=${property.agent.user_id}&user_role=${property.agent.user_role}`}
               className={styles.agentContact}
             >
-              Contact
+              View Profile
             </Link>
           </div>
           <div className={styles.agentImageContainer}>
