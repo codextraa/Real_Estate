@@ -98,20 +98,37 @@
   font-weight: 700;
   font-size: 50px;
   color: #13252e;
+  padding-left: 15px;
   margin-top: 80px;
+}
+
+.recommendationCards {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
 }
 
 .recommendationGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+  gap: 49px;
   justify-items: center;
 }
 
 @media (max-width: 1150px) {
+  .propertyPageContainerBackground {
+    justify-content: flex-start;
+  }
+
   .propertyDetailContainer {
     flex-direction: column;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .propertyDetailDescription {
+    max-width: 690px;
   }
 
   .recommendationCards {
@@ -123,20 +140,28 @@
   }
 
   .recommendationTitle {
-    margin-top: 0px;
+    text-align: center;
+    padding-left: 0;
+    margin-top: 20px;
   }
 }
 
-/* @media (max-width: 1150px) {
-  
-} */
-@media (max-width: 800px) {
+@media (max-width: 768px) {
   .propertyPageContainerBackground {
     padding: 50px 20px 20px 20px;
   }
 
   .profileDetailTitle {
-    font-size: 32px;
+    font-size: 36px;
+  }
+
+  .propertyDetailDescription {
+    max-width: 520px;
+    margin-bottom: 0px;
+  }
+
+  .propertyDetailDescription h2 {
+    font-size: 16px;
   }
 
   .recommendationTitle {
@@ -150,5 +175,11 @@
 
   .recommendationGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .profileDetailTitle {
+    font-size: 28px;
   }
 }

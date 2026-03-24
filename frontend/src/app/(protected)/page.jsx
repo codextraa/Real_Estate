@@ -41,7 +41,7 @@ export default async function Page({ searchParams }) {
             width={500}
             height={500}
             alt="E"
-            className={stylesHome.icon}
+            className={stylesHome.ieicon}
           />
           <span>state</span>
         </div>
@@ -70,7 +70,7 @@ export default async function Page({ searchParams }) {
               width={500}
               height={500}
               alt="E"
-              className={stylesHome.icon}
+              className={styles.meicon}
             />
             <span>state</span>
           </div>

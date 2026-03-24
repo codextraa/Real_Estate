@@ -48,11 +48,13 @@ export default async function PropertyPage({ params }) {
         <div className={styles.propertyDetailDropdowns}>
           <Dropdown />
         </div>
-        <div className={styles.recommendationTitle}>Recommendation</div>
-        <div className={styles.recommendationGrid}>
-          {recommendedProperties.results.slice(0, 6).map((property) => (
-            <PropertyCard key={property.id} property={property} />
-          ))}
+        <div className={styles.recommendationTitle}>Recommendations</div>
+        <div className={styles.recommendationCards}>
+          <div className={styles.recommendationGrid}>
+            {recommendedProperties.results.slice(0, 6).map((property) => (
+              <PropertyCard key={property.id} property={property} />
+            ))}
+          </div>
         </div>
       </div>
     </div>

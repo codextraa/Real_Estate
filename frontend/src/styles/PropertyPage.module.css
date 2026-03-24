@@ -48,7 +48,7 @@
   pointer-events: none;
 }
 
-.icon {
+.meicon {
   width: 131px;
   height: 186px;
 }
@@ -213,10 +213,6 @@
     font-size: 90px;
   }
 
-  .content {
-    font-size: 90px;
-  }
-
   .reportTitle {
     margin: 0 40px;
     font-size: 45px;
@@ -231,6 +227,11 @@
   .reportTitle {
     margin: 0 30px;
     font-size: 40px;
+  }
+
+  .meicon {
+    width: 60px;
+    height: 89px;
   }
 
   .content,
@@ -265,7 +266,6 @@
   .searchbar,
   .dropdowns {
     width: 100%;
-    overflow-x: hidden;
   }
 }
 
@@ -280,6 +280,11 @@
   .content,
   .content2 {
     font-size: 60px;
+  }
+
+  .meicon {
+    width: 50px;
+    height: 74px;
   }
 
   .image {

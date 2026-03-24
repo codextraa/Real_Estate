@@ -18,6 +18,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -46,9 +47,11 @@
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
@@ -157,18 +160,20 @@
   flex-direction: row;
 }
 
-.successMsg {
-  color: #28a745;
+.successMsg,
+.errorMsg {
+  font-family: var(--font-old-standard-tt);
   font-weight: 600;
   font-size: 0.9rem;
   animation: fadeIn 0.3s ease-in;
 }
 
+.successMsg {
+  color: #28a745;
+}
+
 .errorMsg {
   color: #dc3545;
-  font-weight: 600;
-  font-size: 0.9rem;
-  animation: fadeIn 0.3s ease-in;
 }
 
 @keyframes fadeIn {
@@ -176,6 +181,7 @@
     opacity: 0;
     transform: translateY(5px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -308,22 +314,50 @@
   box-shadow: 0 4px 8px rgba(152, 0, 0, 0.2);
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1150px) {
+  .propertyDetailCard {
+    width: 690px;
+    padding: 30px 50px;
+  }
+
+  .pricePayment {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 768px) {
+  .propertyDetailCard {
+    width: 520px;
+    padding: 30px 35px;
+  }
+
+  .pricePayment {
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 580px) {
   .propertyDetailCard {
     width: 100%;
-    max-width: 450px;
-    margin: 0 auto;
+    max-width: 520px;
+    padding: 30px 20px;
   }
 }
 
 @media (max-width: 480px) {
+  .locationText {
+    font-size: 16px;
+  }
+
   .propertyDetailCard {
     padding: 20px;
     gap: 12px;
   }
 
   .priceValue {
-    font-size: 22px;
+    font-size: 24px;
   }
 
   .detailItemBed,
@@ -333,11 +367,19 @@
   }
 
   .detailItemLabel {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .formProfileButtons {
     flex-direction: column;
     gap: 12px;
+  }
+
+  .agentContact {
+    font-size: 18px;
+  }
+
+  .agentInfo:hover .agentImage {
+    transform: rotate(0deg) scale(1);
   }
 }

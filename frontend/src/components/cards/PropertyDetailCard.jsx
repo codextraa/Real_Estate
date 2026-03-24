@@ -97,6 +97,7 @@ export default function PropertyDetailCard({ property }) {
       fetchUserId();
     }
   }, [isClient]);
+
   return (
     <div className={styles.propertyDetailCard}>
       <div className={styles.locationContainer}>
