@@ -1,6 +1,10 @@
 import re
+import math
 import random
+from datetime import timedelta
 from decimal import Decimal, ROUND_DOWN
+from django.core.cache import cache
+from django.utils import timezone
 import numpy as np
 
 
@@ -430,3 +434,36 @@ def generate_bath_score(
         bath_remarks,
     )
     # pylint: enable=R0801
+
+
+def get_seconds_until_midnight():
+    """Calculates seconds remaining until the next midnight in the local timezone."""
+    now = timezone.localtime(timezone.now())
+    midnight = (now + timedelta(days=1)).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    return int((midnight - now).total_seconds())
+
+
+def get_remaining_seconds(remaining_secs):
+    if remaining_secs > 0:
+        minutes_left = math.ceil(remaining_secs / 60)
+
+        if minutes_left >= 60:
+            hours = minutes_left // 60
+            mins = minutes_left % 60
+            time_str = f"{hours}h {mins}m" if mins > 0 else f"{hours}h"
+        else:
+            time_str = f"{minutes_left} minutes"
+
+        return time_str
+
+    return "0 minutes"
+
+
+def release_locks(user_lock_key):
+    """Safe helper to refund credits."""
+    cache.delete(user_lock_key)
+    current_global = cache.get("global_report_lock")
+    if current_global and int(current_global) > 0:
+        cache.decr("global_report_lock")

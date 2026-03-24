@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.cache import cache
 from backend_ai.mixins import http_method_mixin
 from backend_ai.renderers import ViewRenderer
 from backend_ai.schema_serializers import (
@@ -20,7 +21,12 @@ from .serializers import (
 )
 from .paginations import AIReportPagination
 from .filters import AIReportFilter
-from .utils import extract_location
+from .utils import (
+    extract_location,
+    get_seconds_until_midnight,
+    get_remaining_seconds,
+    release_locks,
+)
 from .tasks import parallel_report_generator
 
 
@@ -255,9 +261,38 @@ class AIReportViewSet(ModelViewSet):
             ),
         ],
     )
-    def create(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):  # pylint: disable=R0911, R0914
         """Create a new report."""
         current_user = request.user
+
+        global_lock_key = "global_report_lock"
+        global_count = cache.get(global_lock_key)
+
+        if global_count is not None and int(global_count) >= 4:
+            remaining_seconds = cache.ttl(global_lock_key)
+            time_str = get_remaining_seconds(remaining_seconds)
+            return Response(
+                {
+                    "error": (
+                        "System daily limit reached. "
+                        f"You can generate another report in {time_str}."
+                    )
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        user_lock_key = f"user_report_lock:{current_user.id}"
+        is_locked = cache.get(user_lock_key)
+
+        if is_locked:
+            remaining_seconds = cache.ttl(user_lock_key)
+            time_str = get_remaining_seconds(remaining_seconds)
+            return Response(
+                {
+                    "error": f"Daily limit reached. You can generate another report in {time_str}."
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
 
         if current_user.is_staff and not current_user.is_superuser:
             return Response(
@@ -323,7 +358,22 @@ class AIReportViewSet(ModelViewSet):
             "price": property_obj.price,
         }
 
-        parallel_report_generator.delay(report.id, property_data)
+        timeout_seconds = get_seconds_until_midnight()
+        cache.set(user_lock_key, "locked", timeout=timeout_seconds)
+        try:
+            cache.incr(global_lock_key)
+        except ValueError:
+            cache.set(global_lock_key, 1, timeout=timeout_seconds)
+
+        try:
+            parallel_report_generator.delay(report.id, property_data, user_lock_key)
+        except Exception:  # pylint: disable=W0718
+            release_locks(user_lock_key)
+            report.delete()
+            return Response(
+                {"error": "Failed to generate report. Please try again later."},
+                status=500,
+            )
 
         return Response(
             {"success": f"Analysis Report {report.id} is being generated."},
