@@ -1,11 +1,12 @@
-import re
 import math
 import random
+import re
 from datetime import timedelta
-from decimal import Decimal, ROUND_DOWN
+from decimal import ROUND_DOWN, Decimal
+
+import numpy as np
 from django.core.cache import cache
 from django.utils import timezone
-import numpy as np
 
 
 def generate_mock_properties(area_sqft, beds, baths, count):
@@ -461,9 +462,20 @@ def get_remaining_seconds(remaining_secs):
     return "0 minutes"
 
 
-def release_locks(user_lock_key):
+def release_report_locks(user_lock_key):
     """Safe helper to refund credits."""
     cache.delete(user_lock_key)
     current_global = cache.get("global_report_lock")
     if current_global and int(current_global) > 0:
         cache.decr("global_report_lock")
+
+
+def release_chat_locks(user_lock_key):
+    """Safe helper to refund credits."""
+    current_chat = cache.get(user_lock_key)
+    if current_chat and int(current_chat) > 0:
+        cache.decr(user_lock_key)
+
+    current_global = cache.get("global_chat_lock")
+    if current_global and int(current_global) > 0:
+        cache.decr("global_chat_lock")

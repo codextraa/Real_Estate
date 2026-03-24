@@ -1,24 +1,33 @@
+from django.core.cache import cache
 from django.utils import timezone
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import (
     OpenApiExample,
-    OpenApiResponse,
     OpenApiParameter,
+    OpenApiResponse,
     extend_schema,
 )
+
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from backend_ai.renderers import ViewRenderer
 from backend_ai.schema_serializers import (
-    ErrorResponseSerializer,
     ChatMessageGETResponseSerializer,
-    ChatMessageRequestSerializer,
     ChatMessagePOSTResponseSerializer,
+    ChatMessageRequestSerializer,
+    ErrorResponseSerializer,
 )
-from core_db_ai.models import ChatSession, AIReport, ChatMessage
-from .serializers import ChatSessionSerializer, ChatMessageSerializer
+from report_api.utils import (
+    get_remaining_seconds,
+    get_seconds_until_midnight,
+    release_chat_locks,
+)
+
+from core_db_ai.models import AIReport, ChatMessage, ChatSession
+from .serializers import ChatMessageSerializer, ChatSessionSerializer
 from .tasks import generate_ai_chat_response
 
 
@@ -437,6 +446,8 @@ class ChatMessageCreateView(APIView):
             status.HTTP_401_UNAUTHORIZED: ErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ErrorResponseSerializer,
             status.HTTP_404_NOT_FOUND: ErrorResponseSerializer,
+            status.HTTP_429_TOO_MANY_REQUESTS: ErrorResponseSerializer,
+            status.HTTP_500_INTERNAL_SERVER_ERROR: ErrorResponseSerializer,
         },
         examples=[
             OpenApiExample(
@@ -457,13 +468,57 @@ class ChatMessageCreateView(APIView):
                 status_codes=["403"],
                 value={"error": "Access denied. This session belongs to another user."},
             ),
+            OpenApiExample(
+                name="User Report Lock",
+                response_only=True,
+                status_codes=["429"],
+                value={"error": "Daily limit reached. You can chat again in 8hr 2min."},
+            ),
+            OpenApiExample(
+                name="Global Report Lock",
+                response_only=True,
+                status_codes=["429"],
+                value={
+                    "error": "System daily limit reached. You can chat again in 8hr 2min."
+                },
+            ),
+            OpenApiExample(
+                name="Internal Server Error",
+                response_only=True,
+                status_codes=["500"],
+                value={"error": "Failed to generate report. Please try again later."},
+            ),
         ],
     )
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):  # pylint: disable=R0911, R0914
         """
         Post a user message and generate an AI response.
         """
         current_user = request.user
+        global_lock_key = "global_chat_lock"
+        global_count = cache.get(global_lock_key)
+
+        if global_count is not None and int(global_count) >= 100:
+            remaining_seconds = cache.ttl(global_lock_key)
+            time_str = get_remaining_seconds(remaining_seconds)
+            return Response(
+                {
+                    "error": f"System daily limit reached. You can chat again in {time_str}."
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        user_lock_key = f"user_chat_lock:{current_user.id}"
+        user_count = cache.get(user_lock_key)
+
+        if user_count is not None and int(user_count) >= 10:
+            remaining_seconds = cache.ttl(user_lock_key)
+            time_str = get_remaining_seconds(remaining_seconds)
+            return Response(
+                {"error": f"Daily limit reached. You can chat again in {time_str}."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
         session_id = request.data.get("session")
         user_content = request.data.get("content")
 
@@ -499,9 +554,35 @@ class ChatMessageCreateView(APIView):
             session=session, role=ChatMessage.Role.AI
         )
 
-        generate_ai_chat_response.delay(
-            session.id, ai_message.id, session.report_id, user_content
-        )
+        timeout_seconds = get_seconds_until_midnight()
+
+        try:
+            cache.incr(user_lock_key)
+        except ValueError:
+            cache.set(user_lock_key, 1, timeout=timeout_seconds)
+
+        # pylint: disable=R0801
+        try:
+            cache.incr(global_lock_key)
+        except ValueError:
+            cache.set(global_lock_key, 1, timeout=timeout_seconds)
+        # pylint: enable=R0801
+
+        try:
+            generate_ai_chat_response.delay(
+                session.id,
+                ai_message.id,
+                session.report_id,
+                user_content,
+                user_lock_key,
+            )
+        except Exception:  # pylint: disable=W0718
+            release_chat_locks(user_lock_key)
+            ai_message.delete()
+            return Response(
+                {"error": "Failed to create message. Please try again later."},
+                status=500,
+            )
 
         return Response(
             {

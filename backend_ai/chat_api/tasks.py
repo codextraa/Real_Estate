@@ -4,6 +4,7 @@ from celery.utils.log import get_task_logger
 from celery.exceptions import MaxRetriesExceededError
 from report_api.regression_model import InvestmentRegressor
 from report_api.agents import groq_ai_insight_prompt
+from report_api.utils import release_chat_locks
 from core_db_ai.models import ChatSession, ChatMessage, AIReport
 
 # from .agents import chat_json_extractor_agent
@@ -13,8 +14,8 @@ logger = get_task_logger(__name__)
 
 @shared_task(bind=True)
 def ai_message_extractor(
-    self, session_id, message_id, property_details, user_query
-):  # pylint: disable=W0613
+    self, session_id, message_id, property_details, user_query, user_lock_key
+):  # pylint: disable=W0613, R0913, R0917
     """Dummy extractor"""
     self.request.chain = None
     message = ChatMessage.objects.get(id=message_id)
@@ -37,7 +38,9 @@ def ai_message_extractor(
 #     rate_limit="8/m",
 #     retry_jitter=False,
 # )
-# def ai_message_extractor(self, session_id, message_id, property_details, user_query):
+# def ai_message_extractor(
+#     self, session_id, message_id, property_details, user_query, user_lock_key
+# ):  # pylint: disable=R0913, R0917
 #     """
 #     Worker Task: Calls Groq GPT for extraction.
 #     """
@@ -67,6 +70,11 @@ def ai_message_extractor(
 #                 session = ChatSession.objects.get(id=session_id)
 #                 session.user_message_count += 1
 #                 session.save()
+#             else:
+#                 try:
+#                     release_chat_locks(user_lock_key)
+#                 except Exception as r_err:  # pylint: disable=W0718
+#                     logger.warning("Lock decrement failed: %s", r_err)
 
 #             return "Stopped"
 
@@ -91,6 +99,12 @@ def ai_message_extractor(
 #             message.content = "Agent failed to respond. Please try again."
 #             message.timestamp = timezone.now()
 #             message.save(update_fields=["status", "content", "timestamp"])
+
+#             try:
+#                 release_chat_locks(user_lock_key)
+#             except Exception as r_err:  # pylint: disable=W0718
+#                 logger.warning("Lock decrement failed: %s", r_err)
+
 #             return "Stopped"
 
 
@@ -108,9 +122,10 @@ def ai_message_analysis(
     message_id,
     report_details,
     user_query,
+    user_lock_key,
     rating=None,
     breakdown=None,
-):  # pylint: disable=R0913, R0917
+):  # pylint: disable=R0913, R0914, R0917
     """
     Passes the json to Investment Regressor for rating.
     Then Calls Groq Qwen for AI Insight Summary.
@@ -142,6 +157,12 @@ def ai_message_analysis(
             message.content = "Agent failed to respond. Please try again."
             message.timestamp = timezone.now()
             message.save(update_fields=["status", "content", "timestamp"])
+
+            try:
+                release_chat_locks(user_lock_key)
+            except Exception as r_err:  # pylint: disable=W0718
+                logger.warning("Lock decrement failed: %s", r_err)
+
             return "Stopped"
 
     # pylint: disable=R0801
@@ -189,6 +210,7 @@ def ai_message_analysis(
                     message_id,
                     report_details,
                     user_query,
+                    user_lock_key,
                 ],
                 kwargs={
                     "rating": rating,
@@ -204,11 +226,19 @@ def ai_message_analysis(
             message.content = "Agent failed to respond. Please try again."
             message.timestamp = timezone.now()
             message.save(update_fields=["status", "content", "timestamp"])
+
+            try:
+                release_chat_locks(user_lock_key)
+            except Exception as r_err:  # pylint: disable=W0718
+                logger.warning("Lock decrement failed: %s", r_err)
+
             return "Stopped"
 
 
 @shared_task
-def finalizer_task(analysis_result, session_id, message_id):  # pylint: disable=W0613
+def finalizer_task(
+    analysis_result, session_id, message_id, user_lock_key
+):  # pylint: disable=W0613
     """
     Takes the JSON analysis from Qwen, formats it into a professional message,
     and updates the ChatMessage model.
@@ -248,11 +278,19 @@ def finalizer_task(analysis_result, session_id, message_id):  # pylint: disable=
             content="Error finalizing the AI response.",
             timestamp=timezone.now(),
         )
+
+        try:
+            release_chat_locks(user_lock_key)
+        except Exception as r_err:  # pylint: disable=W0718
+            logger.warning("Lock decrement failed: %s", r_err)
+
         return f"Message {message_id} Failed"
 
 
 @shared_task
-def generate_ai_chat_response(session_id, message_id, report_id, user_query):
+def generate_ai_chat_response(
+    session_id, message_id, report_id, user_query, user_lock_key
+):
     try:
         report = AIReport.objects.select_related("property").get(id=report_id)
         property_obj = report.property
@@ -279,10 +317,12 @@ def generate_ai_chat_response(session_id, message_id, report_id, user_query):
 
         return chain(
             ai_message_extractor.s(
-                session_id, message_id, property_details, user_query
+                session_id, message_id, property_details, user_query, user_lock_key
             ),
-            ai_message_analysis.s(message_id, report_details, user_query),
-            finalizer_task.s(session_id, message_id),
+            ai_message_analysis.s(
+                message_id, report_details, user_query, user_lock_key
+            ),
+            finalizer_task.s(session_id, message_id, user_lock_key),
         ).apply_async()
     except AIReport.DoesNotExist:
         logger.error(f"Abort: Report {report_id} does not exist.")
@@ -298,4 +338,10 @@ def generate_ai_chat_response(session_id, message_id, report_id, user_query):
                 content="Error generating AI response. Please try again.",
                 timestamp=timezone.now(),
             )
+
+            try:
+                release_chat_locks(user_lock_key)
+            except Exception as r_err:  # pylint: disable=W0718
+                logger.warning("Lock decrement failed: %s", r_err)
+
         return None

@@ -25,7 +25,7 @@ from .utils import (
     extract_location,
     get_seconds_until_midnight,
     get_remaining_seconds,
-    release_locks,
+    release_report_locks,
 )
 from .tasks import parallel_report_generator
 
@@ -220,6 +220,10 @@ class AIReportViewSet(ModelViewSet):
                 response=ErrorResponseSerializer,
                 description="Forbidden. Report cannot be created by staffs.",
             ),
+            status.HTTP_429_TOO_MANY_REQUESTS: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Too Many Requests. Rate limit exceeded.",
+            ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: ErrorResponseSerializer,
         },
         examples=[
@@ -258,6 +262,34 @@ class AIReportViewSet(ModelViewSet):
                 response_only=True,
                 status_codes=["404"],
                 value={"error": "Property not found."},
+            ),
+            OpenApiExample(
+                name="User Report Lock",
+                response_only=True,
+                status_codes=["429"],
+                value={
+                    "error": (
+                        "Daily limit reached. "
+                        "You can generate another report in 8hr 2min."
+                    )
+                },
+            ),
+            OpenApiExample(
+                name="Global Report Lock",
+                response_only=True,
+                status_codes=["429"],
+                value={
+                    "error": (
+                        "System daily limit reached. "
+                        "You can generate another report in 8hr 2min."
+                    )
+                },
+            ),
+            OpenApiExample(
+                name="Internal Server Error",
+                response_only=True,
+                status_codes=["500"],
+                value={"error": "Failed to generate report. Please try again later."},
             ),
         ],
     )
@@ -368,7 +400,7 @@ class AIReportViewSet(ModelViewSet):
         try:
             parallel_report_generator.delay(report.id, property_data, user_lock_key)
         except Exception:  # pylint: disable=W0718
-            release_locks(user_lock_key)
+            release_report_locks(user_lock_key)
             report.delete()
             return Response(
                 {"error": "Failed to generate report. Please try again later."},

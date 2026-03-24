@@ -1,6 +1,6 @@
 # import time
 # import random
-from celery import shared_task, chord, chain
+from celery import chain, chord, shared_task
 from celery.utils.log import get_task_logger
 
 # from celery.exceptions import MaxRetriesExceededError
@@ -8,15 +8,12 @@ from core_db_ai.models import AIReport
 
 # from .agents import tavily_search, groq_json_formatter, groq_ai_insight_prompt
 # from .regression_model import InvestmentRegressor
-from .utils import (
-    # split_context,
+from .utils import (  # split_context,; average_prices_beds_baths,
     clean_properties,
-    # average_prices_beds_baths,
-    generate_mock_summary,
     generate_mock_properties,
-    release_locks,
+    generate_mock_summary,
+    release_report_locks,
 )
-
 
 logger = get_task_logger(__name__)
 
@@ -90,7 +87,7 @@ def search_properties(
 #                     ai_insight_summary="Automated data search failed. Please try again later.",
 #                 )
 #                 try:
-#                     release_locks(user_lock_key)
+#                     release_report_locks(user_lock_key)
 #                 except Exception as e:  # pylint: disable=W0718
 #                     logger.warning("Global lock decrement failed: %s", e)
 #                 return generate_mock_properties(area_sqft, beds, baths, count)
@@ -156,7 +153,7 @@ def search_properties(
 #                     ai_insight_summary="Automated data search failed. Please try again later.",
 #                 )
 #                 try:
-#                     release_locks(user_lock_key)
+#                     release_report_locks(user_lock_key)
 #                 except Exception as e:  # pylint: disable=W0718
 #                     logger.warning("Global lock decrement failed: %s", e)
 #                 return generate_mock_properties(area_sqft, beds, baths, count)
@@ -355,7 +352,7 @@ def report_finalizer(analysis_result, compiled_data, report_id, user_lock_key):
                         report.ai_insight_summary = value
                         report.status = AIReport.Status.FAILED
                         try:
-                            release_locks(user_lock_key)
+                            release_report_locks(user_lock_key)
                         except Exception as e:  # pylint: disable=W0718
                             logger.warning("Global lock decrement failed: %s", e)
 
