@@ -85,13 +85,18 @@
 
 .input {
   width: 100%;
-  padding: 10px;
+  padding: 9px;
   border: 1px solid #415261;
   background-color: #f7f7f7;
   border-radius: 5px;
-  font-family: inherit;
-  font-size: 16px;
+  font-family: var(--font-old-standard-tt);
+  font-size: 18px;
   transition: all 0.2s;
+
+  &::placeholder {
+    font-family: inherit;
+    font-size: 16px;
+  }
 }
 
 .input:focus {
@@ -186,18 +191,21 @@
 }
 
 .priceInputWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
   position: relative;
 }
 
 .dollarSign {
   position: absolute;
-  padding: 10px;
+  padding-left: 10px;
   color: #13252e;
-  font-family: inherit;
+  font-family: var(--font-old-standard-tt);
   font-size: 18px;
   font-weight: 400;
-  line-height: 100%;
-  font-style: regular;
 }
 
 .priceInput {
@@ -207,8 +215,8 @@
   border: 1px solid #415261;
   background-color: #f7f7f7;
   border-radius: 5px;
-  font-family: inherit;
-  font-size: 1rem;
+  font-family: var(--font-old-standard-tt);
+  font-size: 18px;
   transition: all 0.2s;
 }
 
@@ -430,7 +438,6 @@
 }
 
 @media (max-width: 600px) {
-  /*! font size for everything small */
   .sidebarTitle {
     font-size: 20px;
   }
@@ -440,11 +447,11 @@
   }
 
   .sectionTitle {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .inputTitle {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .input {

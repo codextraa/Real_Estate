@@ -7,7 +7,7 @@ import { deletePropertyAction } from "@/actions/propertyActions";
 import { deleteReportAction } from "@/actions/reportActions";
 import { deleteAIChatSessionAction } from "@/actions/chatActions";
 import { logoutAction } from "@/actions/authActions";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 export default function DeleteModal({
   title,
   userData,
@@ -16,6 +16,7 @@ export default function DeleteModal({
   onCancel,
   onClose,
 }) {
+  const router = useRouter();
   const [deletionError, setDeletionError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
@@ -56,7 +57,8 @@ export default function DeleteModal({
           );
           setTimeout(async () => {
             onCancel();
-            redirect("/");
+            router.back();
+            router.refresh();
           }, 2000);
         }
       } else if (actionName === "deleteReport") {
@@ -71,7 +73,7 @@ export default function DeleteModal({
           setSuccessMessage(response.success || "Report deleted successfully.");
           setTimeout(async () => {
             onCancel();
-            redirect("/dashboard");
+            router.refresh();
           }, 2000);
         }
       } else if (actionName === "deleteChat") {

@@ -133,6 +133,7 @@
     opacity: 0;
     transform: translateY(-10px) scaleY(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scaleY(1);
@@ -180,11 +181,32 @@
 
   .addressFilter,
   .priceFilter,
-  .areaSqftFilter,
+  .areaSqftFilter {
+    width: calc(33.33% - 20px);
+    max-width: 300px;
+  }
+
   .bedroomsFilter,
   .bathroomsFilter {
-    width: calc(45% - 10px);
-    min-width: 160px;
+    width: calc(50% - 20px);
+    max-width: 200px;
+    flex-grow: 0;
+  }
+}
+
+@media (max-width: 850px) {
+  .addressFilter,
+  .priceFilter,
+  .areaSqftFilter,
+  .bedroomsFilter {
+    width: calc(50% - 15px);
+    max-width: 300px;
+  }
+
+  .bathroomsFilter {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
   }
 }
 
@@ -227,7 +249,7 @@
   .bedroomsFilter,
   .bathroomsFilter {
     width: 100%;
-    max-width: 400px;
+    max-width: 300px;
     height: 65px;
   }
 }

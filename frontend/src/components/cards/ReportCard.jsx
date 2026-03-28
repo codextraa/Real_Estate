@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import DeleteModal from "@/components/modals/DeleteModal";
-import ChatOverlay from "../modals/ChatModal";
+import ChatOverlay from "@/components/modals/ChatModal";
 import { getAIChatSessionAction } from "@/actions/chatActions";
 import ReportDetailsModal from "@/components/modals/ReportDetailsModal";
-import { DeleteButton } from "../buttons/Buttons";
+import { DeleteButton } from "@/components/buttons/Buttons";
 import { useState, useEffect } from "react";
 import styles from "./ReportCard.module.css";
 

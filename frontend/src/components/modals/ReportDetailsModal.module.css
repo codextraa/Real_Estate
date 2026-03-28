@@ -156,8 +156,9 @@
 .modalFooter {
   display: flex;
   justify-content: space-between;
-  margin-top: 30px;
   font-weight: 700;
+  font-size: 18px;
+  margin-top: -10px;
 }
 
 @media (max-width: 900px) {
