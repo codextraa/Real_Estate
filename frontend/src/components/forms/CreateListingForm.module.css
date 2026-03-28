@@ -438,8 +438,6 @@
 }
 
 @media (max-width: 600px) {
-
-  /*! font size for everything small */
   .sidebarTitle {
     font-size: 20px;
   }
@@ -449,11 +447,11 @@
   }
 
   .sectionTitle {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .inputTitle {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .input {

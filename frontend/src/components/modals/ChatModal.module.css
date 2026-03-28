@@ -114,7 +114,7 @@
 
 .messageList {
   flex: 1;
-  padding: 20px;
+  padding: 20px 20px 15px 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -139,7 +139,8 @@
   gap: 5px;
 }
 
-.bubble {
+.bubble,
+.fBubble {
   position: relative;
   white-space: pre-line;
   max-width: 405px;
@@ -170,10 +171,15 @@
   border-radius: 0px 10px 10px 10px;
 }
 
+.ai .fBubble {
+  background: #cad4da;
+  color: #b70000;
+  border-radius: 0px 10px 10px 10px;
+}
+
 .timestamp {
   font-size: 12px;
   color: #788a9b;
-  margin-top: 5px;
   position: absolute;
   bottom: -20px;
 }
@@ -287,12 +293,13 @@
 }
 
 .limitReached {
+  border-top: 1px solid rgba(65, 82, 97, 0.47);
   font-weight: 700;
   font-size: 16px;
   line-height: 20px;
   text-align: center;
   color: #b70000;
-  padding: 15px;
+  padding: 15px 0px 15px 0px;
 }
 
 .inputArea {

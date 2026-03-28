@@ -89,7 +89,7 @@ export default function ReportDetailsModal({ reportID, onClose }) {
             </div>
             <div className={styles.modalFooter}>
               <span>Created By: {details.user?.username}</span>
-              <span suppressHydrationWarning>
+              <span>
                 Created At: {new Date(details.created_at).toLocaleDateString()},{" "}
                 {new Date(details.created_at).toLocaleTimeString([], {
                   hour: "2-digit",

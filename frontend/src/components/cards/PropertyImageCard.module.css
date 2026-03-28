@@ -94,13 +94,27 @@
   transform: scale(1.05);
 }
 
+@media (max-width: 1150px) {
+  .imageCard {
+    width: 690px;
+  }
+}
+
 @media (max-width: 768px) {
   .imageCard {
-    height: 350px;
+    width: 520px;
     border-radius: 20px;
   }
 
   .imageCard::after {
     display: none;
+  }
+}
+
+@media (max-width: 580px) {
+  .imageCard {
+    width: 100%;
+    height: 435px;
+    max-width: 520px;
   }
 }

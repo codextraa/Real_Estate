@@ -77,7 +77,6 @@
   opacity: 0.8;
 }
 
-/* Container 2: Recommendations */
 .propertyPageContainer2 {
   max-width: 1200px;
   margin: 0 auto;
@@ -90,7 +89,6 @@
 .propertyDetailDropdowns {
   display: flex;
   justify-content: center;
-  /* margin-top: 5px; */
 }
 
 .recommendationTitle {
@@ -181,5 +179,9 @@
 @media (max-width: 480px) {
   .profileDetailTitle {
     font-size: 28px;
+  }
+
+  .propertyPageContainerBackground {
+    padding: 50px 10px 20px 10px;
   }
 }
