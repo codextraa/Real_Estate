@@ -13,14 +13,14 @@
   display: flex;
   justify-content: center;
   padding-top: 71px;
-  padding-left: 81px;
-  padding-right: 81px;
+  padding-left: 60px;
+  padding-right: 60px;
 }
 
 .propertyPageContainer1 {
   display: flex;
   flex-direction: column;
-  max-width: 1120px;
+  max-width: 1162px;
 }
 
 .profileDetailTitle {
@@ -37,18 +37,20 @@
   justify-content: center;
   gap: 30px;
   width: 100%;
-  max-width: 1120px;
+  max-width: 1162px;
   margin: 0 auto;
 }
 
 .propertyImageCard {
   flex: 1;
+  max-width: 695px;
   border-radius: 20px;
   overflow: hidden;
 }
 
 .propertyDetailCard {
   flex-shrink: 0;
+  max-width: 435px;
   background: #f7f7f7;
   border-radius: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -75,7 +77,6 @@
   opacity: 0.8;
 }
 
-/* Container 2: Recommendations */
 .propertyPageContainer2 {
   max-width: 1200px;
   margin: 0 auto;
@@ -88,7 +89,6 @@
 .propertyDetailDropdowns {
   display: flex;
   justify-content: center;
-  /* margin-top: 5px; */
 }
 
 .recommendationTitle {
@@ -96,20 +96,37 @@
   font-weight: 700;
   font-size: 50px;
   color: #13252e;
+  padding-left: 15px;
   margin-top: 80px;
+}
+
+.recommendationCards {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
 }
 
 .recommendationGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+  gap: 49px;
   justify-items: center;
 }
 
 @media (max-width: 1150px) {
+  .propertyPageContainerBackground {
+    justify-content: flex-start;
+  }
+
   .propertyDetailContainer {
     flex-direction: column;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .propertyDetailDescription {
+    max-width: 690px;
   }
 
   .recommendationCards {
@@ -121,20 +138,28 @@
   }
 
   .recommendationTitle {
-    margin-top: 0px;
+    text-align: center;
+    padding-left: 0;
+    margin-top: 20px;
   }
 }
 
-/* @media (max-width: 1150px) {
-  
-} */
-@media (max-width: 800px) {
+@media (max-width: 768px) {
   .propertyPageContainerBackground {
     padding: 50px 20px 20px 20px;
   }
 
   .profileDetailTitle {
-    font-size: 32px;
+    font-size: 36px;
+  }
+
+  .propertyDetailDescription {
+    max-width: 520px;
+    margin-bottom: 0px;
+  }
+
+  .propertyDetailDescription h2 {
+    font-size: 16px;
   }
 
   .recommendationTitle {
@@ -148,5 +173,15 @@
 
   .recommendationGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .profileDetailTitle {
+    font-size: 28px;
+  }
+
+  .propertyPageContainerBackground {
+    padding: 50px 10px 20px 10px;
   }
 }

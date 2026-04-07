@@ -41,7 +41,8 @@ export default function ChatOverlay({ sessionData, onClose }) {
         {
           id: "w2",
           role: "ai",
-          content: "Tell me how can I help you message",
+          content:
+            "Ask me anything about the report! I can only help with questions regarding price, bedroom counts, bathroom details, or total square footage.",
           timestamp: new Date().toISOString(),
         },
       ];
@@ -64,9 +65,9 @@ export default function ChatOverlay({ sessionData, onClose }) {
   const isMounted = useRef(true);
 
   const suggestions = [
-    "Can you give me a summary of the property features including the area and price?",
-    "What are the specific beds and baths details for this report?",
-    "Does the price per sqft represent a good value for this area?",
+    "What if we added an extra bathroom but kept the area same?",
+    "What would be the future valuation of the property if we removed one bathroom?",
+    "What if I want to sell this property for a 10% price increment?",
   ];
 
   const typeMessage = (messageId, fullText) => {
@@ -100,15 +101,39 @@ export default function ChatOverlay({ sessionData, onClose }) {
   };
 
   const pollForResponse = async (messageId) => {
+    const MAX_RETRIES = 25;
+    const INITIAL_DELAY = 2000;
+    const MAX_DELAY = 10000;
+
+    let attempts = 0;
+    let currentDelay = INITIAL_DELAY;
+
     const executePoll = async () => {
       if (!isMounted.current) return;
 
+      if (attempts >= MAX_RETRIES) {
+        setIsTyping(false);
+        setPendingText("");
+        setErrorText(
+          "The AI is taking a while. Please refresh or try again later.",
+        );
+        return;
+      }
+
       const response = await getAIMessageAction(messageId);
+      // console.log("Polling attempt", attempts + 1, "Response:", response);
+      attempts++;
 
       if (response.pending) {
         setPendingText(response.pending);
-        setTimeout(executePoll, 5000);
         setErrorText("");
+
+        const nextDelay = Math.min(currentDelay + 2000, MAX_DELAY);
+
+        setTimeout(() => {
+          currentDelay = nextDelay;
+          executePoll();
+        }, currentDelay);
         return;
       }
 
@@ -126,6 +151,7 @@ export default function ChatOverlay({ sessionData, onClose }) {
         setErrorText(response.error || "Failed to retrieve message.");
       }
     };
+
     executePoll();
   };
 
@@ -145,6 +171,7 @@ export default function ChatOverlay({ sessionData, onClose }) {
     data.append("content", content);
 
     const result = await postAIMessageAction(sessionData.id, null, formData);
+    // console.log("Client action result:", result);
 
     if (result.data?.ai_message_id) {
       setMessageCount((prev) => prev + 1);
@@ -197,21 +224,25 @@ export default function ChatOverlay({ sessionData, onClose }) {
             key={msg.id}
             className={`${styles.messageWrapper} ${msg.role === "user" ? styles.user : styles.ai}`}
           >
-            <div className={styles.bubble}>
+            <div
+              className={
+                msg.status === "FAILED" ? styles.fBubble : styles.bubble
+              }
+            >
               {msg.role === "ai" && streamingMessageId === msg.id
                 ? displayedContent[msg.id]
                 : msg.content}
-              <div className={styles.timestamp}>
-                {new Date(msg.timestamp).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
+            </div>
+            <div className={styles.timestamp}>
+              {new Date(msg.timestamp).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </div>
           </div>
         ))}
 
-        {messageCount === 0 && !isTyping && (
+        {messageCount === 0 && !isTyping && !errorText && (
           <div className={styles.suggestionsContainer}>
             {suggestions.map((text, index) => (
               <button
@@ -226,20 +257,6 @@ export default function ChatOverlay({ sessionData, onClose }) {
                 {text}
               </button>
             ))}
-          </div>
-        )}
-
-        {messageCount > 10 && (
-          <div className={styles.limitReached}>
-            "We couldn't process your request right now. Our models are
-            experiencing an unusually high volume of traffic and need a quick
-            breather."
-          </div>
-        )}
-
-        {errorText && (
-          <div className={styles.messageWrapper}>
-            <div className={styles.limitReached}>{errorText}</div>
           </div>
         )}
 
@@ -269,7 +286,15 @@ export default function ChatOverlay({ sessionData, onClose }) {
           </div>
         )}
       </div>
+      {messageCount > 10 && (
+        <div className={styles.limitReached}>
+          "We couldn't process your request right now. Our models are
+          experiencing an unusually high volume of traffic and need a quick
+          breather."
+        </div>
+      )}
 
+      {errorText && <div className={styles.limitReached}>{errorText}</div>}
       <Form action={clientAction} className={styles.inputArea}>
         <div className={styles.inputWrapper}>
           <input
@@ -278,12 +303,14 @@ export default function ChatOverlay({ sessionData, onClose }) {
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={isTyping ? pendingText : "Input query here"}
             className={styles.input}
-            disabled={isTyping || messageCount >= 10}
+            disabled={isTyping}
+            // disabled={isTyping || messageCount >= 10}
           />
           <button
             type="submit"
             className={styles.sendBtn}
-            disabled={isTyping || !inputValue.trim() || messageCount >= 10}
+            // disabled={isTyping || !inputValue.trim() || messageCount >= 10}
+            disabled={isTyping || !inputValue.trim()}
           >
             <Image src={sendIcon} alt="Send" width={30} height={30} />
           </button>

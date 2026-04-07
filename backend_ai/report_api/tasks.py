@@ -1,6 +1,6 @@
 # import time
 # import random
-from celery import shared_task, chord, chain
+from celery import chain, chord, shared_task
 from celery.utils.log import get_task_logger
 
 # from celery.exceptions import MaxRetriesExceededError
@@ -8,21 +8,19 @@ from core_db_ai.models import AIReport
 
 # from .agents import tavily_search, groq_json_formatter, groq_ai_insight_prompt
 # from .regression_model import InvestmentRegressor
-from .utils import (
-    # split_context,
+from .utils import (  # split_context,; average_prices_beds_baths,
     clean_properties,
-    # average_prices_beds_baths,
-    generate_mock_summary,
     generate_mock_properties,
+    generate_mock_summary,
+    release_report_locks,
 )
-
 
 logger = get_task_logger(__name__)
 
 
 @shared_task()
 def search_properties(
-    report_id, property_data, count, seed_index
+    report_id, property_data, count, seed_index, user_lock_key
 ):  # pylint: disable=W0613
     """
     Worker Task: Mocks Tavily and Groq llama for a specific slice of data.
@@ -47,6 +45,7 @@ def search_properties(
 #     property_data,
 #     count,
 #     seed_index,
+#     user_lock_key,
 #     existing_context=None,
 #     final_properties=None,
 #     completed_chunks=None,
@@ -87,6 +86,10 @@ def search_properties(
 #                     status=AIReport.Status.FAILED,
 #                     ai_insight_summary="Automated data search failed. Please try again later.",
 #                 )
+#                 try:
+#                     release_report_locks(user_lock_key)
+#                 except Exception as e:  # pylint: disable=W0718
+#                     logger.warning("Global lock decrement failed: %s", e)
 #                 return generate_mock_properties(area_sqft, beds, baths, count)
 
 #     if final_properties is None:
@@ -132,7 +135,7 @@ def search_properties(
 
 #             try:
 #                 raise self.retry(
-#                     args=[report_id, property_data, count, seed_index],
+#                     args=[report_id, property_data, count, seed_index, user_lock_key],
 #                     kwargs={
 #                         "existing_context": context_text,
 #                         "final_properties": final_properties,
@@ -149,6 +152,10 @@ def search_properties(
 #                     status=AIReport.Status.FAILED,
 #                     ai_insight_summary="Automated data search failed. Please try again later.",
 #                 )
+#                 try:
+#                     release_report_locks(user_lock_key)
+#                 except Exception as e:  # pylint: disable=W0718
+#                     logger.warning("Global lock decrement failed: %s", e)
 #                 return generate_mock_properties(area_sqft, beds, baths, count)
 
 #     return final_properties
@@ -313,7 +320,7 @@ def report_analysis(compiled_data, report_id, property_data):  # pylint: disable
 
 
 @shared_task
-def report_finalizer(analysis_result, compiled_data, report_id):
+def report_finalizer(analysis_result, compiled_data, report_id, user_lock_key):
     """
     analysis_results: price_stats, bed_bath_stats, rating_stats, ai_summary_text
     Map results to the AIReport model
@@ -344,6 +351,10 @@ def report_finalizer(analysis_result, compiled_data, report_id):
                     else:
                         report.ai_insight_summary = value
                         report.status = AIReport.Status.FAILED
+                        try:
+                            release_report_locks(user_lock_key)
+                        except Exception as e:  # pylint: disable=W0718
+                            logger.warning("Global lock decrement failed: %s", e)
 
         report.save()
 
@@ -358,19 +369,23 @@ def report_finalizer(analysis_result, compiled_data, report_id):
 
 
 @shared_task
-def analysis(compiled_data, report_id, property_data):
+def analysis(compiled_data, report_id, property_data, user_lock_key):
     return chain(
         report_analysis.s(
             compiled_data=compiled_data,
             report_id=report_id,
             property_data=property_data,
         ),
-        report_finalizer.s(compiled_data=compiled_data, report_id=report_id),
+        report_finalizer.s(
+            compiled_data=compiled_data,
+            report_id=report_id,
+            user_lock_key=user_lock_key,
+        ),
     ).apply_async()
 
 
 @shared_task
-def parallel_report_generator(report_id, property_data):
+def parallel_report_generator(report_id, property_data, user_lock_key):
     """
     Parallel Report generator using searching and then analysis
     """
@@ -382,7 +397,9 @@ def parallel_report_generator(report_id, property_data):
 
     # Define 4 parallel chunks (25 properties each = 100 total)
     search_tasks = [
-        search_properties.s(report_id, property_data, 25, i).set(countdown=i * 20)
+        search_properties.s(report_id, property_data, 25, i, user_lock_key).set(
+            countdown=i * 20
+        )
         for i in range(4)
     ]
 
@@ -391,7 +408,12 @@ def parallel_report_generator(report_id, property_data):
 
     # Linking the tasks so that search_tasks ends then callback is called
     workflow_result = chord(search_tasks)(
-        finalizer | analysis.s(report_id=report_id, property_data=property_data)
+        finalizer
+        | analysis.s(
+            report_id=report_id,
+            property_data=property_data,
+            user_lock_key=user_lock_key,
+        )
     )
 
     return workflow_result.id

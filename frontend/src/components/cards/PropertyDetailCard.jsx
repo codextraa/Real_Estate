@@ -9,6 +9,7 @@ import { getUserIdAction } from "@/actions/authActions";
 import { createReportAction } from "@/actions/reportActions";
 
 const locationIcon = "/assets/location-icon.svg";
+const arrowIcon = "/assets/arrow2.svg";
 export default function PropertyDetailCard({ property }) {
   const [userId, setUserId] = useState(null);
   const [isClient, setIsClient] = useState(false);
@@ -96,51 +97,67 @@ export default function PropertyDetailCard({ property }) {
       fetchUserId();
     }
   }, [isClient]);
+
   return (
-    <div className={styles.propertyDetailCard}>
-      <div className={styles.locationContainer}>
-        <div className={styles.location}>
-          <Image
-            src={locationIcon}
-            alt="Location Icon"
-            width={100}
-            height={100}
-            className={styles.locationIcon}
-          />
-          <div className={styles.locationText}>
-            {formatAddress(property.address)}
+    <>
+      <div className={styles.propertyDetailCard}>
+        <div className={styles.locationContainer}>
+          <div className={styles.location}>
+            <Image
+              src={locationIcon}
+              alt="Location Icon"
+              width={100}
+              height={100}
+              className={styles.locationIcon}
+            />
+            <div className={styles.locationText}>
+              {formatAddress(property.address)}
+            </div>
           </div>
         </div>
-      </div>
-      <div className={styles.details}>
-        <div className={styles.detailText}>Details</div>
-        <div className={styles.detailItem}>
-          <div className={styles.detailItemContainer}>
-            <span className={styles.detailItemBed}>{property.beds}</span>
-            <span className={styles.detailItemLabel}>Beds</span>
-          </div>
-          <div className={styles.detailItemContainer}>
-            <span className={styles.detailItemBath}>{property.baths}</span>
-            <span className={styles.detailItemLabel}>Baths</span>
-          </div>
-          <div className={styles.detailItemContainer}>
-            <span className={styles.detailItemArea}>{property.area_sqft}</span>
-            <span className={styles.detailItemLabel}>Sqft</span>
+        <div className={styles.details}>
+          <div className={styles.detailText}>Details</div>
+          <div className={styles.detailItem}>
+            <div className={styles.detailItemContainer}>
+              <span className={styles.detailItemBed}>{property.beds}</span>
+              <span className={styles.detailItemLabel}>Beds</span>
+            </div>
+            <div className={styles.detailItemContainer}>
+              <span className={styles.detailItemBath}>{property.baths}</span>
+              <span className={styles.detailItemLabel}>Baths</span>
+            </div>
+            <div className={styles.detailItemContainer}>
+              <span className={styles.detailItemArea}>
+                {property.area_sqft}
+              </span>
+              <span className={styles.detailItemLabel}>Sqft</span>
+            </div>
           </div>
         </div>
-      </div>
-      <div className={styles.priceContainer}>
-        <div className={styles.priceLabel}>Price </div>
-        <div className={styles.pricePayment}>
-          <span className={styles.priceValue}>${property.price}</span>
-          <div className={styles.button}>
+        <div className={styles.priceContainer}>
+          <div className={styles.priceLabel}>Price </div>
+          <div className={styles.pricePayment}>
+            <span className={styles.priceValue}>${property.price}</span>
             {status === "idle" ? (
               <button
                 className={styles.paymentButton}
                 onClick={handleAnalyze}
                 disabled={loading}
               >
-                {loading ? "Analyzing..." : "Analyze"}
+                {loading ? (
+                  "Analyzing..."
+                ) : (
+                  <span className={styles.analyzeText}>
+                    Analyze Property
+                    <Image
+                      src={arrowIcon}
+                      alt="Arrow Icon"
+                      width={16}
+                      height={16}
+                      className={styles.arrowIcon}
+                    />
+                  </span>
+                )}
               </button>
             ) : (
               <span
@@ -153,52 +170,52 @@ export default function PropertyDetailCard({ property }) {
             )}
           </div>
         </div>
-      </div>
-      <div className={styles.agentContainer}>
-        <div className={styles.agentLabel}>Agent</div>
-        <div className={styles.agentInfo}>
-          <div className={styles.agentNameContainer}>
-            <div className={styles.agentName}>
-              {property.agent.first_name} {property.agent.last_name}
+        <div className={styles.agentContainer}>
+          <div className={styles.agentLabel}>Agent</div>
+          <div className={styles.agentInfo}>
+            <div className={styles.agentNameContainer}>
+              <div className={styles.agentName}>
+                {property.agent.first_name} {property.agent.last_name}
+              </div>
+              <Link
+                href={`/profile/${property.agent.slug}?user_id=${property.agent.user_id}&user_role=${property.agent.user_role}`}
+                className={styles.agentContact}
+              >
+                View Profile
+              </Link>
             </div>
-            <Link
-              href={`/profile/${property.agent.slug}?user_id=${property.agent.user_id}&user_role=${property.agent.user_role}`}
-              className={styles.agentContact}
-            >
-              Contact
-            </Link>
-          </div>
-          <div className={styles.agentImageContainer}>
-            <Image
-              src={property.agent.image_url}
-              alt="Agent Picture"
-              width={100}
-              height={100}
-              className={styles.agentImage}
-            />
+            <div className={styles.agentImageContainer}>
+              <Image
+                src={property.agent.image_url}
+                alt="Agent Picture"
+                width={100}
+                height={100}
+                className={styles.agentImage}
+              />
+            </div>
           </div>
         </div>
+        {userId == property.agent.user_id && (
+          <div className={styles.formProfileButtons}>
+            <div className={styles.profileDetailButtonContainer}>
+              <Link
+                href={`/properties/${property.slug}/edit`}
+                className={styles.editProfileButton}
+              >
+                Update
+              </Link>
+            </div>
+            <div className={styles.deleteProfileButton}>
+              <DeleteButton
+                text="Delete"
+                type="button"
+                onClick={openDeleteModal}
+                className={styles.deleteButton}
+              />
+            </div>
+          </div>
+        )}
       </div>
-      {userId == property.agent.user_id && (
-        <div className={styles.formProfileButtons}>
-          <div className={styles.profileDetailButtonContainer}>
-            <Link
-              href={`/properties/${property.slug}/edit`}
-              className={styles.editProfileButton}
-            >
-              Update
-            </Link>
-          </div>
-          <div className={styles.deleteProfileButton}>
-            <DeleteButton
-              text="Delete"
-              type="button"
-              onClick={openDeleteModal}
-              className={styles.deleteButton}
-            />
-          </div>
-        </div>
-      )}
       {isDeleteModalOpen && (
         <DeleteModal
           title="Are you sure you want to delete your property?"
@@ -208,6 +225,6 @@ export default function PropertyDetailCard({ property }) {
           onCancel={closeDeleteModal}
         />
       )}
-    </div>
+    </>
   );
 }

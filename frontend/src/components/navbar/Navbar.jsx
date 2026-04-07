@@ -26,22 +26,24 @@ export default async function Navbar() {
   } else {
     navButtons = [
       { text: "Sign Up", href: "/auth/signup" },
-      { text: "Login", href: "/auth/login" },
+      { text: "Log In", href: "/auth/login" },
     ];
   }
 
   return (
     <nav className={styles.navbar}>
-      <Link href="/" className={styles.logo}>
-        <Image
-          src={eIcon}
-          width={500}
-          height={500}
-          alt="E"
-          className={styles.icon}
-        />
-        <span>state</span>
-      </Link>
+      <div className={styles.navLogo}>
+        <Link href="/" className={styles.logo}>
+          <Image
+            src={eIcon}
+            width={500}
+            height={500}
+            alt="E"
+            className={styles.icon}
+          />
+          <span>state</span>
+        </Link>
+      </div>
 
       <div className={styles.navLinks}>
         {navButtons.map((button, index) => (
