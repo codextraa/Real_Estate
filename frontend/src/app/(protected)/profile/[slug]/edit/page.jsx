@@ -8,6 +8,15 @@ import { redirect } from "next/navigation";
 import ProfileForm from "@/components/forms/ProfileForm";
 import styles from "@/styles/ProfilePage.module.css";
 
+export const metadata = {
+  title: "Edit Profile",
+  description: "Update your account details and preferences.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default async function EditPage() {
   const userId = await getUserIdAction();
   const userRole = await getUserRoleAction();

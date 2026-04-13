@@ -10,6 +10,37 @@ import Searchbar from "@/components/searchbar/Searchbar";
 import Pagination from "@/components/pagination/Pagination";
 import styles from "@/styles/PropertyPage.module.css";
 
+export async function generateMetadata() {
+  const userId = await getUserIdAction();
+  if (!userId) {
+    return {
+      title: "Estate — Discover Your Dream Home",
+      description:
+        "Explore the most comprehensive collection of real estate listings, from cozy starter homes to luxurious family estates.",
+      robots: {
+        index: true,
+        follow: true,
+      },
+      openGraph: {
+        title: "Estate — Modern Real Estate Solutions",
+        description:
+          "Effortlessly navigate diverse neighborhoods and find the perfect home.",
+        images: ["/real-estate/real-estate.jpg"],
+        type: "website",
+      },
+    };
+  }
+
+  return {
+    title: "Property Dashboard",
+    description:
+      "Browse and manage the latest real estate listings curated for you.",
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
+}
 export default async function Page({ searchParams }) {
   const imageUrl = "/real-estate/real-estate.jpg";
   const eIcon = "/assets/E.svg";
@@ -103,13 +134,9 @@ export default async function Page({ searchParams }) {
         </article>
         <section className={styles.propertyCards}>
           {response.error ? (
-            <div className={styles.errorContainer}>
-              {response.error}
-            </div>
+            <div className={styles.errorContainer}>{response.error}</div>
           ) : response.count === 0 ? (
-            <div className={styles.noResultsContainer}>
-              No Properties Found
-            </div>
+            <div className={styles.noResultsContainer}>No Properties Found</div>
           ) : (
             <div className={styles.propertyGridPagination}>
               <div className={styles.propertyGrid}>
