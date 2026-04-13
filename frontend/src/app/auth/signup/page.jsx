@@ -10,9 +10,9 @@ export default async function SignUpPage({ searchParams }) {
   // user = params.user
 
   return user && (user === "customer" || user === "agent") ? (
-    <div className={styles.signUpBackground}>
-      <div className={styles.signUpPageContainer}>
-        <div className={styles.signUpPictureContainer}>
+    <main className={styles.signUpBackground}>
+      <section className={styles.signUpPageContainer}>
+        <figure className={styles.signUpPictureContainer}>
           <Image
             src={imgUrl}
             alt="Modern city buildings representing real estate"
@@ -20,18 +20,18 @@ export default async function SignUpPage({ searchParams }) {
             height={900}
             priority
           />
-        </div>
-        <div className={styles.signUpPageFormContainer}>
+        </figure>
+        <article className={styles.signUpPageFormContainer}>
           <SignUpForm userType={user} />
-        </div>
-      </div>
-    </div>
+        </article>
+      </section>
+    </main>
   ) : (
-    <div className={styles.background}>
+    <main className={styles.background}>
       <Image src={imgUrl} alt="background" fill priority />
-      <div className={styles.signUpPageCardContainer}>
+      <article className={styles.signUpPageCardContainer}>
         <SignUpPageCard />
-      </div>
-    </div>
+      </article>
+    </main>
   );
 }

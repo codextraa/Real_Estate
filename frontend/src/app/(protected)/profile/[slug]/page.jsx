@@ -43,8 +43,8 @@ export default async function ProfilePage({ params, searchParams }) {
   }`;
 
   return (
-    <>
-      <div className={styles.profileImageWrapper}>
+    <main className={styles.profilePageWrapper}>
+      <header className={styles.profileImageWrapper}>
         <Image
           className={styles.profilePageBackgroundImage}
           src={imgUrl}
@@ -52,8 +52,8 @@ export default async function ProfilePage({ params, searchParams }) {
           fill
           priority
         />
-      </div>
-      <div className={styles.profilePageWrapper}>
+      </header>
+      <section className={styles.profilePageWrapper}>
         <div className={containerClassStyle}>
           <ProfileCard
             userData={response}
@@ -61,7 +61,7 @@ export default async function ProfilePage({ params, searchParams }) {
             userRole={userRole}
           />
         </div>
-      </div>
-    </>
+      </section>
+    </main>
   );
 }

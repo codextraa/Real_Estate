@@ -12,10 +12,10 @@ export default async function CreatePropertyPage() {
   }
 
   return (
-    <div className={styles.background}>
-      <div className={styles.form}>
+    <main className={styles.background}>
+      <article className={styles.form}>
         <ListingForm />
-      </div>
-    </div>
+      </article>
+    </main>
   );
 }

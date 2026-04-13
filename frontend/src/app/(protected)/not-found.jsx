@@ -7,17 +7,17 @@ import Image from "next/image";
 
 export default function NotFound() {
   return (
-    <div className={styles.background}>
-      <div className={styles.image}>
+    <main className={styles.background}>
+      <figure className={styles.image}>
         <Image
           src="/real-estate/real-estate.jpg"
           alt="Modern city buildings representing real estate"
           fill
           priority
         />
-      </div>
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
+      </figure>
+      <section className={styles.container}>
+        <figure className={styles.errorContainer}>
           <Image
             src="/assets/global-not-found.svg"
             alt="Not Found"
@@ -26,17 +26,17 @@ export default function NotFound() {
             className={styles.errorIcon}
             priority
           />
-        </div>
-        <div className={styles.errorTextContainer}>
-          <div className={styles.errorTitle}>Error</div>
-          <div className={styles.errorMessage}>Page Not Found</div>
+        </figure>
+        <article className={styles.errorTextContainer}>
+          <h1 className={styles.errorTitle}>Error</h1>
+          <p className={styles.errorMessage}>Page Not Found</p>
           <div className={styles.button}>
             <Link href="/">
               <GlobalButton text="Back to Home" />
             </Link>
           </div>
-        </div>
-      </div>
-    </div>
+        </article>
+      </section>
+    </main>
   );
 }

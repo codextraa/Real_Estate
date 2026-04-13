@@ -26,7 +26,7 @@ export default async function Page({ searchParams }) {
   }
 
   return !userId ? (
-    <div className={stylesHome.image}>
+    <main className={stylesHome.image}>
       <Image
         src={imageUrl}
         alt="Modern city buildings representing real estate"
@@ -34,8 +34,8 @@ export default async function Page({ searchParams }) {
         priority
       />
 
-      <div className={stylesHome.container}>
-        <div className={stylesHome.content}>
+      <section className={stylesHome.container}>
+        <figure className={stylesHome.content}>
           <Image
             src={eIcon}
             width={500}
@@ -44,17 +44,19 @@ export default async function Page({ searchParams }) {
             className={stylesHome.ieicon}
           />
           <span>state</span>
-        </div>
+        </figure>
         <div className={stylesHome.buttons}>
           <HomePageButton text="Get Started" />
         </div>
-      </div>
-      <Footer />
-    </div>
+      </section>
+      <footer>
+        <Footer />
+      </footer>
+    </main>
   ) : (
-    <div className={styles.background}>
-      <div className={styles.image}>
-        <div className={styles.imageWrapper}>
+    <main className={styles.background}>
+      <header className={styles.image}>
+        <figure className={styles.imageWrapper}>
           <Image
             src={imageUrl}
             alt="Modern city buildings representing real estate"
@@ -62,9 +64,9 @@ export default async function Page({ searchParams }) {
             fill
             className={styles.imageStyle}
           />
-        </div>
+        </figure>
         <div className={styles.container}>
-          <div className={styles.content}>
+          <figure className={styles.content}>
             <Image
               src={eIcon}
               width={500}
@@ -73,19 +75,21 @@ export default async function Page({ searchParams }) {
               className={styles.meicon}
             />
             <span>state</span>
+          </figure>
+        </div>
+      </header>
+      <section className={styles.propertiesContainer}>
+        <aside>
+          <div className={styles.searchbar}>
+            <Searchbar />
           </div>
-        </div>
-      </div>
-      <div className={styles.propertiesContainer}>
-        <div className={styles.searchbar}>
-          <Searchbar />
-        </div>
-        <div className={styles.dropdowns}>
-          <Dropdown />
-        </div>
-        <div className={styles.propertiesContent}>
-          <div className={styles.propertiesTitle}>Properties</div>
-          <div className={styles.propertiesDescription}>
+          <div className={styles.dropdowns}>
+            <Dropdown />
+          </div>
+        </aside>
+        <article className={styles.propertiesContent}>
+          <h1 className={styles.propertiesTitle}>Properties</h1>
+          <p className={styles.propertiesDescription}>
             Explore the most current and comprehensive collection of real estate
             listings available right now. We showcase properties that capture
             the diversity and quality of the local market, from cozy starter
@@ -95,16 +99,16 @@ export default async function Page({ searchParams }) {
             goal is to streamline your search, making it effortless to navigate
             diverse neighborhoods, compare property features, and connect with
             the perfect home that meets your unique needs.
-          </div>
-        </div>
-        <div className={styles.propertyCards}>
+          </p>
+        </article>
+        <section className={styles.propertyCards}>
           {response.error ? (
             <div className={styles.errorContainer}>
-              <div>{response.error}</div>
+              {response.error}
             </div>
           ) : response.count === 0 ? (
             <div className={styles.noResultsContainer}>
-              <div>No Properties Found</div>
+              No Properties Found
             </div>
           ) : (
             <div className={styles.propertyGridPagination}>
@@ -113,16 +117,16 @@ export default async function Page({ searchParams }) {
                   <PropertyCard key={property.id} property={property} />
                 ))}
               </div>
-              <div className={styles.paginationContainer}>
+              <footer className={styles.paginationContainer}>
                 <Pagination
                   currentPage={currentPage}
                   totalPages={response.total_pages}
                 />
-              </div>
+              </footer>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+        </section>
+      </section>
+    </main>
   );
 }

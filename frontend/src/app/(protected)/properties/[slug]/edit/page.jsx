@@ -16,10 +16,12 @@ export default async function UpdateListingPage({ params }) {
   }
 
   return (
-    <div className={styles.background}>
-      <div className={styles.form}>
-        <UpdateListingForm propertyId={propertyId} initialData={propertyData} />
-      </div>
-    </div>
+    <main className={styles.background}>
+      <header>
+        <article className={styles.form}>
+          <UpdateListingForm propertyId={propertyId} initialData={propertyData} />
+        </article>
+      </header>
+    </main>
   );
 }
