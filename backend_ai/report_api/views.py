@@ -440,7 +440,7 @@ class AIReportViewSet(ModelViewSet):
                 value={"success": "Report with ID 1 deleted successfully."},
             ),
             OpenApiExample(
-                name="Unauthorized Report Delete Error",
+                name="Unauthenticated Report Delete Error",
                 response_only=True,
                 status_codes=["401"],
                 value={"error": "You are not authenticated."},
