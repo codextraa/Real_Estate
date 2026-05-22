@@ -61,12 +61,14 @@ export default function Dropdown() {
     ],
     price: [
       "Default",
-      "$1000 - $10000",
-      "$10000 - $50000",
       "$50000 - $100000",
       "$100000 - $200000",
       "$200000 - $500000",
       "$500000 - $1000000",
+      "$1000000 - $2000000",
+      "$2000000 - $5000000",
+      "$5000000 - $10000000",
+      "$10000000 - $1000000000",
     ],
     area_sqft: [
       "Default",
@@ -133,7 +135,6 @@ export default function Dropdown() {
     setDropdownOpen((prev) => ({ ...prev, [filterType]: false }));
 
     const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "1");
 
     Object.keys(newFilters).forEach((key) => {
       const filterValue = newFilters[key];
@@ -144,6 +145,10 @@ export default function Dropdown() {
         params.delete(key);
       }
     });
+
+    if (params.has("page")) {
+      params.delete("page");
+    }
 
     router.push(`?${params.toString()}`);
   };
@@ -175,7 +180,7 @@ export default function Dropdown() {
     {
       filterType: "address",
       icon: addressIcon,
-      label: "Address",
+      label: "Location",
       styleClass: "addressFilter",
     },
     {

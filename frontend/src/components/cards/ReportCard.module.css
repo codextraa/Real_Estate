@@ -16,7 +16,7 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 5px;
+  gap: 10px;
 }
 
 .reportId {
@@ -190,6 +190,7 @@
     opacity: 0;
     transform: translateY(5px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

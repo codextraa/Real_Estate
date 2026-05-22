@@ -3,6 +3,7 @@
   height: auto;
   display: flex;
   justify-content: space-between;
+  flex-direction: row;
   align-items: center;
   z-index: 500;
   padding: 15px 80px 0px 80px;
@@ -14,7 +15,6 @@
   font-size: 20px;
   line-height: 100%;
   text-align: center;
-  justify-items: left;
   color: #13252e;
   cursor: pointer;
   letter-spacing: 0%;
@@ -32,31 +32,32 @@
   gap: 20px;
 }
 
-/* Responsive Styles */
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 900px) {
   .navbar {
     padding: 10px 20px 0px 20px;
   }
 
   .logo {
-    font-size: 18px;
+    font-size: 16px;
+  }
+  .icon {
+    width: 10px;
+    height: 14px;
+  }
+  .navLinks {
+    gap: 15px;
   }
 }
 
-@media screen and (max-width: 550px) {
-  .navbar {
-    padding: 3px 5px 0px 5px;
-  }
+@media screen and (max-width: 500px) {
   .logo {
-    font-size: 16px;
+    font-size: 14px;
   }
   .navLinks {
     gap: 10px;
   }
-}
-
-@media screen and (max-width: 360px) {
-  .logo {
-    font-size: 12px;
+  .icon {
+    width: 9px;
+    height: 13px;
   }
 }

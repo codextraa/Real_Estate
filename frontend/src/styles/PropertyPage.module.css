@@ -48,7 +48,7 @@
   pointer-events: none;
 }
 
-.icon {
+.meicon {
   width: 131px;
   height: 186px;
 }
@@ -146,18 +146,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: 400px;
-  height: 42px;
-  margin: 0 auto;
-  gap: 10px;
   border-radius: 93px;
-  padding: 8px 22px;
+  padding: 9px 107px;
   background: #13252e;
   color: #f7f7f7;
   font-family: var(--font-old-standard-tt);
   font-weight: 700;
   font-size: 20px;
-  line-height: 25px;
+  margin: 30px auto;
   text-align: center;
 }
 
@@ -169,7 +165,7 @@
 .propertyGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+  gap: 49px;
   justify-items: center;
 }
 
@@ -217,10 +213,6 @@
     font-size: 90px;
   }
 
-  .content {
-    font-size: 90px;
-  }
-
   .reportTitle {
     margin: 0 40px;
     font-size: 45px;
@@ -235,6 +227,11 @@
   .reportTitle {
     margin: 0 30px;
     font-size: 40px;
+  }
+
+  .meicon {
+    width: 60px;
+    height: 89px;
   }
 
   .content,
@@ -269,7 +266,6 @@
   .searchbar,
   .dropdowns {
     width: 100%;
-    overflow-x: hidden;
   }
 }
 
@@ -286,6 +282,11 @@
     font-size: 60px;
   }
 
+  .meicon {
+    width: 50px;
+    height: 74px;
+  }
+
   .image {
     height: 280px;
   }
@@ -295,6 +296,7 @@
     max-width: 100%;
     font-size: 16px;
     padding: 8px 15px;
+    margin: 15px auto;
   }
 
   .reportTitle {

@@ -3,6 +3,7 @@
     background: rgba(0, 0, 0, 0);
     backdrop-filter: blur(0px);
   }
+
   to {
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(5px);
@@ -14,9 +15,11 @@
     opacity: 0;
     transform: scale(0.85) translateY(20px);
   }
+
   70% {
     transform: scale(1.02) translateY(-2px);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -28,9 +31,11 @@
   100% {
     transform: translateX(0);
   }
+
   25% {
     transform: translateX(-5px);
   }
+
   75% {
     transform: translateX(5px);
   }
@@ -96,7 +101,6 @@
     box-shadow 0.2s;
 }
 
-/* Subtle button lift on hover */
 .yesButton:hover,
 .noButton:hover {
   transform: translateY(-2px);
@@ -127,16 +131,15 @@
 }
 
 .errorMessage {
-  margin-top: 10px;
-  margin-bottom: -25px;
+  margin-bottom: -20px;
   color: #b70000;
   font-weight: 700;
   font-size: 18px;
   animation: shake 0.3s ease-in-out;
 }
+
 .successMessage {
-  margin-top: 10px;
-  margin-bottom: -25px;
+  margin-bottom: -20px;
   color: #368c04;
   font-weight: 700;
   font-size: 18px;
@@ -170,6 +173,7 @@
   .successMessage {
     font-size: 16px;
   }
+
   .errorMessage,
   .successMessage {
     margin-bottom: -15px;
@@ -179,5 +183,13 @@
   .noButton {
     padding: 6px 15px 3px 15px;
     font-size: 14px;
+  }
+
+  .errorMessage {
+    font-size: 12px;
+  }
+
+  .successMessage {
+    font-size: 12px;
   }
 }

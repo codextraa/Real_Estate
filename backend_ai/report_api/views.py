@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.cache import cache
 from backend_ai.mixins import http_method_mixin
 from backend_ai.renderers import ViewRenderer
 from backend_ai.schema_serializers import (
@@ -20,7 +21,12 @@ from .serializers import (
 )
 from .paginations import AIReportPagination
 from .filters import AIReportFilter
-from .utils import extract_location
+from .utils import (
+    extract_location,
+    get_seconds_until_midnight,
+    get_remaining_seconds,
+    release_report_locks,
+)
 from .tasks import parallel_report_generator
 
 
@@ -214,6 +220,10 @@ class AIReportViewSet(ModelViewSet):
                 response=ErrorResponseSerializer,
                 description="Forbidden. Report cannot be created by staffs.",
             ),
+            status.HTTP_429_TOO_MANY_REQUESTS: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Too Many Requests. Rate limit exceeded.",
+            ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: ErrorResponseSerializer,
         },
         examples=[
@@ -253,11 +263,68 @@ class AIReportViewSet(ModelViewSet):
                 status_codes=["404"],
                 value={"error": "Property not found."},
             ),
+            OpenApiExample(
+                name="User Report Lock",
+                response_only=True,
+                status_codes=["429"],
+                value={
+                    "error": (
+                        "Daily limit reached. "
+                        "You can generate another report in 8hr 2min."
+                    )
+                },
+            ),
+            OpenApiExample(
+                name="Global Report Lock",
+                response_only=True,
+                status_codes=["429"],
+                value={
+                    "error": (
+                        "System daily limit reached. "
+                        "You can generate another report in 8hr 2min."
+                    )
+                },
+            ),
+            OpenApiExample(
+                name="Internal Server Error",
+                response_only=True,
+                status_codes=["500"],
+                value={"error": "Failed to generate report. Please try again later."},
+            ),
         ],
     )
-    def create(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):  # pylint: disable=R0911, R0914
         """Create a new report."""
         current_user = request.user
+
+        global_lock_key = "global_report_lock"
+        global_count = cache.get(global_lock_key)
+
+        if global_count is not None and int(global_count) >= 4:
+            remaining_seconds = cache.ttl(global_lock_key)
+            time_str = get_remaining_seconds(remaining_seconds)
+            return Response(
+                {
+                    "error": (
+                        "System daily limit reached. "
+                        f"You can generate another report in {time_str}."
+                    )
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        user_lock_key = f"user_report_lock:{current_user.id}"
+        is_locked = cache.get(user_lock_key)
+
+        if is_locked:
+            remaining_seconds = cache.ttl(user_lock_key)
+            time_str = get_remaining_seconds(remaining_seconds)
+            return Response(
+                {
+                    "error": f"Daily limit reached. You can generate another report in {time_str}."
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
 
         if current_user.is_staff and not current_user.is_superuser:
             return Response(
@@ -323,7 +390,22 @@ class AIReportViewSet(ModelViewSet):
             "price": property_obj.price,
         }
 
-        parallel_report_generator.delay(report.id, property_data)
+        timeout_seconds = get_seconds_until_midnight()
+        cache.set(user_lock_key, "locked", timeout=timeout_seconds)
+        try:
+            cache.incr(global_lock_key)
+        except ValueError:
+            cache.set(global_lock_key, 1, timeout=timeout_seconds)
+
+        try:
+            parallel_report_generator.delay(report.id, property_data, user_lock_key)
+        except Exception:  # pylint: disable=W0718
+            release_report_locks(user_lock_key)
+            report.delete()
+            return Response(
+                {"error": "Failed to generate report. Please try again later."},
+                status=500,
+            )
 
         return Response(
             {"success": f"Analysis Report {report.id} is being generated."},
