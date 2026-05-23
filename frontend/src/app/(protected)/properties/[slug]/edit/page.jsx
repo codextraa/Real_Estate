@@ -3,6 +3,15 @@ import styles from "@/styles/CreatePropertyPage.module.css";
 import { notFound } from "next/navigation";
 import { getProperty } from "@/libs/api";
 
+export const metadata = {
+  title: "Edit Property Listing",
+  description: "Update your property listing details and preferences.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default async function UpdateListingPage({ params }) {
   const propertySlug = await params;
   const parts = propertySlug.slug.split("-");
@@ -16,10 +25,15 @@ export default async function UpdateListingPage({ params }) {
   }
 
   return (
-    <div className={styles.background}>
-      <div className={styles.form}>
-        <UpdateListingForm propertyId={propertyId} initialData={propertyData} />
-      </div>
-    </div>
+    <main className={styles.background}>
+      <header>
+        <article className={styles.form}>
+          <UpdateListingForm
+            propertyId={propertyId}
+            initialData={propertyData}
+          />
+        </article>
+      </header>
+    </main>
   );
 }

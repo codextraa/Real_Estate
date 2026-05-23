@@ -8,6 +8,15 @@ import { redirect } from "next/navigation";
 import ProfileForm from "@/components/forms/ProfileForm";
 import styles from "@/styles/ProfilePage.module.css";
 
+export const metadata = {
+  title: "Edit Profile",
+  description: "Update your account details and preferences.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default async function EditPage() {
   const userId = await getUserIdAction();
   const userRole = await getUserRoleAction();
@@ -39,8 +48,8 @@ export default async function EditPage() {
   }`;
 
   return (
-    <>
-      <div className={styles.profileImageWrapper}>
+    <main className={styles.profilePageWrapper}>
+      <header className={styles.profileImageWrapper}>
         <Image
           className={styles.profilePageBackgroundImage}
           src={imgUrl}
@@ -48,16 +57,16 @@ export default async function EditPage() {
           fill
           priority
         />
-      </div>
-      <div className={styles.profilePageWrapper}>
-        <div className={containerClassStyle}>
+      </header>
+      <section className={styles.profilePageWrapper}>
+        <article className={containerClassStyle}>
           <ProfileForm
             userData={response}
             userRole={userRole}
             updateProfileAction={updateProfileAction}
           />
-        </div>
-      </div>
-    </>
+        </article>
+      </section>
+    </main>
   );
 }

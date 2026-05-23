@@ -2,6 +2,11 @@ import { getUser, getAgent } from "@/libs/api";
 import { getUserIdAction, getUserRoleAction } from "@/actions/authActions";
 import { redirect } from "next/navigation";
 
+export const metadata = {
+  title: "Redirecting...",
+  robots: { index: false, follow: false },
+};
+
 export default async function ProfileRedirectPage() {
   const userId = await getUserIdAction();
   const userRole = await getUserRoleAction();
