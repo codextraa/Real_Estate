@@ -1,5 +1,0 @@
-FROM minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
-
-# Expose Minio ports
-EXPOSE 9000
-EXPOSE 9001
