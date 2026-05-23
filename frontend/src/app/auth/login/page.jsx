@@ -6,12 +6,12 @@ export default async function LoginPage() {
   const imageUrl = "/real-estate/real-estate.jpg";
 
   return (
-    <div className={styles.background}>
-      <div className={styles.container}>
-        <div className={styles.formContainer}>
+    <main className={styles.background}>
+      <section className={styles.container}>
+        <article className={styles.formContainer}>
           <LoginForm />
-        </div>
-        <div className={styles.image}>
+        </article>
+        <figure className={styles.image}>
           <Image
             src={imageUrl}
             alt="Modern city buildings representing real estate"
@@ -19,8 +19,8 @@ export default async function LoginPage() {
             height={746}
             priority
           />
-        </div>
-      </div>
-    </div>
+        </figure>
+      </section>
+    </main>
   );
 }

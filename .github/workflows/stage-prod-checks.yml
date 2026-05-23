@@ -29,6 +29,7 @@ jobs:
             "backend/core_db/"
             "backend/static/"
             "backend_ai/backend_ai/"
+            "backend_ai/chat_api/"
             "backend_ai/core_db_ai/"
             "backend_ai/report_api/"
             "backend_ai/static_ai/"

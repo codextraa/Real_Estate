@@ -20,6 +20,50 @@ import SignUpForm from "@/components/forms/SignUpForm";
 
 const imageUrl = "/real-estate/real-estate.jpg";
 
+const baseUrl = "https://your-realestate-site.com";
+
+export const metadata = {
+  title: "Estate Dashboard",
+  description:
+    "Sign up for a LuxHome account to save listings, track property prices, and connect with expert real estate agents.",
+
+  openGraph: {
+    title: "Start Your Property Search with LuxHome",
+    description:
+      "Create an account to get exclusive access to new listings and market insights.",
+    url: `${baseUrl}/signup`,
+    siteName: "LuxHome Realty",
+    images: [
+      {
+        url: `${baseUrl}/real-estate/real-estate.jpg`,
+        width: 1200,
+        height: 630,
+        alt: "Sign up for LuxHome Realty",
+      },
+    ],
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Join LuxHome Realty",
+    description: "Your dream home is just a click away. Sign up today.",
+    images: [`${baseUrl}/real-estate/real-estate.jpg`],
+  },
+
+  // OPTIONAL: Prevent Google from showing the signup page in search results
+  // (Common if you want people to land on your marketing pages instead)
+  robots: {
+    index: false,
+    follow: true,
+    nocache: true,
+  },
+
+  alternates: {
+    canonical: `${baseUrl}/signup`,
+  },
+};
+
 export default async function DashboardPage({ searchParams }) {
   const userId = await getUserIdAction();
   const userRole = await getUserRoleAction();
@@ -71,8 +115,8 @@ export default async function DashboardPage({ searchParams }) {
   }
 
   return (
-    <div className={styles.background}>
-      <div className={styles.image}>
+    <main className={styles.background}>
+      <header className={styles.image}>
         <div className={styles.imageWrapper}>
           <Image
             src={imageUrl}
@@ -85,21 +129,23 @@ export default async function DashboardPage({ searchParams }) {
         <div className={styles.container}>
           <div className={styles.content2}>My Dashboard</div>
         </div>
-      </div>
-      <div className={styles.tabs}>
+      </header>
+      <nav className={styles.tabs}>
         <DashboardTabs currentTab={currentTab} userRole={userRole} />
-      </div>
+      </nav>
       {currentTab === "my-listings" || currentTab === "all-listings" ? (
-        <div className={styles.propertiesContainer}>
-          <div className={styles.searchbar}>
-            <Searchbar />
-          </div>
-          <div className={styles.dropdowns}>
-            <Dropdown />
-          </div>
-          <div className={styles.propertiesContent}>
-            <div className={styles.propertiesTitle}>Properties</div>
-            <div className={styles.propertiesDescription}>
+        <section className={styles.propertiesContainer}>
+          <aside className={styles.searchFilterSection}>
+            <div className={styles.searchbar}>
+              <Searchbar />
+            </div>
+            <div className={styles.dropdowns}>
+              <Dropdown />
+            </div>
+          </aside>
+          <article className={styles.propertiesContent}>
+            <h2 className={styles.propertiesTitle}>Properties</h2>
+            <p className={styles.propertiesDescription}>
               Explore the most current and comprehensive collection of real
               estate listings available right now. We showcase properties that
               capture the diversity and quality of the local market, from cozy
@@ -110,17 +156,13 @@ export default async function DashboardPage({ searchParams }) {
               effortless to navigate diverse neighborhoods, compare property
               features, and connect with the perfect home that meets your unique
               needs.
-            </div>
-          </div>
+            </p>
+          </article>
           <div className={styles.propertyCards}>
             {response.error ? (
-              <div className={styles.errorContainer}>
-                <div>{response.error}</div>
-              </div>
+              <p className={styles.errorContainer}>{response.error}</p>
             ) : response.count === 0 ? (
-              <div className={styles.noResultsContainer}>
-                <div>No Properties Found</div>
-              </div>
+              <p className={styles.noResultsContainer}>No Properties Found</p>
             ) : (
               <div className={styles.propertyGridPagination}>
                 <div className={styles.propertyGrid}>
@@ -128,34 +170,34 @@ export default async function DashboardPage({ searchParams }) {
                     <PropertyCard key={property.id} property={property} />
                   ))}
                 </div>
-                <div className={styles.paginationContainer}>
+                <footer className={styles.paginationContainer}>
                   <Pagination
                     currentPage={currentPage}
                     totalPages={response.total_pages}
                   />
-                </div>
+                </footer>
               </div>
             )}
           </div>
-        </div>
+        </section>
       ) : currentTab === "create-admin" ? (
-        <div className={styles.createAdminForm}>
+        <section className={styles.createAdminForm}>
           <SignUpForm userType="admin" />
-        </div>
+        </section>
       ) : (
-        <div className={styles.reportsWrapper}>
-          <div className={styles.reportHeader}>
+        <section className={styles.reportsWrapper}>
+          <nav className={styles.reportHeader}>
             <ReportFilterTabs currentStatus={currentStatus} />
-          </div>
+          </nav>
           <div className={styles.reportContent}>
-            <div className={styles.reportTitle}>Reports</div>
+            <h2 className={styles.reportTitle}>Reports</h2>
             <div className={styles.reportGrid}>
               {(() => {
                 if (response.results && response.results?.length === 0) {
                   return (
-                    <div className={styles.noResultsContainer}>
+                    <p className={styles.noResultsContainer}>
                       No {currentStatus} Reports Found
-                    </div>
+                    </p>
                   );
                 }
                 return response.results.map((report) => (
@@ -164,14 +206,14 @@ export default async function DashboardPage({ searchParams }) {
               })()}
             </div>
           </div>
-          <div className={styles.paginationContainer}>
+          <footer className={styles.paginationContainer}>
             <Pagination
               currentPage={currentPage}
               totalPages={response.total_pages}
             />
-          </div>
-        </div>
+          </footer>
+        </section>
       )}
-    </div>
+    </main>
   );
 }

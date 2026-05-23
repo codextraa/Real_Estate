@@ -5,8 +5,8 @@ export default function Loading() {
   const gifUrl = "/assets/loading-anime.gif";
 
   return (
-    <div className={styles.background}>
-      <div className={styles.logoContainer}>
+    <main className={styles.background}>
+      <figure className={styles.logoContainer}>
         <Image
           src={gifUrl}
           alt="Loading Animation"
@@ -15,11 +15,11 @@ export default function Loading() {
           className={styles.gif}
           unoptimized
         />
-      </div>
-      <div className={styles.text}>
+      </figure>
+      <h1 className={styles.text}>
         Loading
         <span className={styles.dots}>.</span>
-      </div>
-    </div>
+      </h1>
+    </main>
   );
 }

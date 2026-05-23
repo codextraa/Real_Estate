@@ -14,17 +14,17 @@ export default function Error({ error, reset }) {
   }, [error]);
 
   return (
-    <div className={styles.background}>
-      <div className={styles.image}>
+    <main className={styles.background}>
+      <figure className={styles.image}>
         <Image
           src="/real-estate/real-estate.jpg"
           alt="Modern city buildings representing real estate"
           fill
           priority
         />
-      </div>
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
+      </figure>
+      <section className={styles.container}>
+        <figure className={styles.errorContainer}>
           <Image
             src="/assets/global-error.svg"
             alt="Error"
@@ -34,18 +34,18 @@ export default function Error({ error, reset }) {
             priority
             loading="eager"
           />
-        </div>
-        <div className={styles.errorTextContainer}>
-          <div className={styles.errorTitle}>Oops!</div>
-          <div className={styles.errorMessage}>Something went wrong</div>
+        </figure>
+        <article className={styles.errorTextContainer}>
+          <h1 className={styles.errorTitle}>Oops!</h1>
+          <h1 className={styles.errorMessage}>Something went wrong</h1>
           <div className={styles.button}>
             <GlobalButton text="Try Again" onClick={() => reset()} />
           </div>
           <div className={styles.button}>
             <GlobalButton text="Go Back" onClick={() => router.back()} />
           </div>
-        </div>
-      </div>
-    </div>
+        </article>
+      </section>
+    </main>
   );
 }
