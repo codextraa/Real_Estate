@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   reactCompiler: true,
   allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS
     ? process.env.ALLOWED_DEV_ORIGINS.split(",")
@@ -13,7 +14,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "codextra-s3-media.s3.amazonaws.com",
+        hostname: process.env.NEXTJS_PROD_IMAGE_HOST,
       },
     ],
     localPatterns: [
@@ -28,6 +29,9 @@ const nextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: 5 * 1024 * 1024, // Increase limit to 5 MB
+      allowedOrigins: process.env.SERVER_ACTIONS_ALLOWED_ORIGINS
+        ? process.env.SERVER_ACTIONS_ALLOWED_ORIGINS.split(",")
+        : [],
     },
   },
 };
