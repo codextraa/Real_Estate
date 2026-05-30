@@ -11,7 +11,7 @@ services:
     container_name: real-estate-backend
     build: 
       context: ..
-      dockerfile: ./docker/backend/dev/Dockerfile
+      dockerfile: ./docker/backend/backend.dev.Dockerfile
     image: real-estate-backend:Python-3.12-slim-D
     ports:
       - "8004:8000"
@@ -29,7 +29,7 @@ services:
     container_name: real-estate-backend-ai
     build: 
       context: ..
-      dockerfile: ./docker/backend_ai/dev/Dockerfile
+      dockerfile: ./docker/backend_ai/backend_ai.dev.Dockerfile
     image: real-estate-backend-ai:Python-3.12-slim-D
     ports:
       - "8005:8001"
@@ -54,7 +54,7 @@ services:
     container_name: real-estate-backend-ai-worker
     build: 
       context: ..
-      dockerfile: ./docker/backend_ai/dev/Dockerfile
+      dockerfile: ./docker/backend_ai/backend_ai.dev.Dockerfile
     image: real-estate-backend-ai:Python-3.12-slim-D
     secrets:
       - infisical_token
@@ -77,7 +77,7 @@ services:
     container_name: real-estate-frontend
     build: 
       context: ..
-      dockerfile: ./docker/frontend/dev/Dockerfile
+      dockerfile: ./docker/frontend/frontend.dev.Dockerfile
     image: real-estate-frontend:Node-20-alpine-D
     ports:
       - "3004:3000"

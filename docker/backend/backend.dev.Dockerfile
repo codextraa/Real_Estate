@@ -1,9 +1,9 @@
 FROM python:3.12-slim
 
 WORKDIR /app
-COPY ./backend/requirements.txt .
+COPY ./backend/requirements_dev.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements_dev.txt
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     postgresql-client-17 \
