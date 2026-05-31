@@ -7,105 +7,105 @@ from report_api.agents import groq_ai_insight_prompt
 from report_api.utils import release_chat_locks
 from core_db_ai.models import ChatSession, ChatMessage, AIReport
 
-# from .agents import chat_json_extractor_agent
+from .agents import chat_json_extractor_agent
 
 logger = get_task_logger(__name__)
 
 
-@shared_task(bind=True)
-def ai_message_extractor(
-    self, session_id, message_id, property_details, user_query, user_lock_key
-):  # pylint: disable=W0613, R0913, R0917
-    """Dummy extractor"""
-    self.request.chain = None
-    message = ChatMessage.objects.get(id=message_id)
-    message.status = ChatMessage.Status.FAILED
-    message.content = "Our chat bot is currently unavailable. Please try again later."
-    message.timestamp = timezone.now()
-    message.save(update_fields=["status", "content", "timestamp"])
-
-    session = ChatSession.objects.get(id=session_id)
-    session.user_message_count += 1
-    session.save()
-
-    return "Stopped"
-
-
-# @shared_task(
-#     bind=True,
-#     max_retries=3,
-#     default_retry_delay=61,
-#     rate_limit="8/m",
-#     retry_jitter=False,
-# )
+# @shared_task(bind=True)
 # def ai_message_extractor(
 #     self, session_id, message_id, property_details, user_query, user_lock_key
-# ):  # pylint: disable=R0913, R0917
-#     """
-#     Worker Task: Calls Groq GPT for extraction.
-#     """
-#     try:
-#         property_json, usage = chat_json_extractor_agent(property_details, user_query)
+# ):  # pylint: disable=W0613, R0913, R0917
+#     """Dummy extractor"""
+#     self.request.chain = None
+#     message = ChatMessage.objects.get(id=message_id)
+#     message.status = ChatMessage.Status.FAILED
+#     message.content = "Our chat bot is currently unavailable. Please try again later."
+#     message.timestamp = timezone.now()
+#     message.save(update_fields=["status", "content", "timestamp"])
 
-#         # pylint: disable=R0801
-#         logger.info(
-#             "[Groq GPT] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
-#             usage.prompt_tokens,
-#             usage.completion_tokens,
-#             usage.total_tokens,
-#         )
-#         logger.info("Groq Json extraction complete.")
-#         # pylint: enable=R0801
+#     session = ChatSession.objects.get(id=session_id)
+#     session.user_message_count += 1
+#     session.save()
 
-#         error = property_json.get("error")
-#         if error:
-#             self.request.chain = None
-#             message = ChatMessage.objects.get(id=message_id)
-#             message.status = ChatMessage.Status.FAILED
-#             message.content = error
-#             message.timestamp = timezone.now()
-#             message.save(update_fields=["status", "content", "timestamp"])
+#     return "Stopped"
 
-#             if error == "Invalid request. Please try again.":
-#                 session = ChatSession.objects.get(id=session_id)
-#                 session.user_message_count += 1
-#                 session.save()
-#             else:
-#                 try:
-#                     release_chat_locks(user_lock_key)
-#                 except Exception as r_err:  # pylint: disable=W0718
-#                     logger.warning("Lock decrement failed: %s", r_err)
 
-#             return "Stopped"
+@shared_task(
+    bind=True,
+    max_retries=3,
+    default_retry_delay=61,
+    rate_limit="8/m",
+    retry_jitter=False,
+)
+def ai_message_extractor(
+    self, session_id, message_id, property_details, user_query, user_lock_key
+):  # pylint: disable=R0913, R0917
+    """
+    Worker Task: Calls Groq GPT for extraction.
+    """
+    try:
+        property_json, usage = chat_json_extractor_agent(property_details, user_query)
 
-#         property_json["title"] = property_details["title"]
-#         return property_json
-#     except Exception as e:  # pylint: disable=W0718
-#         # pylint: disable=R0801
-#         logger.warning(
-#             "Attempt %s/%s failed Groq Rate Limit/Error: %s. Retrying again",
-#             self.request.retries,
-#             self.max_retries,
-#             e,
-#         )
-#         # pylint: enable=R0801
-#         try:
-#             return self.retry(exc=e)
-#         except MaxRetriesExceededError as err:
-#             logger.error("Groq GPT Summary Error: %s", err)
-#             self.request.chain = None
-#             message = ChatMessage.objects.get(id=message_id)
-#             message.status = ChatMessage.Status.FAILED
-#             message.content = "Agent failed to respond. Please try again."
-#             message.timestamp = timezone.now()
-#             message.save(update_fields=["status", "content", "timestamp"])
+        # pylint: disable=R0801
+        logger.info(
+            "[Groq GPT] Prompt Tokens: %s | Completion Tokens: %s | Total: %s",
+            usage.prompt_tokens,
+            usage.completion_tokens,
+            usage.total_tokens,
+        )
+        logger.info("Groq Json extraction complete.")
+        # pylint: enable=R0801
 
-#             try:
-#                 release_chat_locks(user_lock_key)
-#             except Exception as r_err:  # pylint: disable=W0718
-#                 logger.warning("Lock decrement failed: %s", r_err)
+        error = property_json.get("error")
+        if error:
+            self.request.chain = None
+            message = ChatMessage.objects.get(id=message_id)
+            message.status = ChatMessage.Status.FAILED
+            message.content = error
+            message.timestamp = timezone.now()
+            message.save(update_fields=["status", "content", "timestamp"])
 
-#             return "Stopped"
+            if error == "Invalid request. Please try again.":
+                session = ChatSession.objects.get(id=session_id)
+                session.user_message_count += 1
+                session.save()
+            else:
+                try:
+                    release_chat_locks(user_lock_key)
+                except Exception as r_err:  # pylint: disable=W0718
+                    logger.warning("Lock decrement failed: %s", r_err)
+
+            return "Stopped"
+
+        property_json["title"] = property_details["title"]
+        return property_json
+    except Exception as e:  # pylint: disable=W0718
+        # pylint: disable=R0801
+        logger.warning(
+            "Attempt %s/%s failed Groq Rate Limit/Error: %s. Retrying again",
+            self.request.retries,
+            self.max_retries,
+            e,
+        )
+        # pylint: enable=R0801
+        try:
+            return self.retry(exc=e)
+        except MaxRetriesExceededError as err:
+            logger.error("Groq GPT Summary Error: %s", err)
+            self.request.chain = None
+            message = ChatMessage.objects.get(id=message_id)
+            message.status = ChatMessage.Status.FAILED
+            message.content = "Agent failed to respond. Please try again."
+            message.timestamp = timezone.now()
+            message.save(update_fields=["status", "content", "timestamp"])
+
+            try:
+                release_chat_locks(user_lock_key)
+            except Exception as r_err:  # pylint: disable=W0718
+                logger.warning("Lock decrement failed: %s", r_err)
+
+            return "Stopped"
 
 
 @shared_task(
