@@ -14,7 +14,9 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: process.env.NEXTJS_PROD_IMAGE_HOST || "codextra",
+        hostname: "codextra-media-065148239936-ap-south-1-an.s3.ap-south-1.amazonaws.com",
+        port: "",
+        pathname: "/**",
       },
     ],
     localPatterns: [
@@ -28,7 +30,7 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: 5 * 1024 * 1024, // Increase limit to 5 MB
+      bodySizeLimit: 10 * 1024 * 1024, // Increase limit to 5 MB
       allowedOrigins: process.env.SERVER_ACTIONS_ALLOWED_ORIGINS
         ? process.env.SERVER_ACTIONS_ALLOWED_ORIGINS.split(",")
         : [],
