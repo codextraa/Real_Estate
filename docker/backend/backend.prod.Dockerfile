@@ -6,13 +6,14 @@ RUN apk add --no-cache gcc musl-dev postgresql-dev libffi-dev
 
 COPY ./backend/requirements_prod.txt .
 
-RUN pip install --no-cache-dir --target=/home/django/app/packages -r requirements_prod.txt
+RUN pip install --no-cache-dir -r requirements_prod.txt
 
 FROM python:3.13-alpine AS builder
 
 WORKDIR /home/django/app
 
-COPY --from=deps /home/django/app/packages /usr/local/lib/python3.13/site-packages
+COPY --from=deps /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=deps /usr/local/bin /usr/local/bin
 COPY ./backend .
 
 FROM python:3.13-alpine AS runner
@@ -26,6 +27,7 @@ RUN adduser -D django
 WORKDIR /home/django/app
 
 COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 COPY --from=builder /home/django/app/backend/ ./backend/
 COPY --from=builder /home/django/app/core_db/ ./core_db/

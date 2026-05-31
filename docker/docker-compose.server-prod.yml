@@ -87,13 +87,14 @@ services:
 
     entrypoint: /home/django_ai/app/run.sh
 
-    # environment:
-    #   - http_proxy=${http_proxy}
-    #   - https_proxy=${https_proxy}
-    #   - no_proxy=${no_proxy}
-    #   - HTTP_PROXY=${HTTP_PROXY}
-    #   - HTTPS_PROXY=${HTTPS_PROXY}
-    #   - NO_PROXY=${NO_PROXY}
+    environment:
+      - SERVICE_TYPE=ai-api
+      # - http_proxy=${http_proxy}
+      # - https_proxy=${https_proxy}
+      # - no_proxy=${no_proxy}
+      # - HTTP_PROXY=${HTTP_PROXY}
+      # - HTTPS_PROXY=${HTTPS_PROXY}
+      # - NO_PROXY=${NO_PROXY}
 
     sysctls:
       net.core.somaxconn: 1024
@@ -142,13 +143,14 @@ services:
 
     entrypoint: /home/django_ai/app/run.sh
 
-    # environment:
-    #   - http_proxy=${http_proxy}
-    #   - https_proxy=${https_proxy}
-    #   - no_proxy=${no_proxy}
-    #   - HTTP_PROXY=${HTTP_PROXY}
-    #   - HTTPS_PROXY=${HTTPS_PROXY}
-    #   - NO_PROXY=${NO_PROXY}
+    environment:
+      - SERVICE_TYPE=ai-worker
+      # - http_proxy=${http_proxy}
+      # - https_proxy=${https_proxy}
+      # - no_proxy=${no_proxy}
+      # - HTTP_PROXY=${HTTP_PROXY}
+      # - HTTPS_PROXY=${HTTPS_PROXY}
+      # - NO_PROXY=${NO_PROXY}
 
     depends_on:
       real-estate-redis:

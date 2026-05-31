@@ -14,13 +14,14 @@ RUN apk add --no-cache \
 
 COPY ./backend_ai/requirements_prod.txt .
 
-RUN pip install --no-cache-dir --target=/home/django_ai/app/packages -r requirements_prod.txt
+RUN pip install --no-cache-dir -r requirements_prod.txt
 
 FROM python:3.13-alpine AS builder
 
 WORKDIR /home/django_ai/app
 
-COPY --from=deps /home/django_ai/app/packages /usr/local/lib/python3.13/site-packages
+COPY --from=deps /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=deps /usr/local/bin /usr/local/bin
 COPY ./backend_ai .
 
 FROM python:3.13-alpine AS runner
@@ -31,7 +32,8 @@ RUN apk add --no-cache \
     postgresql-client \
     libstdc++ \
     openblas \
-    lapack && \
+    lapack \
+    libgomp && \
     curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.alpine.sh' | distro=alpine version=3.20 bash && \
     apk add --no-cache infisical
 
@@ -40,6 +42,7 @@ RUN adduser -D django_ai
 WORKDIR /home/django_ai/app
 
 COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 COPY --from=builder /home/django_ai/app/backend_ai/ ./backend_ai/
 COPY --from=builder /home/django_ai/app/core_db_ai/ ./core_db_ai/
