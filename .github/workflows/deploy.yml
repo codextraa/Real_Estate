@@ -1,0 +1,292 @@
+name: Deploy Real-Estate in AWS EC2 instance
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed # Trigger only when PR is closed (merged)
+
+jobs:
+  deploy-client:
+    runs-on: ubuntu-latest
+    # Only run if the PR was merged
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_CLIENT_HOST }}
+          username: ${{ secrets.EC2_CLIENT_USERNAME }}
+          key: ${{ secrets.EC2_CLIENT_SSH_KEY }}
+          script: |
+            # Set up a temporary directory
+            TEMP_DIR=$(mktemp -d /home/ubuntu/tmp.XXXXXX)
+            cd "$TEMP_DIR"
+
+            # Clone the repository
+            git clone https://github.com/codextraa/Real_Estate.git .
+
+            # Write secrets to files
+            echo "${{ secrets.INFISICAL_TOKEN_PROD }}" > infisical_token.txt
+            echo "${{ secrets.INFISICAL_JSON_PROD }}" | base64 -d > .infisical.json
+            chmod 600 infisical_token.txt .infisical.json
+
+            # Ensure network exists
+            docker network create web-app-network || true
+
+            # Check and remove existing app container if they exist
+            if docker ps -a --format '{{.Names}}' | grep -q "^real-estate-frontend$"; then
+              echo "Stopping and removing container: real-estate-frontend"
+              docker stop "real-estate-frontend" || true
+              docker rm "real-estate-frontend" || true
+            fi
+
+            # Run the app container
+            docker compose -f docker-compose.client-prod.yml up -d
+
+            # Wait for real-estate-frontend to be ready
+            echo "Waiting for Frontend to be ready..."
+            timeout 60s bash -c "until curl -s -f http://localhost:3000/ > /dev/null; do echo 'Frontend not ready yet...'; sleep 5s; done" || { 
+              echo "Frontend failed to start"; 
+              docker logs real-estate-frontend; 
+              docker stop real-estate-frontend || true; 
+              docker rm real-estate-frontend || true; 
+              exit 1; 
+            }
+            echo "Frontend is ready!"
+
+            # Cleanup
+            cd /home/ubuntu
+            rm -f "$TEMP_DIR/infisical_token.txt"
+            rm -f "$TEMP_DIR/.infisical.json"
+            rm -rf "$TEMP_DIR"
+
+  deploy-server-1:
+    runs-on: ubuntu-latest
+    # Only run if the PR was merged
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Deploy to Private EC2 via Client Server Proxy
+        uses: appleboy/ssh-action@master
+        with:
+          # Target Private Database Host
+          host: ${{ secrets.EC2_SERVER_1_HOST }}
+          username: ${{ secrets.EC2_SERVER_1_USERNAME }}
+          key: ${{ secrets.EC2_SERVER_1_SSH_KEY }}
+          
+          # Tunnel through Public Client Host
+          proxy_host: ${{ secrets.EC2_CLIENT_HOST }}  # Public IP
+          proxy_username: ${{ secrets.EC2_CLIENT_USERNAME }}
+          proxy_key: ${{ secrets.EC2_CLIENT_SSH_KEY }}
+          
+          script: |
+            # Force proxy variables for non-interactive shell execution
+            PROXY_IP_FULL="${{ secrets.PROXY_PRIVATE_IP_FULL }}"
+            PROXY_IP="${{ secrets.PROXY_PRIVATE_IP }}"
+            PROXY_PORT="${{ secrets.PROXY_PORT }}"
+            
+            export http_proxy="http://$PROXY_IP_FULL:$PROXY_PORT"
+            export https_proxy="http://$PROXY_IP_FULL:$PROXY_PORT"
+            export no_proxy="localhost,127.0.0.1,${PROXY_IP}"
+            export HTTP_PROXY="http://$PROXY_IP_FULL:$PROXY_PORT"
+            export HTTPS_PROXY="http://$PROXY_IP_FULL:$PROXY_PORT"
+            export NO_PROXY="localhost,127.0.0.1,${PROXY_IP}"
+
+            # Set up a temporary directory
+            TEMP_DIR=$(mktemp -d /home/ubuntu/tmp.XXXXXX)
+            cd "$TEMP_DIR"
+
+            # Clone the repository
+            git clone https://github.com/codextraa/Real_Estate.git .
+
+            # Write secrets to files
+            echo "${{ secrets.INFISICAL_TOKEN_PROD }}" > infisical_token.txt
+            echo "${{ secrets.INFISICAL_JSON_PROD }}" | base64 -d > .infisical.json
+            chmod 600 infisical_token.txt .infisical.json
+
+            # Ensure network exists
+            docker network create web-app-network || true
+
+            # Check and remove existing app containers if they exist
+            for container in real-estate-backend real-estate-backend-ai real-estate-backend-ai-worker real-estate-redis; do
+              if docker ps -a --format '{{.Names}}' | grep -q "^${container}$"; then
+                echo "Stopping and removing container: $container"
+                docker stop "$container" || true
+                docker rm "$container" || true
+              fi
+            done
+
+            # Run the app container
+            docker compose -f docker-compose.server-prod.yml --env-file .env.docker_server_1 up -d
+
+            # Wait for real-estate-redis to be ready
+            echo "Waiting for Redis to be ready..."
+            timeout 60s bash -c "until docker exec real-estate-redis redis-cli ping | grep -q 'PONG'; do echo 'Redis not ready yet...'; sleep 5s; done" || { 
+              echo "Redis failed to start"; 
+              docker logs real-estate-redis; 
+              docker stop real-estate-redis || true; 
+              docker rm real-estate-redis || true; 
+              exit 1; 
+            }
+            echo "Redis is ready!"
+
+            # Wait for real-estate-backend to be ready
+            echo "Waiting for Core Backend to be ready..."
+            timeout 60s bash -c "until nc -z localhost 8000; do echo 'Core Backend not ready yet...'; sleep 5s; done" || { 
+              echo "Core Backend failed to start"; 
+              docker logs real-estate-backend; 
+              docker stop real-estate-backend || true; 
+              docker rm real-estate-backend || true; 
+              exit 1; 
+            }
+            echo "Core Backend is ready!"
+
+            # Wait for real-estate-backend-ai to be ready
+            echo "Waiting for AI Backend to be ready..."
+            timeout 60s bash -c "until nc -z localhost 8001; do echo 'AI Backend not ready yet...'; sleep 5s; done" || { 
+              echo "AI Backend failed to start"; 
+              docker logs real-estate-backend-ai; 
+              docker stop real-estate-backend-ai || true; 
+              docker rm real-estate-backend-ai || true; 
+              exit 1; 
+            }
+            echo "AI Backend is ready!"
+
+            # Cleanup
+            cd /home/ubuntu
+            rm -f "$TEMP_DIR/infisical_token.txt"
+            rm -f "$TEMP_DIR/.infisical.json"
+            rm -rf "$TEMP_DIR"
+
+  deploy-server-2:
+    runs-on: ubuntu-latest
+    # Only run if the PR was merged
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Deploy to Private EC2 via Client Server Proxy
+        uses: appleboy/ssh-action@master
+        with:
+          # Target Private Database Host
+          host: ${{ secrets.EC2_SERVER_2_HOST }}
+          username: ${{ secrets.EC2_SERVER_2_USERNAME }}
+          key: ${{ secrets.EC2_SERVER_2_SSH_KEY }}
+          
+          # Tunnel through Public Client Host
+          proxy_host: ${{ secrets.EC2_CLIENT_HOST }}  # Public IP
+          proxy_username: ${{ secrets.EC2_CLIENT_USERNAME }}
+          proxy_key: ${{ secrets.EC2_CLIENT_SSH_KEY }}
+          
+          script: |
+            # Force proxy variables for non-interactive shell execution
+            PROXY_IP_FULL="${{ secrets.PROXY_PRIVATE_IP_FULL }}"
+            PROXY_IP="${{ secrets.PROXY_PRIVATE_IP }}"
+            PROXY_PORT="${{ secrets.PROXY_PORT }}"
+            
+            export http_proxy="http://$PROXY_IP_FULL:$PROXY_PORT"
+            export https_proxy="http://$PROXY_IP_FULL:$PROXY_PORT"
+            export no_proxy="localhost,127.0.0.1,${PROXY_IP}"
+            export HTTP_PROXY="http://$PROXY_IP_FULL:$PROXY_PORT"
+            export HTTPS_PROXY="http://$PROXY_IP_FULL:$PROXY_PORT"
+            export NO_PROXY="localhost,127.0.0.1,${PROXY_IP}"
+
+            # Set up a temporary directory
+            TEMP_DIR=$(mktemp -d /home/ubuntu/tmp.XXXXXX)
+            cd "$TEMP_DIR"
+
+            # Clone the repository
+            git clone https://github.com/codextraa/Real_Estate.git .
+
+            # Write secrets to files
+            echo "${{ secrets.INFISICAL_TOKEN_PROD }}" > infisical_token.txt
+            echo "${{ secrets.INFISICAL_JSON_PROD }}" | base64 -d > .infisical.json
+            chmod 600 infisical_token.txt .infisical.json
+
+            # Ensure network exists
+            docker network create web-app-network || true
+
+            # Check and remove existing app containers if they exist
+            for container in real-estate-backend real-estate-backend-ai real-estate-backend-ai-worker real-estate-redis; do
+              if docker ps -a --format '{{.Names}}' | grep -q "^${container}$"; then
+                echo "Stopping and removing container: $container"
+                docker stop "$container" || true
+                docker rm "$container" || true
+              fi
+            done
+
+            # Run the app container
+            docker compose -f docker-compose.server-prod.yml --env-file .env.docker_server_2 up -d
+
+            # Wait for real-estate-redis to be ready
+            echo "Waiting for Redis to be ready..."
+            timeout 60s bash -c "until docker exec real-estate-redis redis-cli ping | grep -q 'PONG'; do echo 'Redis not ready yet...'; sleep 5s; done" || { 
+              echo "Redis failed to start"; 
+              docker logs real-estate-redis; 
+              docker stop real-estate-redis || true; 
+              docker rm real-estate-redis || true; 
+              exit 1; 
+            }
+            echo "Redis is ready!"
+
+            # Wait for real-estate-backend to be ready
+            echo "Waiting for Core Backend to be ready..."
+            timeout 60s bash -c "until nc -z localhost 8000; do echo 'Core Backend not ready yet...'; sleep 5s; done" || { 
+              echo "Core Backend failed to start"; 
+              docker logs real-estate-backend; 
+              docker stop real-estate-backend || true; 
+              docker rm real-estate-backend || true; 
+              exit 1; 
+            }
+            echo "Core Backend is ready!"
+
+            # Wait for real-estate-backend-ai to be ready
+            echo "Waiting for AI Backend to be ready..."
+            timeout 60s bash -c "until nc -z localhost 8001; do echo 'AI Backend not ready yet...'; sleep 5s; done" || { 
+              echo "AI Backend failed to start"; 
+              docker logs real-estate-backend-ai; 
+              docker stop real-estate-backend-ai || true; 
+              docker rm real-estate-backend-ai || true; 
+              exit 1; 
+            }
+            echo "AI Backend is ready!"
+
+            # Cleanup
+            cd /home/ubuntu
+            rm -f "$TEMP_DIR/infisical_token.txt"
+            rm -f "$TEMP_DIR/.infisical.json"
+            rm -rf "$TEMP_DIR"
+
+  restart-nginx-gate:
+    runs-on: ubuntu-latest
+    # Only run if the PR was merged
+    if: github.event.pull_request.merged == true
+    # Depends on the successful completion of the deploy jobs
+    needs: [deploy-client, deploy-server-1, deploy-server-2]
+    steps:
+      - name: Restart Nginx Ingress Gateway on Client Host
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_CLIENT_HOST }}
+          username: ${{ secrets.EC2_CLIENT_USERNAME }}
+          key: ${{ secrets.EC2_CLIENT_SSH_KEY }}
+          script: |
+            # Check if the nginx-proxy container exists (running or stopped)
+            if docker ps -a --format '{{.Names}}' | grep -q "^nginx-proxy$"; then
+              echo "Nginx container found. Stopping container safely..."
+              docker stop nginx-proxy || true
+
+              echo "Starting Nginx container back up..."
+              docker start nginx-proxy
+
+              # Wait for nginx to be ready
+              echo "Waiting for Nginx to be ready..."
+              timeout 60s bash -c "until curl -s -I http://localhost:80/ | grep -q 'HTTP/'; do echo 'Nginx not ready yet...'; sleep 5s; done" || { 
+                echo "Nginx failed to start or respond"; 
+                docker logs nginx-proxy; 
+                docker stop nginx-proxy || true; 
+                exit 1; 
+              }
+              echo "Nginx is ready!"
+            else
+              echo "Nginx container doesn't exist"
+            fi

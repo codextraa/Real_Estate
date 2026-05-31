@@ -9,9 +9,9 @@ secrets:
 services:
   real-estate-frontend:
     image: codxtra/real-estate-frontend:Node-24-alpine-P
-    build: 
-      context: ..
-      dockerfile: ./docker/frontend/frontend.prod.Dockerfile
+    # build: 
+    #   context: ..
+    #   dockerfile: ./docker/frontend/frontend.prod.Dockerfile
     container_name: real-estate-frontend
     restart: unless-stopped
     

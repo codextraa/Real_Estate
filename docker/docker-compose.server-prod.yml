@@ -9,9 +9,9 @@ secrets:
 services:
   real-estate-backend:
     image: codxtra/real-estate-backend:Python-3.13-alpine-P
-    build: 
-      context: ..
-      dockerfile: ./docker/backend/backend.prod.Dockerfile
+    # build: 
+    #   context: ..
+    #   dockerfile: ./docker/backend/backend.prod.Dockerfile
     container_name: real-estate-backend
     restart: unless-stopped
 
@@ -32,13 +32,13 @@ services:
 
     entrypoint: /home/django/app/run.sh
     
-    # environment:
-    #   - http_proxy=${http_proxy}
-    #   - https_proxy=${https_proxy}
-    #   - no_proxy=${no_proxy}
-    #   - HTTP_PROXY=${HTTP_PROXY}
-    #   - HTTPS_PROXY=${HTTPS_PROXY}
-    #   - NO_PROXY=${NO_PROXY}
+    environment:
+      - http_proxy=${http_proxy}
+      - https_proxy=${https_proxy}
+      - no_proxy=${no_proxy}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
 
     sysctls:
       net.core.somaxconn: 1024  
@@ -64,9 +64,9 @@ services:
 
   real-estate-backend-ai:
     image: codxtra/real-estate-backend-ai:Python-3.13-alpine-P
-    build: 
-      context: ..
-      dockerfile: ./docker/backend_ai/backend_ai.prod.Dockerfile
+    # build: 
+    #   context: ..
+    #   dockerfile: ./docker/backend_ai/backend_ai.prod.Dockerfile
     container_name: real-estate-backend-ai
     restart: unless-stopped
 
@@ -89,12 +89,12 @@ services:
 
     environment:
       - SERVICE_TYPE=ai-api
-      # - http_proxy=${http_proxy}
-      # - https_proxy=${https_proxy}
-      # - no_proxy=${no_proxy}
-      # - HTTP_PROXY=${HTTP_PROXY}
-      # - HTTPS_PROXY=${HTTPS_PROXY}
-      # - NO_PROXY=${NO_PROXY}
+      - http_proxy=${http_proxy}
+      - https_proxy=${https_proxy}
+      - no_proxy=${no_proxy}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
 
     sysctls:
       net.core.somaxconn: 1024
@@ -145,12 +145,12 @@ services:
 
     environment:
       - SERVICE_TYPE=ai-worker
-      # - http_proxy=${http_proxy}
-      # - https_proxy=${https_proxy}
-      # - no_proxy=${no_proxy}
-      # - HTTP_PROXY=${HTTP_PROXY}
-      # - HTTPS_PROXY=${HTTPS_PROXY}
-      # - NO_PROXY=${NO_PROXY}
+      - http_proxy=${http_proxy}
+      - https_proxy=${https_proxy}
+      - no_proxy=${no_proxy}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
 
     depends_on:
       real-estate-redis:
@@ -179,9 +179,9 @@ services:
 
   real-estate-redis:
     image: codxtra/real-estate-redis:Redis-7.4.2-alpine-P
-    build: 
-      context: ..
-      dockerfile: ./docker/redis/Dockerfile
+    # build: 
+    #   context: ..
+    #   dockerfile: ./docker/redis/Dockerfile
     container_name: real-estate-redis
     restart: unless-stopped
     volumes:
