@@ -33,7 +33,7 @@ jobs:
             # Write secrets to files
             echo "${{ secrets.INFISICAL_TOKEN_PROD }}" > infisical_token.txt
             echo "${{ secrets.INFISICAL_JSON_PROD }}" | base64 -d > .infisical.json
-            chmod 600 infisical_token.txt .infisical.json
+            chmod 644 infisical_token.txt .infisical.json
 
             # Ensure network exists
             docker network create web-app-network || true
