@@ -21,13 +21,13 @@ services:
     secrets:
       - source: infisical_token
         target: infisical_token
-        uid: '1000'
-        gid: '1000'
+        uid: '1001'
+        gid: '1001'
         mode: 0400
       - source: .infisical.json
         target: .infisical.json
-        uid: '1000'
-        gid: '1000'
+        uid: '1001'
+        gid: '1001'
         mode: 0400
 
     entrypoint: /home/nextjs/app/run.sh
