@@ -1,0 +1,53 @@
+# Python artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Git and version control
+.git
+.gitignore
+
+# Infisical secrets
+infisical*
+.infisical*
+
+# Logs and temp files
+*.log
+*.pid
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Docker Compose and docs (optional)
+docker-compose.yaml
+.dockerignore
+*.md
+
+# Block global testing/seeding folders in the root workspace
+tests/
+seeders/
+
+# Block the 'tests' folder inside EVERY app directory recursively
+**/tests/
+
+# Block data generation scripts inside core database apps
+**/core_db_ai/factories.py
+**/core_db_ai/management/commands/seed.py
