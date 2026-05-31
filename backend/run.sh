@@ -2,7 +2,7 @@
 export INFISICAL_TOKEN=$(cat /run/secrets/infisical_token)
 cd /run/secrets
 infisical run --path="/Real-Estate/backend" -- sh -c '
-  cd /app &&
+  { if [ "$DJANGO_ENV" = "production" ]; then cd /home/django/app; else cd /app; fi; } &&
 
   export PYTHONUNBUFFERED="${PYTHONUNBUFFERED:-1}"
 

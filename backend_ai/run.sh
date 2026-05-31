@@ -2,7 +2,7 @@
 export INFISICAL_TOKEN=$(cat /run/secrets/infisical_token)
 cd /run/secrets
 infisical run --path="/Real-Estate/backend-ai" -- sh -c '
-  cd /app &&
+  { if [ "$DJANGO_ENV" = "production" ]; then cd /home/django_ai/app; else cd /app; fi; } &&
 
   export PYTHONUNBUFFERED="${PYTHONUNBUFFERED:-1}"
   
@@ -77,7 +77,9 @@ except Exception as e:
 
     while [ $attempt -le $retries ]; do
       # python manage.py migrate --check returns 0 if all migrations are applied
-      if python manage.py migrate --check > /dev/null 2>&1; then
+      python manage.py migrate --check
+      
+      if [ $? -eq 0 ]; then
         echo "✅ Migrations complete. Worker starting..."
         break
       fi
