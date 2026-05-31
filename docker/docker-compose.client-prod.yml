@@ -1,0 +1,60 @@
+name: real-estate-frontend-prod
+
+secrets:
+  infisical_token:
+    file: ./infisical_token.txt
+  .infisical.json:
+    file: ./.infisical.json
+
+services:
+  real-estate-frontend:
+    image: codxtra/real-estate-frontend:Node-24-alpine-P
+    build: 
+      context: ..
+      dockerfile: ./docker/frontend/frontend.prod.Dockerfile
+    container_name: real-estate-frontend
+    restart: unless-stopped
+    
+    ports:
+      - "3000:3000"
+      
+    secrets:
+      - source: infisical_token
+        target: infisical_token
+        uid: '1000'
+        gid: '1000'
+        mode: 0400
+      - source: .infisical.json
+        target: .infisical.json
+        uid: '1000'
+        gid: '1000'
+        mode: 0400
+
+    entrypoint: /home/nextjs/app/run.sh
+      
+    extra_hosts:
+      - "real-estate.dev:host-gateway"
+
+    # LEGACY CORE RESOURCE FALLBACKS
+    cpus: 0.85
+    mem_limit: 512M
+    mem_reservation: 256M
+    memswap_limit: 1024M
+
+    # MODERN ORCHESTRATION RE-BALANCING
+    deploy:
+      resources:
+        limits:
+          cpus: '0.85'
+          memory: 512M
+        reservations:
+          cpus: '0.20'
+          memory: 256M
+
+    networks:
+      - web-app-network
+
+networks:
+  web-app-network:
+    name: web-app-network
+    external: true
