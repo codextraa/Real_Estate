@@ -14,7 +14,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: process.env.NEXTJS_PROD_IMAGE_HOST,
+        hostname: process.env.NEXTJS_PROD_IMAGE_HOST || "codextra",
       },
     ],
     localPatterns: [
