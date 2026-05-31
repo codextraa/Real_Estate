@@ -28,7 +28,7 @@ GROQ_API_KEY2 = os.getenv("GROQ_API_KEY2", "XXXXXX")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "XXXXXX")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG")
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
 # Django Environment
 DJANGO_ENV = os.getenv("DJANGO_ENV")
@@ -66,6 +66,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -145,7 +146,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static_ai/"
-STATIC_ROOT = "/app/static_ai"
+
+if DJANGO_ENV == "development":
+    STATIC_ROOT = "/app/static_ai"
+else:
+    STATIC_ROOT = "/home/django_ai/app/static_ai"
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -258,50 +271,50 @@ TEST_RUNNER = "backend_ai.test_runner.ShadowModelTestRunner"
 
 # Monitoring
 
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "formatters": {
-#         "verbose": {
-#             "format": "{levelname} {asctime} {module} {message}",
-#             "style": "{",
-#         },
-#         "simple": {
-#             "format": "{levelname} {message}",
-#             "style": "{",
-#         },
-#     },
-#     "handlers": {
-#         "console": {
-#             "level": "INFO",
-#             "class": "logging.StreamHandler",
-#             "formatter": "simple",
-#         },
-#     },
-#     "loggers": {
-#         "": {  # Root logger
-#             "level": "INFO",
-#             "handlers": ["console"],
-#         },
-#         "django": {  # Django-specific logger
-#             "level": "INFO",
-#             "handlers": ["console"],
-#             "propagate": False,
-#         },
-#         "botocore": {  # botocore logger (for S3/AWS interactions)
-#             "level": "WARNING",
-#             "handlers": ["console"],
-#             "propagate": False,
-#         },
-#         "boto3": {  # boto3 logger
-#             "level": "WARNING",
-#             "handlers": ["console"],
-#             "propagate": False,
-#         },
-#         "s3transfer": {  # s3transfer logger (used by boto3 for file transfers)
-#             "level": "WARNING",
-#             "handlers": ["console"],
-#             "propagate": False,
-#         },
-#     },
-# }
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "loggers": {
+        "": {  # Root logger
+            "level": "INFO",
+            "handlers": ["console"],
+        },
+        "django": {  # Django-specific logger
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "botocore": {  # botocore logger (for S3/AWS interactions)
+            "level": "WARNING",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "boto3": {  # boto3 logger
+            "level": "WARNING",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "s3transfer": {  # s3transfer logger (used by boto3 for file transfers)
+            "level": "WARNING",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+    },
+}

@@ -1,0 +1,226 @@
+name: real-estate-backend-s1
+
+secrets:
+  infisical_token:
+    file: ./infisical_token.txt
+  .infisical.json:
+    file: ./.infisical.json
+
+services:
+  real-estate-backend:
+    image: codxtra/real-estate-backend:Python-3.13-alpine-P
+    # build: 
+    #   context: ..
+    #   dockerfile: ./docker/backend/backend.prod.Dockerfile
+    container_name: real-estate-backend
+    restart: unless-stopped
+
+    ports:
+      - "8000:8000"
+
+    secrets:
+      - source: infisical_token
+        target: infisical_token
+        uid: '1000'
+        gid: '1000'
+        mode: 0400
+      - source: .infisical.json
+        target: .infisical.json
+        uid: '1000'
+        gid: '1000'
+        mode: 0400
+
+    entrypoint: /home/django/app/run.sh
+    
+    environment:
+      - http_proxy=${http_proxy}
+      - https_proxy=${https_proxy}
+      - no_proxy=${no_proxy}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
+
+    sysctls:
+      net.core.somaxconn: 1024  
+
+    # LEGACY CORE RESOURCE FALLBACKS
+    cpus: ${CORE_API_CPU_LIMIT}
+    mem_limit: ${CORE_API_MEM_LIMIT}
+    mem_reservation: ${CORE_API_MEM_RESERVE}
+    memswap_limit: ${CORE_API_SWAP_LIMIT}
+
+    # MODERN ORCHESTRATION RE-BALANCING
+    deploy:
+      resources:
+        limits:
+          cpus: '${CORE_API_CPU_LIMIT}'
+          memory: ${CORE_API_MEM_LIMIT}
+        reservations:
+          cpus: '${CORE_API_CPU_RESERVE}'
+          memory: ${CORE_API_MEM_RESERVE}
+
+    networks:
+      - web-app-network
+
+  real-estate-backend-ai:
+    image: codxtra/real-estate-backend-ai:Python-3.13-alpine-P
+    # build: 
+    #   context: ..
+    #   dockerfile: ./docker/backend_ai/backend_ai.prod.Dockerfile
+    container_name: real-estate-backend-ai
+    restart: unless-stopped
+
+    ports:
+      - "8001:8001"
+
+    secrets:
+      - source: infisical_token
+        target: infisical_token
+        uid: '1000'
+        gid: '1000'
+        mode: 0400
+      - source: .infisical.json
+        target: .infisical.json
+        uid: '1000'
+        gid: '1000'
+        mode: 0400
+
+    entrypoint: /home/django_ai/app/run.sh
+
+    environment:
+      - SERVICE_TYPE=ai-api
+      - http_proxy=${http_proxy}
+      - https_proxy=${https_proxy}
+      - no_proxy=${no_proxy}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
+
+    sysctls:
+      net.core.somaxconn: 1024
+
+    depends_on:
+      real-estate-redis:
+        condition: service_healthy
+      real-estate-backend:
+        condition: service_started
+
+    # LEGACY CORE RESOURCE FALLBACKS
+    cpus: ${AI_API_CPU_LIMIT}
+    mem_limit: ${AI_API_MEM_LIMIT}
+    mem_reservation: ${AI_API_MEM_RESERVE}
+    memswap_limit: ${AI_API_SWAP_LIMIT}
+
+    # MODERN ORCHESTRATION RE-BALANCING
+    deploy:
+      resources:
+        limits:
+          cpus: '${AI_API_CPU_LIMIT}'
+          memory: ${AI_API_MEM_LIMIT}
+        reservations:
+          cpus: '${AI_API_CPU_RESERVE}'
+          memory: ${AI_API_MEM_RESERVE}
+
+    networks:
+      - web-app-network
+
+  real-estate-backend-ai-worker:
+    image: codxtra/real-estate-backend-ai:Python-3.13-alpine-P
+    container_name: real-estate-backend-ai-worker
+    restart: unless-stopped
+
+    secrets:
+      - source: infisical_token
+        target: infisical_token
+        uid: '1000'
+        gid: '1000'
+        mode: 0400
+      - source: .infisical.json
+        target: .infisical.json
+        uid: '1000'
+        gid: '1000'
+        mode: 0400
+
+    entrypoint: /home/django_ai/app/run.sh
+
+    environment:
+      - SERVICE_TYPE=ai-worker
+      - http_proxy=${http_proxy}
+      - https_proxy=${https_proxy}
+      - no_proxy=${no_proxy}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
+
+    depends_on:
+      real-estate-redis:
+        condition: service_healthy
+      real-estate-backend-ai:
+        condition: service_started
+
+    # LEGACY CORE RESOURCE FALLBACKS
+    cpus: ${AI_WORKER_CPU_LIMIT}
+    mem_limit: ${AI_WORKER_MEM_LIMIT}
+    mem_reservation: ${AI_WORKER_MEM_RESERVE}
+    memswap_limit: ${AI_WORKER_SWAP_LIMIT}
+
+    # MODERN ORCHESTRATION RE-BALANCING
+    deploy:
+      resources:
+        limits:
+          cpus: '${AI_WORKER_CPU_LIMIT}'
+          memory: ${AI_WORKER_MEM_LIMIT}
+        reservations:
+          cpus: '${AI_WORKER_CPU_RESERVE}'
+          memory: ${AI_WORKER_MEM_RESERVE}
+    
+    networks:
+      - web-app-network
+
+  real-estate-redis:
+    image: codxtra/real-estate-redis:Redis-7.4.2-alpine-P
+    # build: 
+    #   context: ..
+    #   dockerfile: ./docker/redis/Dockerfile
+    container_name: real-estate-redis
+    restart: unless-stopped
+    volumes:
+      - ${REDIS_VOLUME_NAME}:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    
+    # LEGACY CORE RESOURCE FALLBACKS
+    cpus: 0.25
+    mem_limit: 200M
+    mem_reservation: 64M
+
+    # MODERN ORCHESTRATION RE-BALANCING
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 200M
+        reservations:
+          cpus: '0.05'
+          memory: 64M
+
+    networks:
+      - web-app-network
+
+volumes:
+  # The engine evaluates the name dynamically on creation
+  real-estate-redis-data-s1:
+    external: false
+  real-estate-redis-data-s2:
+    external: false
+
+networks:
+  web-app-network:
+    name: web-app-network
+    external: true
+
