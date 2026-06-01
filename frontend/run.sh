@@ -12,10 +12,8 @@ infisical run --path="/Real-Estate/frontend" -- sh -c '
     
     # Check environment and start appropriate server
     if [ "$NODE_ENV" = "production" ]; then
-        echo "Starting Next.js in Standalone Production mode..."
-        export PORT=${PORT:-3000}
-        export HOSTNAME=${HOSTNAME:-"0.0.0.0"}
-        node server.js
+        echo "Starting Next.js in production mode..."
+        npm start
     else
         echo "Starting Next.js in development mode..."
         npm run dev
