@@ -15,7 +15,7 @@ export async function generateMetadata({ params }) {
       title: "Property Not Found",
       description: "The property you are looking for does not exist.",
       alternates: {
-        canonical: `https://realestate.com/properties/${params.slug}`,
+        canonical: `https://realestate.com/properties/${slug}`,
       },
       robots: { index: false },
     };
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }) {
     title: `${response.title} | Real Estate Listings`,
     description: `${response.description}`,
     alternates: {
-      canonical: `https://realestate.com/properties/${params.slug}`,
+      canonical: `https://realestate.com/properties/${slug}`,
     },
     openGraph: {
       title: response.title,
