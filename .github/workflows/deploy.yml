@@ -6,6 +6,7 @@ on:
       - main
     types:
       - closed # Trigger only when PR is closed (merged)
+  workflow_dispatch:
 
 jobs:
   deploy-client:
