@@ -32,11 +32,11 @@ def chat_json_extractor_agent(property_details, user_query):
         f"USER QUERY: {user_query}\n\n"
         "Output the final state in this JSON format:\n"
         "{\n"
-        "  'area_sqft': float or null,\n"
-        "  'beds': int or null,\n"
-        "  'baths': int or null,\n"
-        "  'price': float or null,\n"
-        "  'error': string or null\n"
+        '  "area_sqft": float or null,\n'
+        '  "beds": int or null,\n'
+        '  "baths": int or null,\n'
+        '  "price": float or null,\n'
+        '  "error": string or null\n'
         "}"
     )
 

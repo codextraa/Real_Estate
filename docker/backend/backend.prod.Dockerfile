@@ -18,8 +18,8 @@ COPY ./backend .
 
 FROM python:3.13-alpine AS runner
 
-RUN apk add --no-cache bash curl postgresql-client && \
-    curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.alpine.sh' | distro=alpine version=3.20 bash && \
+RUN apk add --no-cache bash wget postgresql-client && \
+    wget -qO- 'https://artifacts-cli.infisical.com/setup.apk.sh' | sh && \
     apk add --no-cache infisical
 
 RUN adduser -D django
