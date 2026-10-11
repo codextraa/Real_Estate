@@ -71,7 +71,7 @@ def groq_json_formatter(context_text, area, city):
     )
 
     response = openai.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.0,  # Low temperature for strict extraction accuracy
@@ -119,22 +119,22 @@ def groq_ai_insight_prompt(
         f"ALGORITHM DATA (Internal Metrics & Logic):\n{math_context}\n\n"
         f"COMPUTED RATING: {rating} / 5\n\n"
         f"MARKET DATA (Comps): {json.dumps(comps_sample[:10])}\n\n"
-        "TASK: Provide a JSON object with this exact structure:\n"
+        "TASK: Return ONLY a valid JSON object with this exact structure. "
+        "Use double quotes for all JSON keys and string values. "
+        "Do not use single quotes, Markdown code fences, or text outside the JSON object.\n"
         "{\n"
-        "  'weighted_analysis': 'A single string where each line represents a score adjustment. "
-        "Start each line with the raw score and a professional description. "
-        "Example: +1.4 Exceptional Price-to-Value Gap\\n-0.5 Square Footage Utility Penalty',\n"
-        "  'investment_summary': 'A professional 3-sentence "
-        "executive summary explaining the rating.',\n"
-        "  'pros': ['Detailed strength 1', 'Detailed strength 2'],\n"
-        "  'cons': ['Detailed risk 1', 'Detailed risk 2']\n"
+        '  "weighted_analysis": "A single string where each line represents a score adjustment. '
+        'Start each line with the raw score and a professional description.",\n'
+        '  "investment_summary": "A professional 3-sentence executive summary explaining the rating.",\n'
+        '  "pros": ["Detailed strength 1", "Detailed strength 2"],\n'
+        '  "cons": ["Detailed risk 1", "Detailed risk 2"]\n'
         "}"
     )
 
     if agent == "GPT":
         agent_model = "openai/gpt-oss-120b"
     else:
-        agent_model = "qwen/qwen3-32b"
+        agent_model = "openai/gpt-oss-120b"
 
     response = openai.chat.completions.create(
         model=agent_model,
